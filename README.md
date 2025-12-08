@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+frontend/
+├── src/
+│ ├── app/
+│ │ ├── layout.tsx # Root layout
+│ │ ├── page.tsx # Home/redirect page
+│ │ ├── globals.css
+│ │ ├── (auth)/ # Auth group
+│ │ │ ├── layout.tsx
+│ │ │ └── login/
+│ │ │ └── page.tsx
+│ │ ├── admin/ # Admin routes
+│ │ │ ├── layout.tsx
+│ │ │ ├── page.tsx
+│ │ │ └── stores/
+│ │ │ ├── page.tsx
+│ │ │ ├── create/
+│ │ │ │ └── page.tsx
+│ │ │ └── [id]/
+│ │ │ └── edit/
+│ │ │ └── page.tsx
+│ │ ├── host/ # Host routes
+│ │ │ ├── layout.tsx
+│ │ │ ├── page.tsx
+│ │ │ ├── menu/
+│ │ │ │ └── page.tsx
+│ │ │ ├── tables/
+│ │ │ │ └── page.tsx
+│ │ │ └── orders/
+│ │ │ ├── page.tsx
+│ │ │ └── [id]/
+│ │ │ └── page.tsx
+│ │ └── menu/ # Public customer menu
+│ │ └── [storeId]/
+│ │ └── page.tsx
+│ ├── components/
+│ │ ├── common/ # Shared components
+│ │ │ ├── LoadingSpinner.tsx
+│ │ │ ├── ErrorMessage.tsx
+│ │ │ └── ConfirmDialog.tsx
+│ │ ├── admin/
+│ │ │ ├── StoreCard.tsx
+│ │ │ ├── StoreForm.tsx
+│ │ │ └── StatsCard.tsx
+│ │ ├── host/
+│ │ │ ├── MenuManager/
+│ │ │ │ ├── CategoryList.tsx
+│ │ │ │ ├── ProductList.tsx
+│ │ │ │ └── ProductForm.tsx
+│ │ │ ├── TableManager/
+│ │ │ │ ├── TableCard.tsx
+│ │ │ │ └── QRCodeDisplay.tsx
+│ │ │ └── OrderManager/
+│ │ │ ├── OrderList.tsx
+│ │ │ ├── OrderCard.tsx
+│ │ │ └── OrderDetail.tsx
+│ │ └── customer/
+│ │ ├── MenuList.tsx
+│ │ ├── ProductCard.tsx
+│ │ ├── Cart.tsx
+│ │ └── CheckoutModal.tsx
+│ ├── lib/
+│ │ ├── api.ts # Axios instance
+│ │ ├── socket.ts # Socket.io client
+│ │ └── stores/ # Zustand stores
+│ │ ├── authStore.ts
+│ │ └── cartStore.ts
+│ ├── types/
+│ │ └── index.ts # TypeScript types
+│ ├── utils/
+│ │ ├── constants.ts
+│ │ ├── formatters.ts
+│ │ └── validators.ts
+│ └── middleware.ts # NextJS middleware
+├── public/
+│ └── logo.png
+├── .env.local
+├── next.config.js
+└── package.json
+Checklist hoàn thành base:
 
-## Getting Started
+✅ NextJS 14 + TypeScript
+✅ Tailwind + MUI
+✅ Zustand (auth + cart)
+✅ Axios setup với interceptor
+✅ TypeScript types đầy đủ
+✅ Folder structure chuẩn
+✅ Middleware cho protected routes
+✅ Environment variables
 
-First, run the development server:
+🎯 Tiếp theo:
+Sau khi bạn setup xong base này, mình sẽ hướng dẫn từng phase:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Phase 1: Authentication (Login page)
+Phase 2: Admin Module
+Phase 3: Host Module - Menu
+Phase 4: Host Module - Tables
+Phase 5: Customer Menu & Order
+Phase 6: Host Orders & Socket.io
+Phase 7: Statistics & Polish
