@@ -23,19 +23,19 @@ export const API_ENDPOINTS = {
 
   // Store/Host endpoints
   STORES: {
-    CATEGORIES: (storeId: string) => `/stores/${storeId}/categories`,
-    CATEGORY_DETAIL: (id: string) => `/categories/${id}`,
+    CATEGORIES: (storeId: string) => `/host/stores/${storeId}/categories`,
+    CATEGORY_DETAIL: (id: string) => `/host/categories/${id}`,
     
-    PRODUCTS: (storeId: string) => `/stores/${storeId}/products`,
-    PRODUCT_DETAIL: (id: string) => `/products/${id}`,
-    PRODUCT_TOGGLE: (id: string) => `/products/${id}/toggle-availability`,
+    PRODUCTS: (storeId: string) => `/host/stores/${storeId}/products`,
+    PRODUCT_DETAIL: (id: string) => `/host/products/${id}`,
+    PRODUCT_TOGGLE: (id: string) => `/host/products/${id}/toggle-availability`,
     
-    TABLES: (storeId: string) => `/stores/${storeId}/tables`,
-    TABLE_DETAIL: (id: string) => `/tables/${id}`,
+    TABLES: (storeId: string) => `/host/stores/${storeId}/tables`,
+    TABLE_DETAIL: (id: string) => `/host/tables/${id}`,
     
-    ORDERS: (storeId: string) => `/stores/${storeId}/orders`,
-    ORDER_DETAIL: (id: string) => `/orders/${id}`,
-    ORDER_STATUS: (id: string) => `/orders/${id}/status`,
+    ORDERS: (storeId: string) => `/host/stores/${storeId}/orders`,
+    ORDER_DETAIL: (id: string) => `/host/orders/${id}`,
+    ORDER_STATUS: (id: string) => `/host/orders/${id}/status`,
     
     STATS: (storeId: string) => `/stores/${storeId}/stats`,
   },

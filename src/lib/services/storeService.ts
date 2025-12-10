@@ -6,7 +6,7 @@ export const storeService = {
   // ===== CATEGORIES =====
   getCategories: async (storeId: string): Promise<Category[]> => {
     const response = await api.get(API_ENDPOINTS.STORES.CATEGORIES(storeId));
-    return response.data;
+    return response.data.data;
   },
 
   createCategory: async (storeId: string, data: { name: string; order: number }): Promise<Category> => {
@@ -26,7 +26,7 @@ export const storeService = {
   // ===== PRODUCTS =====
   getProducts: async (storeId: string): Promise<Product[]> => {
     const response = await api.get(API_ENDPOINTS.STORES.PRODUCTS(storeId));
-    return response.data;
+    return response.data.data;
   },
 
   createProduct: async (storeId: string, data: FormData): Promise<Product> => {

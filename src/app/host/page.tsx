@@ -67,7 +67,7 @@ export default function HostDashboard() {
   ];
 
   return (
-     <Box sx={{ marginLeft: '240px', p: 3, width: 'calc(100% - 240px)' }}>
+     <Box>
       <div>
         {/* Header */}
         <div className="mb-8">
