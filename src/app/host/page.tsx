@@ -29,8 +29,8 @@ export default function HostDashboard() {
       value: '0',
       subtitle: 'đơn',
       change: '+0%',
-      icon: <Receipt className="text-green-600" />,
-      color: 'from-green-500 to-green-600',
+      icon: <Receipt className="text-gray-200" />,
+      color: 'from-green-500 to-teal-600',
       bgColor: 'bg-green-50',
     },
     {
@@ -38,8 +38,8 @@ export default function HostDashboard() {
       value: '0 ₫',
       subtitle: 'VNĐ',
       change: '+0%',
-      icon: <TrendingUp className="text-blue-600" />,
-      color: 'from-blue-500 to-blue-600',
+      icon: <TrendingUp className="text-gray-200" />,
+      color: 'from-blue-500 to-purple-600',
       bgColor: 'bg-blue-50',
     },
     {
@@ -47,8 +47,8 @@ export default function HostDashboard() {
       value: '0',
       subtitle: 'món',
       change: '+0%',
-      icon: <Restaurant className="text-orange-600" />,
-      color: 'from-orange-500 to-orange-600',
+      icon: <Restaurant className="text-gray-200" />,
+      color: 'from-red-500 to-purple-600',
       bgColor: 'bg-orange-50',
     },
     {
@@ -56,8 +56,8 @@ export default function HostDashboard() {
       value: '0',
       subtitle: 'bàn',
       change: '+0%',
-      icon: <TableBar className="text-purple-600" />,
-      color: 'from-purple-500 to-purple-600',
+      icon: <TableBar className="text-gray-200" />,
+      color: 'from-orange-500 to-yellow-600',
       bgColor: 'bg-purple-50',
     },
   ];
@@ -116,66 +116,6 @@ export default function HostDashboard() {
               </Card>
             </Grid>
           ))}
-        </Grid>
-
-        {/* Quick Actions */}
-        <Grid container spacing={3} className="mb-8">
-          <Grid size={{ xs: 12, md: 4 }}>
-            <Card 
-              className="hover:shadow-xl transition-all duration-300 cursor-pointer border-2 border-transparent hover:border-green-500"
-              onClick={() => router.push('/host/menu')}
-            >
-              <CardContent className="text-center py-8">
-                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                  <Restaurant className="text-white text-3xl" />
-                </div>
-                <Typography variant="h6" className="font-bold mb-2">
-                  Quản lý Menu
-                </Typography>
-                <Typography variant="body2" className="text-gray-600">
-                  Thêm, sửa, xóa món ăn
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          <Grid size={{ xs: 12, md: 4 }}>
-            <Card 
-              className="hover:shadow-xl transition-all duration-300 cursor-pointer border-2 border-transparent hover:border-blue-500"
-              onClick={() => router.push('/host/tables')}
-            >
-              <CardContent className="text-center py-8">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                  <TableBar className="text-white text-3xl" />
-                </div>
-                <Typography variant="h6" className="font-bold mb-2">
-                  Quản lý Bàn
-                </Typography>
-                <Typography variant="body2" className="text-gray-600">
-                  Tạo QR code cho bàn
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-
-        <Grid size={{ xs: 12, md: 4 }}>
-            <Card 
-              className="hover:shadow-xl transition-all duration-300 cursor-pointer border-2 border-transparent hover:border-purple-500"
-              onClick={() => router.push('/host/orders')}
-            >
-              <CardContent className="text-center py-8">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                  <Receipt className="text-white text-3xl" />
-                </div>
-                <Typography variant="h6" className="font-bold mb-2">
-                  Xem Đơn hàng
-                </Typography>
-                <Typography variant="body2" className="text-gray-600">
-                  Theo dõi đơn real-time
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
         </Grid>
 
         {/* Recent Orders */}

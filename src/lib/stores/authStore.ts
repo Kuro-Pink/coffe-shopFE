@@ -1,27 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { User } from '@/types';
-
-// Helper functions để làm việc với cookie
-const setCookie = (name: string, value: string, days: number = 7) => {
-  const maxAge = days * 24 * 60 * 60; // Convert to seconds
-  document.cookie = `${name}=${value}; path=/; max-age=${maxAge}; SameSite=Lax`;
-};
-
-const getCookie = (name: string): string | null => {
-  if (typeof document === 'undefined') return null;
-  
-  const value = document.cookie
-    .split('; ')
-    .find(row => row.startsWith(`${name}=`))
-    ?.split('=')[1];
-  
-  return value || null;
-};
-
-const deleteCookie = (name: string) => {
-  document.cookie = `${name}=; path=/; max-age=0`;
-};
+import { setCookie, getCookie, deleteCookie } from '@/utils/cookies';
 
 interface AuthState {
   user: User | null;
@@ -41,46 +21,61 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       
       login: (user, token) => {
-        // ✅ Lưu token vào cookie (để middleware có thể đọc)
+        // ✅ Lưu token vào cookie
         setCookie('token', token, 7);
         
-        // Lưu vào zustand state
+        // ✅ QUAN TRỌNG: Cũng lưu vào localStorage để Axios đọc được
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('token', token);
+        }
+        
         set({ user, token, isAuthenticated: true });
       },
       
       logout: () => {
-        // ✅ Xóa cookie
+        // ✅ Xóa cả cookie và localStorage
         deleteCookie('token');
         
-        // Xóa localStorage
-        localStorage.removeItem('token');
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('token');
+        }
         
-        // Reset state
         set({ user: null, token: null, isAuthenticated: false });
       },
       
       updateUser: (user) => set({ user }),
       
-      // ✅ Initialize auth từ cookie khi app load
+      // ✅ Initialize auth từ cookie
       initAuth: () => {
         const token = getCookie('token');
-        const storedUser = localStorage.getItem('auth-storage');
         
-        if (token && storedUser) {
-          try {
-            const parsed = JSON.parse(storedUser);
-            if (parsed.state?.user) {
-              set({ 
-                user: parsed.state.user, 
-                token, 
-                isAuthenticated: true 
-              });
-            }
-          } catch (error) {
-            console.error('Failed to parse stored user:', error);
-            get().logout();
+        if (token) {
+          // Sync token vào localStorage
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('token', token);
           }
-        } else if (!token) {
+          
+          // Load user từ storage
+          const storedUser = typeof window !== 'undefined' 
+            ? localStorage.getItem('auth-storage') 
+            : null;
+          
+          if (storedUser) {
+            try {
+              const parsed = JSON.parse(storedUser);
+              if (parsed.state?.user) {
+                set({ 
+                  user: parsed.state.user, 
+                  token, 
+                  isAuthenticated: true 
+                });
+              }
+            } catch (error) {
+              console.error('Failed to parse stored user:', error);
+              get().logout();
+            }
+          }
+        } else {
           // Không có token -> logout
           get().logout();
         }
@@ -90,7 +85,6 @@ export const useAuthStore = create<AuthState>()(
       name: 'auth-storage',
       storage: createJSONStorage(() => localStorage),
       skipHydration: false,
-      // Chỉ persist user info, không persist token (vì token ở cookie)
       partialize: (state) => ({ 
         user: state.user,
         isAuthenticated: state.isAuthenticated 

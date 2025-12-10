@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/stores/authStore';
 import { 
@@ -20,47 +20,71 @@ import {
   People,
   ArrowUpward,
 } from '@mui/icons-material';
+import { adminService } from '@/lib/services/adminService';
 
 export default function AdminDashboard() {
-  const router = useRouter();
-   const initAuth = useAuthStore(state => state.initAuth);
+   const router = useRouter();
+  const [stats, setStats] = useState({
+    totalStores: 0,
+    totalOrders: 0,
+    totalRevenue: 0,
+    totalHosts: 0,
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const data = await adminService.getStats();
+      console.log('Stats data:', data);
+      setStats(data);
+    } catch (err) {
+      console.error('Failed to fetch stats:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const initAuth = useAuthStore(state => state.initAuth);
   
     useEffect(() => {
       // Initialize auth từ cookie khi app mount
       initAuth();
     }, [initAuth]);
 
-  const stats = [
+  const statsData  = [
     {
       title: 'Tổng cửa hàng',
       value: '0',
       change: '+0%',
-      icon: <Store className="text-blue-600" />,
-      color: 'from-blue-500 to-blue-600',
+      icon: <Store className="text-gray-200" />,
+      color: 'from-purple-500 to-blue-600',
       bgColor: 'bg-blue-50',
     },
     {
       title: 'Tổng đơn hàng',
       value: '0',
       change: '+0%',
-      icon: <ShoppingCart className="text-green-600" />,
-      color: 'from-green-500 to-green-600',
+      icon: <ShoppingCart className="text-gray-200" />,
+      color: 'from-green-500 to-teal-600',
       bgColor: 'bg-green-50',
     },
     {
       title: 'Doanh thu',
       value: '0 ₫',
       change: '+0%',
-      icon: <TrendingUp className="text-purple-600" />,
-      color: 'from-purple-500 to-purple-600',
+      icon: <TrendingUp className="text-gray-200" />,
+      color: 'from-red-500 to-purple-600',
       bgColor: 'bg-purple-50',
     },
     {
       title: 'Tài khoản Host',
       value: '0',
       change: '+0%',
-      icon: <People className="text-orange-600" />,
-      color: 'from-orange-500 to-orange-600',
+      icon: <People className="text-gray-200" />,
+      color: 'from-orange-500 to-yellow-600',
       bgColor: 'bg-orange-50',
     },
   ];
@@ -85,13 +109,13 @@ export default function AdminDashboard() {
             onClick={() => router.push('/admin/hosts/create')}
             className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-lg"
           >
-            Tạo tài khoản Host
+            Thêm cửa hàng
           </Button>
         </div>
 
         {/* Stats Cards */}
         <Grid container spacing={3} className="mb-8">
-          {stats.map((stat, index) => (
+          {statsData.map((stat, index) => (
             <Grid size={{ xs: 12, sm: 6, lg: 3 }} key={index}>
               <Card className="hover:shadow-xl transition-shadow duration-300 border-0 overflow-hidden">
                 <CardContent className="relative">
