@@ -1,13 +1,15 @@
 import axios from 'axios';
+import { API_CONFIG } from '@/config/api.config';
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  baseURL: API_CONFIG.BASE_URL,
+  timeout: API_CONFIG.TIMEOUT,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Request interceptor - thêm token vào header
+// Request interceptor
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -19,16 +21,28 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor - xử lý error
+// Response interceptor
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Unauthorized - clear token và redirect
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+    const status = error.response?.status;
+    
+    if (status === 401) {
+      const token = localStorage.getItem('token');
+      const isLoginRequest = error.config?.url?.includes('/auth/login');
+      
+      // Nếu có token (đã login) và không phải login request
+      if (token && !isLoginRequest) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        
+        // ✅ Emit event thay vì window.location
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('auth:logout'));
+        }
+      }
     }
+    
     return Promise.reject(error);
   }
 );
