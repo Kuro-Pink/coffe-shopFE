@@ -55,7 +55,7 @@ export const storeService = {
   // ===== TABLES =====
   getTables: async (storeId: string): Promise<Table[]> => {
     const response = await api.get(API_ENDPOINTS.STORES.TABLES(storeId));
-    return response.data;
+    return response.data.data;
   },
 
   createTable: async (storeId: string, data: { tableNumber: string; area: string }): Promise<Table> => {
