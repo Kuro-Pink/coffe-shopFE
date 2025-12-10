@@ -18,13 +18,13 @@ export const adminService = {
   // Get all stores
   getStores: async (): Promise<Store[]> => {
     const response = await api.get(API_ENDPOINTS.ADMIN.STORES);
-    return response.data;
+    return response.data.data;
   },
 
   // Get store by ID
   getStore: async (id: string): Promise<Store> => {
     const response = await api.get(API_ENDPOINTS.ADMIN.STORE_DETAIL(id));
-    return response.data;
+    return response.data.data;
   },
 
   // Create store

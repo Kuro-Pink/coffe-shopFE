@@ -121,7 +121,7 @@ export default function CreateStorePage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="mx-auto">
       {/* Header */}
       <div className="mb-6">
         <Button
@@ -147,7 +147,7 @@ export default function CreateStorePage() {
             </Alert>
           )}
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 flex flex-col gap-4">
             {/* Logo Upload */}
             <div className="text-center">
               <Avatar

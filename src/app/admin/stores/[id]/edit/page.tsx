@@ -65,6 +65,7 @@ export default function EditStorePage() {
     try {
       setLoading(true);
       const store = await adminService.getStore(storeId);
+      console.log('Fetched store:', store);
       
       // Populate form
       reset({
@@ -145,7 +146,7 @@ export default function EditStorePage() {
   if (loading) return <LoadingSpinner />;
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="mx-auto">
       {/* Header */}
       <div className="mb-6">
         <Button
@@ -171,7 +172,7 @@ export default function EditStorePage() {
             </Alert>
           )}
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 flex flex-col gap-4">
             {/* Logo */}
             <div className="text-center">
               <Avatar

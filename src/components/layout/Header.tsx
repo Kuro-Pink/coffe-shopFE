@@ -70,17 +70,8 @@ export default function Header({
           <MenuIcon />
         </IconButton>
 
-        <Typography
-          variant="h6"
-          component="div"
-          sx={{ flexGrow: 1 }}
-          className={`${theme.textColor} font-semibold`}
-        >
-          {title}
-        </Typography>
-
         {/* Notifications */}
-        <IconButton color="inherit" className={`${theme.iconColor} mr-2`}>
+        <IconButton color="inherit" className={`${theme.iconColor}`} sx={{ ml: 'auto', mr: 2 }}>
           <Badge badgeContent={notificationCount} color="error">
             <Notifications />
           </Badge>

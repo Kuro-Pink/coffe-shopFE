@@ -89,7 +89,7 @@ export default function DashboardLayout({
           component="main"
           sx={{
             flexGrow: 1,
-            width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
+            ml: { md: `${DRAWER_WIDTH}px` },  
             height: '100vh',
             overflow: 'auto',
           }}

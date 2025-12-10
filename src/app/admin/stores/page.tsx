@@ -72,21 +72,26 @@ export default function StoresListPage() {
 
   const fetchStores = async () => {
     try {
-      setLoading(true);
-      const data = await adminService.getStores();
-      setStores(data);
-      setFilteredStores(data);
-    } catch (err: unknown) {
-      let errorMessage = 'Không thể tải danh sách cửa hàng';
-      if (err instanceof AxiosError) {
+        setLoading(true);
+
+        const res = await adminService.getStores();
+
+        setStores(res);        
+        setFilteredStores(res);
+
+    } catch (err) {
+        let errorMessage = 'Không thể tải danh sách cửa hàng';
+        if (err instanceof AxiosError) {
         const responseData = err.response?.data as ErrorResponse;
         errorMessage = responseData?.message || responseData?.error || errorMessage;
-      }
-      setError(errorMessage);
+        }
+        setError(errorMessage);
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+    };
+
+
 
   const handleDelete = async () => {
     if (!deleteDialog.store) return;
@@ -200,7 +205,7 @@ export default function StoresListPage() {
         </Card>
       ) : (
         <Grid container spacing={3}>
-          {filteredStores.map((store) => (
+          {filteredStores?.map((store) => (
             <Grid size={{ xs: 12, md: 6, lg: 4 }} key={store._id}>
               <Card className="hover:shadow-xl transition-all duration-300 border-0 h-full">
                 <CardContent>

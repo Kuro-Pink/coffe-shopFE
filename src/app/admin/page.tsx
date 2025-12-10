@@ -39,7 +39,6 @@ export default function AdminDashboard() {
   const fetchStats = async () => {
     try {
       const data = await adminService.getStats();
-      console.log('Stats data:', data);
       setStats(data);
     } catch (err) {
       console.error('Failed to fetch stats:', err);
@@ -90,7 +89,7 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <Box sx={{ marginLeft: '240px', p: 3, width: 'calc(100% - 240px)' }}>
+    <Box>
       <div>
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
