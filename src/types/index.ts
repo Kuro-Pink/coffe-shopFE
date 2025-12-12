@@ -23,6 +23,7 @@ export interface Category {
   name: string;
   storeId: string;
   order: number;
+  products: Product[];
 }
 
 export interface Product {

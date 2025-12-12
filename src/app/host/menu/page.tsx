@@ -1,25 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import {
-  Card,
-  CardContent,
-  Typography,
-  Button,
-  Tabs,
-  Tab,
-  Box,
-  Chip,
-} from '@mui/material';
+import { useState, useEffect, useMemo } from 'react';
+import { Card, CardContent, Typography, Button, Chip, Box } from '@mui/material';
 import { Add, Restaurant, Category as CategoryIcon } from '@mui/icons-material';
 import { useAuthStore } from '@/lib/stores/authStore';
 import { storeService } from '@/lib/services/storeService';
 import { Category, Product } from '@/types';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
-import CategoryManager from '@/components/host/MenuManager/CategoryManager';
-import ProductManager from '@/components/host/MenuManager/ProductManager';
+import MenuFilter from '@/components/host/MenuManager/MenuFilter';
+import CategoryCard from '@/components/host/MenuManager/CategoryCard';
 import { AxiosError } from 'axios';
+
+// Import existing dialog components
+import CategoryDialog from '@/components/host/MenuManager/CategoryDialog';
+import ProductDialog from '@/components/host/MenuManager/ProductDialog';
 
 interface ErrorResponse {
   message?: string;
@@ -28,39 +23,141 @@ interface ErrorResponse {
 
 export default function MenuManagementPage() {
   const { user } = useAuthStore();
-  const [tabValue, setTabValue] = useState(0);
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  
+
+  // Filter states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'available' | 'unavailable'>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [openMap, setOpenMap] = useState<Record<string, boolean>>({});
+  const [expandAll, setExpandAll] = useState(true);
+
+  // Dialog states
+  const [categoryDialog, setCategoryDialog] = useState<{
+    open: boolean;
+    category: Category | null;
+  }>({ open: false, category: null });
+
+  const [productDialog, setProductDialog] = useState<{
+    open: boolean;
+    product: Product | null;
+    categoryId?: string;
+  }>({ open: false, product: null });
+
   useEffect(() => {
-    if (user?.storeId) {
-      fetchData();
-    }
+    if (user?.storeId) fetchData();
   }, [user]);
 
   const fetchData = async () => {
     if (!user?.storeId) return;
-
     try {
       setLoading(true);
-      const [categoriesData, productsData] = await Promise.all([
+      const [cats, prods] = await Promise.all([
         storeService.getCategories(user.storeId),
         storeService.getProducts(user.storeId),
       ]);
-    
-      setCategories(categoriesData);
-      setProducts(productsData);
+      
+      const sortedCats = cats.sort((a, b) => a.order - b.order);
+      setCategories(sortedCats);
+      setProducts(prods);
+
+      // Initialize open map
+      const mapInit: Record<string, boolean> = {};
+      sortedCats.forEach((c) => (mapInit[c._id] = true));
+      setOpenMap(mapInit);
+      setExpandAll(true);
     } catch (err: unknown) {
-      let errorMessage = 'Không thể tải dữ liệu menu';
+      let message = 'Không thể tải dữ liệu menu';
       if (err instanceof AxiosError) {
-        const responseData = err.response?.data as ErrorResponse;
-        errorMessage = responseData?.message || responseData?.error || errorMessage;
+        const r = err.response?.data as ErrorResponse;
+        message = r?.message || r?.error || message;
       }
-      setError(errorMessage);
+      setError(message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Filter products by search and status
+  const filteredProducts = useMemo(() => {
+    return products.filter((p) => {
+      const byQuery = !searchQuery || p.name.toLowerCase().includes(searchQuery.toLowerCase());
+      const byStatus =
+        statusFilter === 'all'
+          ? true
+          : statusFilter === 'available'
+          ? p.isAvailable
+          : !p.isAvailable;
+      return byQuery && byStatus;
+    });
+  }, [products, searchQuery, statusFilter]);
+
+  // Filter categories by selected category tab
+  const displayedCategories = useMemo(() => {
+    if (selectedCategory === 'all') {
+      return categories;
+    }
+    return categories.filter((cat) => cat._id === selectedCategory);
+  }, [categories, selectedCategory]);
+
+  // Group products by category
+  const productsByCategory = useMemo(() => {
+    return displayedCategories.reduce<Record<string, Product[]>>((acc, cat) => {
+      acc[cat._id] = filteredProducts.filter((p) => {
+        // Handle both string and populated object categoryId
+        const productCategoryId = typeof p.categoryId === 'object' 
+          ? (p.categoryId as { _id: string })._id 
+          : p.categoryId;
+        return productCategoryId === cat._id;
+      });
+      return acc;
+    }, {});
+  }, [displayedCategories, filteredProducts]);
+
+  // Handlers
+  const handleToggleExpandAll = () => {
+    const next = !expandAll;
+    setExpandAll(next);
+    const map: Record<string, boolean> = {};
+    displayedCategories.forEach((c) => (map[c._id] = next));
+    setOpenMap(map);
+  };
+
+  const handleCategoryChange = (categoryId: string) => {
+    setSelectedCategory(categoryId);
+    // Auto expand when switching category
+    if (categoryId !== 'all') {
+      setOpenMap((prev) => ({ ...prev, [categoryId]: true }));
+    }
+  };
+
+  const handleDeleteCategory = async (categoryId: string) => {
+    try {
+      await storeService.deleteCategory(categoryId);
+      await fetchData();
+    } catch {
+      alert('Xóa danh mục thất bại');
+    }
+  };
+
+  const handleDeleteProduct = async (productId: string) => {
+    try {
+      await storeService.deleteProduct(productId);
+      await fetchData();
+    } catch {
+      alert('Xóa sản phẩm thất bại');
+    }
+  };
+
+  const handleToggleAvailability = async (productId: string) => {
+    try {
+      await storeService.toggleProductAvailability(productId);
+      await fetchData();
+    } catch {
+      alert('Cập nhật trạng thái thất bại');
     }
   };
 
@@ -80,21 +177,22 @@ export default function MenuManagementPage() {
   }
 
   if (loading) return <LoadingSpinner />;
+  if (error) return <ErrorMessage message={error} />;
 
   return (
-    <div>
+    <Box>
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div>
-          <Typography variant="h4" className="font-bold text-gray-800 mb-2">
+          <Typography variant="h4" className="font-bold text-gray-800 mb-1">
             Quản lý Menu
           </Typography>
           <Typography variant="body2" className="text-gray-600">
-            Quản lý danh mục và sản phẩm của cửa hàng
+            Quản lý danh mục và sản phẩm theo dạng accordion
           </Typography>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center flex-wrap">
           <Chip
             icon={<CategoryIcon />}
             label={`${categories.length} danh mục`}
@@ -108,38 +206,105 @@ export default function MenuManagementPage() {
         </div>
       </div>
 
-      {error && <ErrorMessage message={error} />}
-
-      {/* Tabs */}
-      <Card className="shadow-lg border-0 mb-6">
-        <Tabs
-          value={tabValue}
-          onChange={(_, newValue) => setTabValue(newValue)}
-          className="border-b border-gray-200"
-        >
-          <Tab label="Danh mục" icon={<CategoryIcon />} iconPosition="start" />
-          <Tab label="Sản phẩm" icon={<Restaurant />} iconPosition="start" />
-        </Tabs>
+      {/* Filter Bar with Category Tabs */}
+      <Card className="p-4 mb-6 shadow-sm">
+        <MenuFilter
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          statusFilter={statusFilter}
+          onStatusChange={setStatusFilter}
+          expandAll={expandAll}
+          onToggleExpandAll={handleToggleExpandAll}
+          categories={categories}
+          selectedCategory={selectedCategory}
+          onCategoryChange={handleCategoryChange}
+        />
       </Card>
 
-      {/* Tab Content */}
-      <Box>
-        {tabValue === 0 && (
-          <CategoryManager
-            categories={categories}
-            onRefresh={fetchData}
-            storeId={user.storeId}
-          />
-        )}
-        {tabValue === 1 && (
-          <ProductManager
-            products={products}
-            categories={categories}
-            onRefresh={fetchData}
-            storeId={user.storeId}
-          />
-        )}
-      </Box>
-    </div>
+      {/* Action Buttons */}
+      <div className="flex gap-2 mb-4">
+        <Button
+          variant="contained"
+          startIcon={<Add />}
+          onClick={() => setCategoryDialog({ open: true, category: null })}
+          className="bg-gradient-to-r from-blue-600 to-purple-600"
+        >
+          Thêm danh mục
+        </Button>
+      </div>
+
+      {/* Categories Accordion List */}
+      {categories.length === 0 ? (
+        <Card className="shadow-lg">
+          <CardContent className="text-center py-12">
+            <Typography variant="h6" className="text-gray-800 mb-2">
+              Chưa có danh mục nào
+            </Typography>
+            <Typography variant="body2" className="text-gray-600 mb-4">
+              Tạo danh mục đầu tiên để bắt đầu thêm món ăn
+            </Typography>
+            <Button
+              variant="contained"
+              startIcon={<Add />}
+              onClick={() => setCategoryDialog({ open: true, category: null })}
+              className="bg-gradient-to-r from-blue-600 to-purple-600"
+            >
+              Tạo danh mục
+            </Button>
+          </CardContent>
+        </Card>
+      ) : displayedCategories.length === 0 ? (
+        <Card className="shadow-lg">
+          <CardContent className="text-center py-12">
+            <Typography variant="h6" className="text-gray-800 mb-2">
+              Không tìm thấy danh mục
+            </Typography>
+            <Typography variant="body2" className="text-gray-600">
+              Thử thay đổi bộ lọc hoặc tìm kiếm khác
+            </Typography>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {displayedCategories.map((cat) => (
+            <CategoryCard
+              key={cat._id}
+              category={cat}
+              products={productsByCategory[cat._id] || []}
+              isOpen={!!openMap[cat._id]}
+              onToggle={() => setOpenMap((m) => ({ ...m, [cat._id]: !m[cat._id] }))}
+              onEditCategory={(category) => setCategoryDialog({ open: true, category })}
+              onDeleteCategory={handleDeleteCategory}
+              onAddProduct={(categoryId) =>
+                setProductDialog({ open: true, product: null, categoryId })
+              }
+              onEditProduct={(product) => setProductDialog({ open: true, product })}
+              onDeleteProduct={handleDeleteProduct}
+              onToggleProductAvailability={handleToggleAvailability}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Category Dialog */}
+      <CategoryDialog
+        open={categoryDialog.open}
+        category={categoryDialog.category}
+        storeId={user.storeId}
+        onClose={() => setCategoryDialog({ open: false, category: null })}
+        onSuccess={fetchData}
+      />
+
+      {/* Product Dialog */}
+      <ProductDialog
+        open={productDialog.open}
+        product={productDialog.product}
+        categories={categories}
+        storeId={user.storeId}
+        defaultCategoryId={productDialog.categoryId}
+        onClose={() => setProductDialog({ open: false, product: null })}
+        onSuccess={fetchData}
+      />
+    </Box>
   );
 }

@@ -15,15 +15,19 @@ export interface CreateOrderData {
 
 export const publicService = {
   // Get menu (categories + products)
-  getMenu: async (storeId: string): Promise<{ categories: Category[]; products: Product[] }> => {
+  getMenu: async (storeId: string): Promise<{ 
+    categories: Category[]; 
+    products: Product[];
+    storeName?: string; 
+  }> => {
     const response = await api.get(API_ENDPOINTS.PUBLIC.MENU(storeId));
-    return response.data;
+    return response.data.data;
   },
 
   // Get table info
   getTableInfo: async (tableId: string): Promise<Table> => {
     const response = await api.get(API_ENDPOINTS.PUBLIC.TABLE_INFO(tableId));
-    return response.data;
+    return response.data.data;
   },
 
   // Create order
