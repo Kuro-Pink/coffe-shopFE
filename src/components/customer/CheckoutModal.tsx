@@ -127,7 +127,7 @@ export default function CheckoutModal({ open, onClose, onSuccess }: CheckoutModa
       ) : (
         <>
           <DialogTitle className="border-b border-gray-200">
-            <Typography variant="h6" className="font-bold">
+            <Typography variant="h6" component="span" className="font-bold">
               Xác nhận đặt hàng
             </Typography>
           </DialogTitle>

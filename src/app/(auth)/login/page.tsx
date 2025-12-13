@@ -86,7 +86,7 @@ export default function LoginPage() {
   };
 
   return (
-   <div className="fixed inset-0 w-screen h-screen bg-gradient-to-br from-blue-600/60 via-purple-600/60 to-pink-500/60 flex items-center justify-center p-4">
+   <div className="fixed inset-0 w-screen h-screen bg-gradient-to-br from-teal-600/60 via-blue-600/60 to-purple-500/60 flex items-center justify-center p-4">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-white/20 rounded-full blur-3xl"></div>
@@ -103,7 +103,7 @@ export default function LoginPage() {
             <h1 className="text-4xl font-extrabold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Coffee Shop
             </h1>
-            <p className="text-gray-700 mt-2">Đăng nhập để quản lý nhà hàng</p>
+            <p className="text-gray-700 mt-2">Đăng nhập để quản lý quán</p>
           </div>
 
           {/* Form */}

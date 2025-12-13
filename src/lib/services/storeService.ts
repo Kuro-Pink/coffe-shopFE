@@ -75,7 +75,7 @@ export const storeService = {
   // ===== ORDERS =====
   getOrders: async (storeId: string): Promise<Order[]> => {
     const response = await api.get(API_ENDPOINTS.STORES.ORDERS(storeId));
-    return response.data;
+    return response.data.data;
   },
 
   getOrder: async (id: string): Promise<Order> => {
