@@ -16,7 +16,6 @@ const menuItems = [
   { text: 'Quản lý Menu', icon: <Restaurant />, path: '/host/menu' },
   { text: 'Quản lý Bàn', icon: <TableBar />, path: '/host/tables' },
   { text: 'Đơn hàng', icon: <Receipt />, path: '/host/orders' },
-  { text: 'Thống kê', icon: <BarChart />, path: '/host/stats' },
 ];
 
 const hostTheme = {

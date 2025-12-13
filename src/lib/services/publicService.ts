@@ -13,13 +13,23 @@ export interface CreateOrderData {
   }[];
 }
 
+export interface MenuResponse {
+  categories: (Category & {
+    products: Product[];
+  })[];
+  store: {
+    _id: string;
+    name: string;
+    address?: string;
+    phone?: string;
+  };
+  bestSellers?: Product[];
+}
+
+
 export const publicService = {
   // Get menu (categories + products)
-  getMenu: async (storeId: string): Promise<{ 
-    categories: Category[]; 
-    products: Product[];
-    storeName?: string; 
-  }> => {
+  getMenu: async (storeId: string): Promise<MenuResponse> => {
     const response = await api.get(API_ENDPOINTS.PUBLIC.MENU(storeId));
     return response.data.data;
   },

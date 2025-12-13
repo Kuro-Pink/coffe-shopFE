@@ -19,10 +19,13 @@ export const API_ENDPOINTS = {
     STORES: '/admin/stores',
     STORE_DETAIL: (id: string) => `/admin/stores/${id}`,
     STATS: '/admin/stats',
+    STORE_REQUESTS: '/admin/store-requests',
+    APPROVE_REQUEST: (id: string) => `/admin/store-requests/${id}/approve`,
+    REJECT_REQUEST: (id: string) => `/admin/store-requests/${id}/reject`,
   },
 
   // Store/Host endpoints
-  STORES: {
+  HOST: {
     CATEGORIES: (storeId: string) => `/host/stores/${storeId}/categories`,
     CATEGORY_DETAIL: (id: string) => `/host/categories/${id}`,
     
@@ -37,7 +40,17 @@ export const API_ENDPOINTS = {
     ORDER_DETAIL: (id: string) => `/host/orders/${id}`,
     ORDER_STATUS: (id: string) => `/host/orders/${id}/status`,
     
-    STATS: (storeId: string) => `/stores/${storeId}/stats`,
+    // ✅ Analytics endpoints - 7 APIs riêng biệt
+    ANALYTICS: {
+      DASHBOARD: (storeId: string) => `/host/stores/${storeId}/analytics/dashboard`,
+      ORDERS_TODAY: (storeId: string) => `/host/stores/${storeId}/orders/today`,
+      REVENUE_TRENDS: (storeId: string) => `/host/stores/${storeId}/analytics/revenue-trends`,
+      PEAK_HOURS: (storeId: string) => `/host/stores/${storeId}/analytics/peak-hours`,
+      BEST_SELLERS: (storeId: string) => `/host/stores/${storeId}/analytics/best-sellers`,
+      CUSTOMERS: (storeId: string) => `/host/stores/${storeId}/analytics/customers`,
+      CATEGORIES: (storeId: string) => `/host/stores/${storeId}/analytics/categories`,
+      TABLES: (storeId: string) => `/host/stores/${storeId}/analytics/tables`,
+    },
   },
 
   // Public/Customer endpoints

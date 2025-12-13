@@ -18,9 +18,10 @@ import { useCartStore } from '@/lib/stores/cartStore';
 
 interface ProductCardProps {
   product: Product;
+  isBestSeller?: boolean;
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, isBestSeller = false }: ProductCardProps) {
   const [quantity, setQuantity] = useState(1);
   const [detailOpen, setDetailOpen] = useState(false);
   const { addItem } = useCartStore();
@@ -46,6 +47,13 @@ export default function ProductCard({ product }: ProductCardProps) {
         <CardContent className="p-0">
           {/* Image */}
           <div className="relative h-48 overflow-hidden">
+            {/* ✅ Best Seller Badge */}
+            {isBestSeller && (
+              <div className="absolute top-2 left-2 bg-gradient-to-r from-orange-500 to-red-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg flex items-center gap-1 z-10 animate-pulse">
+                🔥 HOT
+              </div>
+            )}
+
             {product.image ? (
               <img
                 src={product.image}

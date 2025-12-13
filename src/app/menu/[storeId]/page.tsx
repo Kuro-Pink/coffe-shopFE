@@ -12,8 +12,9 @@ import {
   Box,
   Fab,
   Badge,
+  Chip,
 } from '@mui/material';
-import { ShoppingCart } from '@mui/icons-material';
+import { ShoppingCart, LocalFireDepartment, TrendingUp } from '@mui/icons-material';
 import { publicService } from '@/lib/services/publicService';
 import { useCartStore } from '@/lib/stores/cartStore';
 import { Category, Product } from '@/types';
@@ -28,6 +29,18 @@ interface ErrorResponse {
   error?: string;
 }
 
+interface MenuCategory extends Category {
+  products: Product[];
+}
+
+interface MenuResponse {
+  categories: MenuCategory[];
+  store: {
+    name: string;
+  };
+}
+
+
 export default function CustomerMenuPage() {
   const params = useParams();
   const searchParams = useSearchParams();
@@ -36,7 +49,9 @@ export default function CustomerMenuPage() {
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [bestSellers, setBestSellers] = useState<Product[]>([]);
   const [tableInfo, setTableInfo] = useState<{ tableNumber: string; area: string } | null>(null);
+  const [storeName, setStoreName] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -49,158 +64,152 @@ export default function CustomerMenuPage() {
   }, [storeId, tableId]);
 
   const fetchData = async () => {
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      // Fetch menu
-      const menuData = await publicService.getMenu(storeId);
-      
-      // 🔍 DEBUG: In ra structure của menuData
-      console.log('📦 menuData:', menuData);
-      console.log('📂 menuData.categories:', menuData.categories);
-      console.log('📦 menuData.products:', menuData.products);
+    const menuData: MenuResponse = await publicService.getMenu(storeId);
 
-      // Check if menuData has the expected structure
-      if (!menuData) {
-        throw new Error('Menu data is empty');
-      }
+    const categories = menuData.categories.sort(
+      (a, b) => a.order - b.order
+    );
 
-      // Handle different API response structures
-      if (Array.isArray(menuData.categories)) {
-        setCategories(menuData.categories);
-        
-        // Check if products are nested in categories or separate
-        if (menuData.categories[0]?.products) {
-          // Structure 1: Products nested in categories
-          console.log('✅ Structure 1: Products nested in categories');
-          setProducts(
-            menuData.categories.flatMap(c =>
-              c.products.map(p => ({ 
-                ...p, 
-                categoryId: c._id
-              }))
-            )
-          );
-        } else if (Array.isArray(menuData.products)) {
-          // Structure 2: Products separate array
-          console.log('✅ Structure 2: Products in separate array');
-          setProducts(menuData.products);
-        } else {
-          console.warn('⚠️ Unknown structure, no products found');
-          setProducts([]);
-        }
-      } else {
-        console.error('❌ Invalid menuData structure');
-        throw new Error('Invalid menu data structure');
-      }
+    const products = categories.flatMap(category =>
+      category.products.map(product => ({
+        ...product,
+        categoryId: category._id,
+      }))
+    );
 
-      // Fetch table info if tableId exists
-      if (tableId) {
-        const table = await publicService.getTableInfo(tableId);
-        setTableInfo({
-          tableNumber: table.tableNumber,
-          area: table.area,
-        });
-        setTable(tableId, storeId);
-      }
-    } catch (err: unknown) {
-      console.error('❌ Error fetching data:', err);
-      let errorMessage = 'Không thể tải menu';
-      if (err instanceof AxiosError) {
-        console.error('Axios Error Response:', err.response?.data);
-        const responseData = err.response?.data as ErrorResponse;
-        errorMessage = responseData?.message || responseData?.error || errorMessage;
-      } else if (err instanceof Error) {
-        errorMessage = err.message;
-      }
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
+    setCategories(categories);
+    setProducts(products.filter(p => p.isAvailable));
+    setBestSellers(products.filter(p => p.isAvailable).slice(0, 6));
+    setStoreName(menuData.store?.name || 'Menu');
+
+  } catch (err) {
+    setError('Không thể tải menu');
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const filteredProducts =
     selectedCategory === 'all'
-      ? products.filter((p) => p.isAvailable)
-      : products.filter((p) => {
-          // Handle both string and object categoryId
-          const productCategoryId = typeof p.categoryId === 'object'
-            ? (p.categoryId as { _id: string })._id
-            : p.categoryId;
-          return productCategoryId === selectedCategory && p.isAvailable;
-        });
+      ? products
+      : products.filter((p) => p.categoryId === selectedCategory);
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
+  }
 
   if (error) {
     return (
-      <Container className="py-8">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <ErrorMessage message={error} />
-      </Container>
+      </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* HEADER */}
-      <div className="sticky top-0 z-20">
-        <AppBar
-          position="static"
-          elevation={0}
-          sx={{
-            background: 'transparent !important',
-            boxShadow: 'none',
-          }}
-          className="!bg-gradient-to-r !from-teal-600 !to-green-600"
-        >
-          <Toolbar className="flex flex-col py-3">
-            <Typography variant="h6" className="font-bold text-white">
-              Menu
+    <div className="min-h-screen bg-gray-50 pb-24">
+      {/* Simple Header */}
+      <div className="bg-gradient-to-r from-green-600 to-teal-600 text-white py-6 px-4 shadow-lg sticky top-0 z-20">
+        <Container maxWidth="lg">
+          <Typography variant="h5" className="font-bold text-center mb-1">
+            {storeName}
+          </Typography>
+          {tableInfo && (
+            <Typography variant="body2" className="text-center text-green-100">
+              Bàn {tableInfo.tableNumber} • {tableInfo.area}
             </Typography>
-
-            {tableInfo && (
-              <Typography variant="caption" className="text-green-100">
-                Bàn {tableInfo.tableNumber} - {tableInfo.area}
-              </Typography>
-            )}
-          </Toolbar>
-        </AppBar>
-
-        {/* CATEGORY TABS */}
-        {categories.length > 0 && (
-          <Box className="bg-white border-b border-gray-200">
-            <Container disableGutters={false}>
-              <Tabs
-                value={selectedCategory}
-                onChange={(_, value) => setSelectedCategory(value)}
-                variant="scrollable"
-                scrollButtons="auto"
-              >
-                <Tab label="Tất cả" value="all" />
-                {categories
-                  .sort((a, b) => a.order - b.order)
-                  .map((category) => (
-                    <Tab key={category._id} label={category.name} value={category._id} />
-                  ))}
-              </Tabs>
-            </Container>
-          </Box>
-        )}
+          )}
+        </Container>
       </div>
 
-      {/* Products Grid */}
-      <Container className="py-6">
+      {/* Category Tabs */}
+      {categories.length > 0 && (
+        <Box className="bg-white border-b border-gray-200 sticky top-20 z-10 shadow-sm z-9999">
+          <Container maxWidth="lg">
+            <Tabs
+              value={selectedCategory}
+              onChange={(_, value) => setSelectedCategory(value)}
+              variant="scrollable"
+              scrollButtons="auto"
+              className="py-2"
+            >
+              <Tab label="Tất cả" value="all" />
+              {categories.map((category) => (
+                <Tab key={category._id} label={category.name} value={category._id} />
+              ))}
+            </Tabs>
+          </Container>
+        </Box>
+      )}
+
+      <Container maxWidth="lg" className="py-6">
+        {/* ✅ Best Sellers Section */}
+        {bestSellers.length > 0 && selectedCategory === 'all' && (
+          <div className="mb-8">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
+                <LocalFireDepartment className="text-white" />
+              </div>
+              <div className="flex-1">
+                <Typography variant="h6" className="font-bold text-gray-800">
+                  🔥 Món bán chạy
+                </Typography>
+                <Typography variant="caption" className="text-gray-600">
+                  Những món được yêu thích nhất
+                </Typography>
+              </div>
+              <Chip
+                icon={<TrendingUp fontSize="small" />}
+                label="Hot"
+                size="small"
+                className="bg-orange-50 text-orange-600 font-semibold animate-pulse"
+              />
+            </div>
+
+            {/* Best Sellers Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+              {bestSellers.map((product) => (
+                <ProductCard key={product._id} product={product} isBestSeller />
+              ))}
+            </div>
+
+            {/* Divider */}
+            <div className="relative mb-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center">
+                <span className="bg-gray-50 px-4 text-sm text-gray-500 font-semibold">
+                  Tất cả món ăn
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* All Products Grid */}
         {filteredProducts.length === 0 ? (
           <Box className="text-center py-12">
+            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Typography variant="h1">🍽️</Typography>
+            </div>
             <Typography variant="h6" className="text-gray-800 mb-2">
-              Chưa có sản phẩm nào
+              Chưa có món ăn nào
             </Typography>
             <Typography variant="body2" className="text-gray-600">
               Menu đang được cập nhật
             </Typography>
           </Box>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredProducts.map((product) => (
               <ProductCard key={product._id} product={product} />
             ))}
@@ -212,17 +221,12 @@ export default function CustomerMenuPage() {
       {getTotalItems() > 0 && (
         <Fab
           color="primary"
+          className="fixed bottom-6 right-6 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 shadow-2xl"
           onClick={() => setCartOpen(true)}
-          sx={{
-            position: 'fixed',
-            bottom: 24,
-            right: 36,
-            zIndex: 9999,
-            background: 'linear-gradient(to right, #16a34a, #14b8a6)',
-          }}
+          sx={{ width: 64, height: 64 }}
         >
           <Badge badgeContent={getTotalItems()} color="error">
-            <ShoppingCart />
+            <ShoppingCart sx={{ fontSize: 32 }} />
           </Badge>
         </Fab>
       )}
