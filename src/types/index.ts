@@ -36,6 +36,7 @@ export interface Product {
   storeId: string;
   isAvailable: boolean;
   createdAt: string;
+  soldCount?: number;
 }
 
 export interface Table {
@@ -66,4 +67,44 @@ export interface Order {
   status: 'pending' | 'completed' | 'cancelled';
   createdAt: string;
   completedAt?: string;
+}
+
+export interface StoreRequest {
+  _id: string;
+  userId: {
+    _id: string;
+    name: string;
+    email: string;
+    phone: string;
+  };
+  storeName: string;
+  storeAddress: string;
+  storePhone: string;
+  storeLogo?: string;
+  businessLicense?: string;
+  description?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  rejectionReason?: string;
+  reviewedBy?: {
+    _id: string;
+    name: string;
+    email: string;
+  };
+  reviewedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface HostRegistrationData {
+  // User info
+  name: string;
+  email: string;
+  password: string;
+  phone: string;
+  
+  // Store info
+  storeName: string;
+  storeAddress: string;
+  storePhone: string;
+  storeLogo?: string;
 }

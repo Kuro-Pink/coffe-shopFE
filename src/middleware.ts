@@ -5,7 +5,7 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Public routes
-  const publicRoutes = ['/login', '/menu'];
+  const publicRoutes = ['/login', '/register', '/menu'];
   const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
   
   if (isPublicRoute) {

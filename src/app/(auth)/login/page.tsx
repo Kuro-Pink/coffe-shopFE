@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { TextField, Button, Card, CardContent, Alert, InputAdornment, IconButton } from '@mui/material';
+import { TextField, Button, Card, CardContent, InputAdornment, IconButton, Typography } from '@mui/material';
 import { Visibility, VisibilityOff, RestaurantMenu } from '@mui/icons-material';
 import { useAuthStore } from '@/lib/stores/authStore';
 import { authService } from '@/lib/services/authService';
@@ -148,6 +148,19 @@ export default function LoginPage() {
               ĐĂNG NHẬP
             </Button>
           </form>
+
+          {/* Register Link */}
+          <div className="mt-6 text-center">
+            <Typography variant="body2" className="text-gray-600">
+              Chưa có tài khoản?{' '}
+              <Button
+                onClick={() => router.push('/register')}
+                className="text-blue-600 font-semibold underline"
+              >
+                Đăng ký trở thành đối tác
+              </Button>
+            </Typography>
+          </div>
         </CardContent>
       </Card>
     </div>

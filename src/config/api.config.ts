@@ -16,16 +16,26 @@ export const API_ENDPOINTS = {
 
   // Admin endpoints
   ADMIN: {
+    STATS: '/admin/stats',
     STORES: '/admin/stores',
     STORE_DETAIL: (id: string) => `/admin/stores/${id}`,
-    STATS: '/admin/stats',
+    
+    // Store Requests
     STORE_REQUESTS: '/admin/store-requests',
+    STORE_REQUESTS_STATS: '/admin/store-requests/stats',
+    STORE_REQUEST_DETAIL: (id: string) => `/admin/store-requests/${id}`,
     APPROVE_REQUEST: (id: string) => `/admin/store-requests/${id}/approve`,
     REJECT_REQUEST: (id: string) => `/admin/store-requests/${id}/reject`,
   },
 
   // Store/Host endpoints
   HOST: {
+    MY_STORE: '/host/my-store',
+
+    // Store Requests (Host side)
+    STORE_REQUESTS: '/host/store-requests',
+    MY_STORE_REQUESTS: '/host/store-requests/my-requests',
+
     CATEGORIES: (storeId: string) => `/host/stores/${storeId}/categories`,
     CATEGORY_DETAIL: (id: string) => `/host/categories/${id}`,
     

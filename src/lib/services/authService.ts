@@ -27,7 +27,6 @@ export interface LoginResponse {
   };
 }
 
-
 export const authService = {
   // Login
   login: async (credentials: LoginCredentials): Promise<LoginResponse> => {
@@ -35,12 +34,15 @@ export const authService = {
     return response.data;
   },
 
-  // Register (Admin tạo Host)
+  // Register (tạo user account - KHÔNG tạo store)
   register: async (data: RegisterData): Promise<User> => {
-    const response = await api.post(API_ENDPOINTS.AUTH.REGISTER, data);
-    return response.data;
+    const response = await api.post(API_ENDPOINTS.AUTH.REGISTER, {
+      ...data,
+      role: 'host', // Force role to 'host'
+    });
+    return response.data.data; // Note: backend returns data.data
   },
-
+  
   // Get current user
   me: async (): Promise<User> => {
     const response = await api.get(API_ENDPOINTS.AUTH.ME);

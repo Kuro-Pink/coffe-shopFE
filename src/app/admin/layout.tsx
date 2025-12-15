@@ -13,7 +13,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 const menuItems = [
   { text: 'Dashboard', icon: <Dashboard />, path: '/admin' },
   { text: 'Quản lý cửa hàng', icon: <Store />, path: '/admin/stores' },
-  { text: 'Tài khoản Host', icon: <People />, path: '/admin/hosts' },
+  { text: 'Tài khoản Host', icon: <People />, path: '/admin/store-requests' },
   { text: 'Cài đặt', icon: <Settings />, path: '/admin/settings' },
 ];
 

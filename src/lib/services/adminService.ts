@@ -1,6 +1,6 @@
 import api from '../api';
 import { API_ENDPOINTS } from '@/config/api.config';
-import { Store } from '@/types';
+import { Store, StoreRequest  } from '@/types';
 
 export interface CreateStoreData {
   name: string;
@@ -48,5 +48,27 @@ export const adminService = {
   getStats: async () => {
     const response = await api.get(API_ENDPOINTS.ADMIN.STATS);
     return response.data;
+  },
+
+  // Store Requests Management
+  getStoreRequests: async (): Promise<StoreRequest[]> => {
+    const response = await api.get(API_ENDPOINTS.ADMIN.STORE_REQUESTS);
+    return response.data.data;
+  },
+
+  approveStoreRequest: async (requestId: string): Promise<void> => {
+    const response = await api.post(API_ENDPOINTS.ADMIN.APPROVE_REQUEST(requestId));
+    return response.data;
+  },
+
+  rejectStoreRequest: async (requestId: string, reason: string): Promise<void> => {
+    const response = await api.post(API_ENDPOINTS.ADMIN.REJECT_REQUEST(requestId), {
+      rejectionReason: reason,
+    });
+    return response.data;
+  },
+
+   deleteStoreRequest: async (requestId: string): Promise<void> => {
+    await api.delete(API_ENDPOINTS.ADMIN.STORE_REQUEST_DETAIL(requestId));
   },
 };
