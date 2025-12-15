@@ -1,3 +1,43 @@
+export type ToastType = 'success' | 'error' | 'warning' | 'info';
+
+export interface ToastOptions {
+  duration?: number;
+  position?: 'top-right' | 'top-center' | 'top-left' | 'bottom-right' | 'bottom-center' | 'bottom-left';
+}
+
+export type ModalSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+export type ModalVariant = 'default' | 'danger' | 'warning' | 'success' | 'info';
+
+export interface ConfirmDialogProps {
+  open: boolean;
+  title: string;
+  message: string;
+  confirmText?: string;
+  cancelText?: string;
+  variant?: ModalVariant;
+  loading?: boolean;
+  onConfirm: () => void | Promise<void>;
+  onCancel: () => void;
+}
+
+export interface FormDialogProps {
+  open: boolean;
+  title: string;
+  confirmText?: string;
+  cancelText?: string;
+  loading?: boolean;
+  size?: ModalSize;
+  onConfirm: () => void | Promise<void>;
+  onCancel: () => void;
+  children: React.ReactNode;
+}
+export interface MenuItem {
+  text: string;
+  icon: React.ReactNode;
+  path: string;
+  badge?: number;
+  badgeColor?: 'primary' | 'secondary' | 'error' | 'warning' | 'info' | 'success';
+}
 export interface User {
   _id: string;
   email: string;

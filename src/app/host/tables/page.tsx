@@ -37,6 +37,9 @@ import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import QRCodeDisplay from '@/components/host/TableManager/QRCodeDisplay';
 import { AxiosError } from 'axios';
+import ConfirmDialog from '@/components/common/ConfirmDialog';
+import FormDialog from '@/components/common/FormDialog';
+import { showToast } from '@/components/common/Toast';
 
 const tableSchema = z.object({
   tableNumber: z.string().min(1, 'Số bàn không được để trống'),
@@ -57,17 +60,23 @@ export default function TablesManagementPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [openDialog, setOpenDialog] = useState(false);
-  const [editingTable, setEditingTable] = useState<Table | null>(null);
-  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; table: Table | null }>({
-    open: false,
-    table: null,
-  });
-  const [qrDialog, setQrDialog] = useState<{ open: boolean; table: Table | null }>({
-    open: false,
-    table: null,
-  });
-  const [isLoading, setIsLoading] = useState(false);
+  const [formDialog, setFormDialog] = useState<{
+    open: boolean;
+    table: Table | null;
+  }>({ open: false, table: null });
+
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    table: Table | null;
+  }>({ open: false, table: null });
+
+  const [qrDialog, setQrDialog] = useState<{
+    open: boolean;
+    table: Table | null;
+  }>({ open: false, table: null });
+
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const {
     register,
@@ -120,35 +129,34 @@ export default function TablesManagementPage() {
 
   const handleOpenDialog = (table?: Table) => {
     if (table) {
-      setEditingTable(table);
       setValue('tableNumber', table.tableNumber);
       setValue('area', table.area);
+      setFormDialog({ open: true, table });
     } else {
-      setEditingTable(null);
       reset();
+      setFormDialog({ open: true, table: null });
     }
-    setOpenDialog(true);
   };
 
   const handleCloseDialog = () => {
-    setOpenDialog(false);
-    setEditingTable(null);
+    setFormDialog({ open: false, table: null });
     reset();
   };
 
   const onSubmit = async (data: TableFormData) => {
-    if (isLoading || !user?.storeId) return;
+    if (!user?.storeId) return;
 
+    setSubmitLoading(true);
     try {
-      setIsLoading(true);
-
-      if (editingTable) {
-        await storeService.updateTable(editingTable._id, data);
+      if (formDialog.table) {
+        await storeService.updateTable(formDialog.table._id, data);
+        showToast.success({ message: 'Cập nhật bàn thành công!' });
       } else {
         await storeService.createTable(user.storeId, data);
+        showToast.success({ message: 'Thêm bàn mới thành công!' });
       }
 
-      fetchTables();
+      await fetchTables();
       handleCloseDialog();
     } catch (err: unknown) {
       let errorMessage = 'Thao tác thất bại';
@@ -156,26 +164,30 @@ export default function TablesManagementPage() {
         const responseData = err.response?.data as ErrorResponse;
         errorMessage = responseData?.message || responseData?.error || errorMessage;
       }
-      alert(errorMessage);
+      showToast.error({ message: errorMessage });
     } finally {
-      setIsLoading(false);
+      setSubmitLoading(false);
     }
   };
 
   const handleDelete = async () => {
-    if (!deleteDialog.table) return;
+    if (!confirmDialog.table) return;
 
+    setDeleteLoading(true);
     try {
-      await storeService.deleteTable(deleteDialog.table._id);
-      fetchTables();
-      setDeleteDialog({ open: false, table: null });
+      await storeService.deleteTable(confirmDialog.table._id);
+      showToast.success({ message: 'Xóa bàn thành công!' });
+      await fetchTables();
+      setConfirmDialog({ open: false, table: null });
     } catch (err: unknown) {
       let errorMessage = 'Không thể xóa bàn';
       if (err instanceof AxiosError) {
         const responseData = err.response?.data as ErrorResponse;
         errorMessage = responseData?.message || responseData?.error || errorMessage;
       }
-      alert(errorMessage);
+      showToast.error({ message: errorMessage });
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -218,7 +230,7 @@ export default function TablesManagementPage() {
           <Button
             variant="contained"
             startIcon={<Add />}
-            onClick={() => handleOpenDialog()}
+            onClick={() => setFormDialog({ open: true, table: null })}
             className="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700"
           >
             Thêm bàn mới
@@ -264,7 +276,7 @@ export default function TablesManagementPage() {
               <Button
                 variant="contained"
                 startIcon={<Add />}
-                onClick={() => handleOpenDialog()}
+                onClick={() => setFormDialog({ open: true, table: null })}
                 className="bg-gradient-to-r from-blue-600 to-teal-600"
               >
                 Thêm bàn mới
@@ -320,7 +332,7 @@ export default function TablesManagementPage() {
                       </Button>
                       <IconButton
                         color="error"
-                        onClick={() => setDeleteDialog({ open: true, table })}
+                        onClick={() => setConfirmDialog({ open: true, table })}
                         className="border border-red-200 hover:bg-red-50"
                       >
                         <Delete />
@@ -334,65 +346,52 @@ export default function TablesManagementPage() {
         </Grid>
       )}
 
-      {/* Create/Edit Dialog */}
-      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
-        <DialogTitle>{editingTable ? 'Chỉnh sửa bàn' : 'Thêm bàn mới'}</DialogTitle>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <DialogContent className="space-y-4">
-            <TextField
-              {...register('tableNumber')}
-              label="Số bàn"
-              fullWidth
-              error={!!errors.tableNumber}
-              helperText={errors.tableNumber?.message}
-              disabled={isLoading}
-              placeholder="VD: B01, A12, VIP01..."
-            />
-
-            <TextField
-              {...register('area')}
-              label="Khu vực"
-              fullWidth
-              error={!!errors.area}
-              helperText={errors.area?.message}
-              disabled={isLoading}
-              placeholder="VD: Tầng 1, Tầng 2, Sân thượng..."
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseDialog} disabled={isLoading}>
-              Hủy
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              disabled={isLoading}
-              className="bg-blue-600"
-            >
-              {isLoading ? 'Đang lưu...' : editingTable ? 'Cập nhật' : 'Thêm'}
-            </Button>
-          </DialogActions>
-        </form>
-      </Dialog>
-
-      {/* Delete Dialog */}
-      <Dialog
-        open={deleteDialog.open}
-        onClose={() => setDeleteDialog({ open: false, table: null })}
+      {/* Form Dialog - Create/Edit */}
+      <FormDialog
+        open={formDialog.open}
+        title={formDialog.table ? 'Chỉnh sửa bàn' : 'Thêm bàn mới'}
+        confirmText={formDialog.table ? 'Cập nhật' : 'Thêm'}
+        cancelText="Hủy"
+        loading={submitLoading}
+        onConfirm={handleSubmit(onSubmit)}
+        onCancel={handleCloseDialog}
+        size="sm"
       >
-        <DialogTitle>Xác nhận xóa bàn</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Bạn có chắc chắn muốn xóa bàn <strong>{deleteDialog.table?.tableNumber}</strong>?
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialog({ open: false, table: null })}>Hủy</Button>
-          <Button onClick={handleDelete} color="error" variant="contained">
-            Xóa
-          </Button>
-        </DialogActions>
-      </Dialog>
+        <div className="space-y-4">
+          <TextField
+            {...register('tableNumber')}
+            label="Số bàn"
+            fullWidth
+            error={!!errors.tableNumber}
+            helperText={errors.tableNumber?.message}
+            disabled={submitLoading}
+            placeholder="VD: B01, A12, VIP01..."
+          />
+
+          <TextField
+            {...register('area')}
+            label="Khu vực"
+            fullWidth
+            error={!!errors.area}
+            helperText={errors.area?.message}
+            disabled={submitLoading}
+            placeholder="VD: Tầng 1, Tầng 2, Sân thượng..."
+          />
+        </div>
+      </FormDialog>
+
+      {/* Confirm Delete Dialog */}
+      <ConfirmDialog
+        open={confirmDialog.open}
+        title="Xác nhận xóa bàn"
+        message={`Bạn có chắc chắn muốn xóa bàn ${confirmDialog.table?.tableNumber}? Hành động này không thể hoàn tác.`}
+        variant="danger"
+        confirmText="Xóa bàn"
+        cancelText="Hủy"
+        loading={deleteLoading}
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmDialog({ open: false, table: null })}
+      />
 
       {/* QR Code Dialog */}
       {qrDialog.table && (

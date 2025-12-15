@@ -20,6 +20,8 @@ import { ArrowBack, Save, CloudUpload } from '@mui/icons-material';
 import { adminService } from '@/lib/services/adminService';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { AxiosError } from 'axios';
+import { showToast } from '@/components/common/Toast';
+import { CircularProgress } from '@mui/material';
 
 const storeSchema = z.object({
   name: z.string().min(2, 'Tên cửa hàng phải có ít nhất 2 ký tự'),
@@ -113,16 +115,16 @@ export default function EditStorePage() {
   const onSubmit = async (data: StoreFormData) => {
     if (isLoading) return;
 
-    try {
-      setIsLoading(true);
-      setError('');
+    setIsLoading(true);
+    setError('');
 
+    try {
       await adminService.updateStore(storeId, {
         ...data,
         isActive,
       });
 
-      alert('Cập nhật cửa hàng thành công!');
+      showToast.success({ message: 'Cập nhật cửa hàng thành công!' });
       router.push('/admin/stores');
     } catch (err: unknown) {
       console.error('Update store error:', err);
@@ -137,7 +139,7 @@ export default function EditStorePage() {
       }
 
       setError(errorMessage);
-      setIsLoading(false);
+      showToast.error({ message: errorMessage });
     } finally {
       setIsLoading(false);
     }
@@ -254,15 +256,15 @@ export default function EditStorePage() {
 
             {/* Actions */}
             <div className="flex gap-3 pt-4 border-t border-gray-100">
-              <Button
-                type="submit"
-                variant="contained"
-                startIcon={<Save />}
-                disabled={isLoading}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-              >
-                {isLoading ? 'Đang lưu...' : 'Lưu thay đổi'}
-              </Button>
+             <Button
+              type="submit"
+              variant="contained"
+              startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <Save />}
+              disabled={isLoading}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+            >
+              {isLoading ? 'Đang lưu...' : 'Lưu thay đổi'}
+            </Button>
 
               <Button
                 variant="outlined"

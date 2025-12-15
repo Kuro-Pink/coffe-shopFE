@@ -27,18 +27,19 @@ import {
 } from '@mui/icons-material';
 import { Category, Product } from '@/types';
 
+// THAY THẾ interface CategoryCardProps:
 interface CategoryCardProps {
   category: Category;
   products: Product[];
   isOpen: boolean;
   onToggle: () => void;
   onEditCategory: (category: Category) => void;
-  onDeleteCategory: (categoryId: string) => void;
+  onDeleteCategory: (categoryId: string, categoryName: string) => void; 
   onAddProduct: (categoryId: string) => void;
   onEditProduct: (product: Product) => void;
-  onDeleteProduct: (productId: string) => void;
+  onDeleteProduct: (productId: string, productName: string) => void; 
   onToggleProductAvailability: (productId: string) => void;
-  isDeleting?: boolean;
+  toggleLoadingProductId?: string | null; 
 }
 
 export default function CategoryCard({
@@ -52,7 +53,7 @@ export default function CategoryCard({
   onEditProduct,
   onDeleteProduct,
   onToggleProductAvailability,
-  isDeleting,
+  toggleLoadingProductId,
 }: CategoryCardProps) {
   return (
     <Card className="shadow-md border-0 overflow-hidden">
@@ -90,17 +91,8 @@ export default function CategoryCard({
               size="small"
               color="error"
               variant="outlined"
-              onClick={() => {
-                if (
-                  confirm(
-                    `Bạn có chắc muốn xóa danh mục "${category.name}"?\nTất cả sản phẩm trong danh mục có thể bị ảnh hưởng.`
-                  )
-                ) {
-                  onDeleteCategory(category._id);
-                }
-              }}
-              disabled={isDeleting}
-              startIcon={isDeleting ? <CircularProgress size={18} /> : <Delete />}
+              onClick={() => onDeleteCategory(category._id, category.name)}
+              startIcon={<Delete />}
             >
               Xóa
             </Button>
@@ -184,23 +176,25 @@ export default function CategoryCard({
                         >
                           Sửa
                         </Button>
-
+                        
                         <IconButton
                           size="small"
                           color={product.isAvailable ? 'success' : 'error'}
                           onClick={() => onToggleProductAvailability(product._id)}
+                          disabled={toggleLoadingProductId === product._id}
                         >
-                          {product.isAvailable ? <CheckCircle /> : <Cancel />}
+                          {toggleLoadingProductId === product._id ? (
+                            <CircularProgress size={20} />
+                          ) : product.isAvailable ? (
+                            <CheckCircle />
+                          ) : (
+                            <Cancel />
+                          )}
                         </IconButton>
-
                         <IconButton
                           size="small"
                           color="error"
-                          onClick={() => {
-                            if (confirm(`Xóa sản phẩm "${product.name}"?`)) {
-                              onDeleteProduct(product._id);
-                            }
-                          }}
+                          onClick={() => onDeleteProduct(product._id, product.name)}
                         >
                           <Delete />
                         </IconButton>

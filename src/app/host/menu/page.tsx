@@ -11,10 +11,8 @@ import ErrorMessage from '@/components/common/ErrorMessage';
 import MenuFilter from '@/components/host/MenuManager/MenuFilter';
 import CategoryCard from '@/components/host/MenuManager/CategoryCard';
 import { AxiosError } from 'axios';
-
-// Import existing dialog components
-import CategoryDialog from '@/components/host/MenuManager/CategoryDialog';
-import ProductDialog from '@/components/host/MenuManager/ProductDialog';
+import ConfirmDialog from '@/components/common/ConfirmDialog';
+import { showToast } from '@/components/common/Toast';
 
 interface ErrorResponse {
   message?: string;
@@ -46,6 +44,16 @@ export default function MenuManagementPage() {
     product: Product | null;
     categoryId?: string;
   }>({ open: false, product: null });
+
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    type: 'category' | 'product';
+    id: string;
+    name: string;
+  }>({ open: false, type: 'category', id: '', name: '' });
+
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [toggleLoading, setToggleLoading] = useState<string | null>(null);
 
   useEffect(() => {
     if (user?.storeId) fetchData();
@@ -134,31 +142,64 @@ export default function MenuManagementPage() {
     }
   };
 
-  const handleDeleteCategory = async (categoryId: string) => {
+  const handleDeleteCategory = async () => {
+    setDeleteLoading(true);
     try {
-      await storeService.deleteCategory(categoryId);
+      await storeService.deleteCategory(confirmDialog.id);
+      showToast.success({ message: 'Xóa danh mục thành công!' });
       await fetchData();
-    } catch {
-      alert('Xóa danh mục thất bại');
+      setConfirmDialog({ open: false, type: 'category', id: '', name: '' });
+    } catch (err: unknown) {
+      let message = 'Xóa danh mục thất bại';
+      if (err instanceof AxiosError) {
+        const r = err.response?.data as ErrorResponse;
+        message = r?.message || r?.error || message;
+      }
+      showToast.error({ message });
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
-  const handleDeleteProduct = async (productId: string) => {
+  const handleDeleteProduct = async () => {
+    setDeleteLoading(true);
     try {
-      await storeService.deleteProduct(productId);
+      await storeService.deleteProduct(confirmDialog.id);
+      showToast.success({ message: 'Xóa sản phẩm thành công!' });
       await fetchData();
-    } catch {
-      alert('Xóa sản phẩm thất bại');
+      setConfirmDialog({ open: false, type: 'product', id: '', name: '' });
+    } catch (err: unknown) {
+      let message = 'Xóa sản phẩm thất bại';
+      if (err instanceof AxiosError) {
+        const r = err.response?.data as ErrorResponse;
+        message = r?.message || r?.error || message;
+      }
+      showToast.error({ message });
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
   const handleToggleAvailability = async (productId: string) => {
+    setToggleLoading(productId);
     try {
       await storeService.toggleProductAvailability(productId);
+      showToast.success({ message: 'Cập nhật trạng thái thành công!' });
       await fetchData();
-    } catch {
-      alert('Cập nhật trạng thái thất bại');
+    } catch (err: unknown) {
+      let message = 'Cập nhật trạng thái thất bại';
+      if (err instanceof AxiosError) {
+        const r = err.response?.data as ErrorResponse;
+        message = r?.message || r?.error || message;
+      }
+      showToast.error({ message });
+    } finally {
+      setToggleLoading(null);
     }
+  };
+
+  const handleOpenDeleteConfirm = (type: 'category' | 'product', id: string, name: string) => {
+    setConfirmDialog({ open: true, type, id, name });
   };
 
   if (!user?.storeId) {
@@ -274,36 +315,42 @@ export default function MenuManagementPage() {
               isOpen={!!openMap[cat._id]}
               onToggle={() => setOpenMap((m) => ({ ...m, [cat._id]: !m[cat._id] }))}
               onEditCategory={(category) => setCategoryDialog({ open: true, category })}
-              onDeleteCategory={handleDeleteCategory}
+              onDeleteCategory={(categoryId, categoryName) => 
+                handleOpenDeleteConfirm('category', categoryId, categoryName)
+              }
               onAddProduct={(categoryId) =>
                 setProductDialog({ open: true, product: null, categoryId })
               }
               onEditProduct={(product) => setProductDialog({ open: true, product })}
-              onDeleteProduct={handleDeleteProduct}
+              onDeleteProduct={(productId, productName) => 
+                handleOpenDeleteConfirm('product', productId, productName)
+              }
               onToggleProductAvailability={handleToggleAvailability}
+              toggleLoadingProductId={toggleLoading}
             />
           ))}
         </div>
       )}
 
-      {/* Category Dialog */}
-      <CategoryDialog
-        open={categoryDialog.open}
-        category={categoryDialog.category}
-        storeId={user.storeId}
-        onClose={() => setCategoryDialog({ open: false, category: null })}
-        onSuccess={fetchData}
-      />
-
-      {/* Product Dialog */}
-      <ProductDialog
-        open={productDialog.open}
-        product={productDialog.product}
-        categories={categories}
-        storeId={user.storeId}
-        defaultCategoryId={productDialog.categoryId}
-        onClose={() => setProductDialog({ open: false, product: null })}
-        onSuccess={fetchData}
+      {/* Confirm Delete Dialog */}
+      <ConfirmDialog
+        open={confirmDialog.open}
+        title={`Xác nhận xóa ${confirmDialog.type === 'category' ? 'danh mục' : 'sản phẩm'}`}
+        message={
+          confirmDialog.type === 'category'
+            ? `Bạn có chắc muốn xóa danh mục "${confirmDialog.name}"? Tất cả sản phẩm trong danh mục có thể bị ảnh hưởng.`
+            : `Bạn có chắc muốn xóa sản phẩm "${confirmDialog.name}"?`
+        }
+        variant="danger"
+        confirmText="Xóa"
+        cancelText="Hủy"
+        loading={deleteLoading}
+        onConfirm={
+          confirmDialog.type === 'category' 
+            ? handleDeleteCategory 
+            : handleDeleteProduct
+        }
+        onCancel={() => setConfirmDialog({ open: false, type: 'category', id: '', name: '' })}
       />
     </Box>
   );

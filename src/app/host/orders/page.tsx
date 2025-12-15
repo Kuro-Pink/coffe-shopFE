@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePendingOrdersCount } from '@/lib/hooks/usePendingOrdersCount'; 
 import {
   Card,
   CardContent,
@@ -26,6 +27,8 @@ import ErrorMessage from '@/components/common/ErrorMessage';
 import OrderCard from '@/components/host/OrderManager/OrderCard';
 import OrderNotification from '@/components/host/OrderManager/OrderNotification';
 import { AxiosError } from 'axios';
+import { showToast } from '@/components/common/Toast';
+import ConfirmDialog from '@/components/common/ConfirmDialog';
 
 interface ErrorResponse {
   message?: string;
@@ -36,6 +39,7 @@ type OrderStatus = 'all' | 'pending' | 'completed' | 'cancelled';
 
 export default function OrdersManagementPage() {
   const { user } = useAuthStore();
+  const { refetch: refetchBadgeCount } = usePendingOrdersCount();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -44,6 +48,12 @@ export default function OrdersManagementPage() {
     open: boolean;
     order: Order | null;
   }>({ open: false, order: null });
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    orderId: string;
+    status: 'completed' | 'cancelled';
+  }>({ open: false, orderId: '', status: 'completed' });
+  const [updateLoading, setUpdateLoading] = useState(false);
 
   useEffect(() => {
     if (user?.storeId) {
@@ -72,6 +82,7 @@ export default function OrdersManagementPage() {
         errorMessage = responseData?.message || responseData?.error || errorMessage;
       }
       setError(errorMessage);
+      showToast.error({ message: errorMessage });
     } finally {
       setLoading(false);
     }
@@ -114,6 +125,7 @@ export default function OrdersManagementPage() {
   };
 
   const handleUpdateStatus = async (orderId: string, status: 'completed' | 'cancelled') => {
+    setUpdateLoading(true);
     try {
       await storeService.updateOrderStatus(orderId, status);
       setOrders((prev) =>
@@ -121,14 +133,28 @@ export default function OrdersManagementPage() {
           o._id === orderId ? { ...o, status, completedAt: new Date().toISOString() } : o
         )
       );
+      refetchBadgeCount();
+
+      const statusText = status === 'completed' ? 'hoàn thành' : 'hủy';
+      showToast.success({ 
+        message: `Đã cập nhật đơn hàng thành ${statusText}!` 
+      });
+      
+      // Đóng dialog sau khi thành công
+      setConfirmDialog({ open: false, orderId: '', status: 'completed' });
     } catch (err: unknown) {
       let errorMessage = 'Cập nhật trạng thái thất bại';
       if (err instanceof AxiosError) {
         const responseData = err.response?.data as ErrorResponse;
         errorMessage = responseData?.message || responseData?.error || errorMessage;
       }
-      alert(errorMessage);
+      showToast.error({ message: errorMessage });
+    } finally {
+      setUpdateLoading(false);
     }
+  };
+  const handleOpenConfirm = (orderId: string, status: 'completed' | 'cancelled') => {
+    setConfirmDialog({ open: true, orderId, status });
   };
 
   const filteredOrders = orders.filter((order) => {
@@ -191,7 +217,15 @@ export default function OrdersManagementPage() {
         >
           <Tab
             label={
-              <Badge badgeContent={getOrderCount('all')} color="primary">
+              <Badge 
+              badgeContent={getOrderCount('all')} 
+              color="primary" 
+              sx={{
+            '& .MuiBadge-badge': {
+              top: 0,
+              right: -2,
+            },
+          }}>
                 <span className="mr-2">Tất cả</span>
               </Badge>
             }
@@ -251,7 +285,7 @@ export default function OrdersManagementPage() {
             <OrderCard
               key={order._id}
               order={order}
-              onUpdateStatus={handleUpdateStatus}
+              onUpdateStatus={handleOpenConfirm}
             />
           ))}
         </div>
@@ -269,6 +303,23 @@ export default function OrdersManagementPage() {
           const element = document.getElementById(`order-${order._id}`);
           element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }}
+      />
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        open={confirmDialog.open}
+        title={confirmDialog.status === 'completed' ? 'Xác nhận hoàn thành' : 'Xác nhận hủy đơn'}
+        message={
+          confirmDialog.status === 'completed'
+            ? 'Bạn có chắc muốn đánh dấu đơn hàng này là đã hoàn thành?'
+            : 'Bạn có chắc muốn hủy đơn hàng này? Hành động này không thể hoàn tác.'
+        }
+        variant={confirmDialog.status === 'completed' ? 'success' : 'danger'}
+        confirmText={confirmDialog.status === 'completed' ? 'Hoàn thành' : 'Hủy đơn'}
+        cancelText="Quay lại"
+        loading={updateLoading}  // ← ĐÂY NÈ! Loading state
+        onConfirm={() => handleUpdateStatus(confirmDialog.orderId, confirmDialog.status)}
+        onCancel={() => setConfirmDialog({ open: false, orderId: '', status: 'completed' })}
       />
     </Box>
   );

@@ -201,11 +201,7 @@ export default function OrderCard({ order, onUpdateStatus }: OrderCardProps) {
                 variant="outlined"
                 color="error"
                 startIcon={<Cancel />}
-                onClick={() => {
-                  if (confirm('Bạn có chắc muốn hủy đơn hàng này?')) {
-                    onUpdateStatus(order._id, 'cancelled');
-                  }
-                }}
+                onClick={() => onUpdateStatus(order._id, 'cancelled')}
               >
                 Hủy đơn
               </Button>

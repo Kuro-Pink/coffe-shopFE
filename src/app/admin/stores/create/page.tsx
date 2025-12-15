@@ -17,9 +17,10 @@ import {
 } from '@mui/material';
 import { ArrowBack, Save, CloudUpload } from '@mui/icons-material';
 import { adminService } from '@/lib/services/adminService';
-import { authService } from '@/lib/services/authService';
 import { User } from '@/types';
 import { AxiosError } from 'axios';
+import { showToast } from '@/components/common/Toast';
+import { CircularProgress } from '@mui/material';
 
 const storeSchema = z.object({
   name: z.string().min(2, 'Tên cửa hàng phải có ít nhất 2 ký tự'),
@@ -93,13 +94,12 @@ export default function CreateStorePage() {
   const onSubmit = async (data: StoreFormData) => {
     if (isLoading) return;
 
+    setIsLoading(true);
+    setError('');
+    
     try {
-      setIsLoading(true);
-      setError('');
-
       await adminService.createStore(data);
-
-      alert('Tạo cửa hàng thành công!');
+      showToast.success({ message: 'Tạo cửa hàng thành công!' });
       router.push('/admin/stores');
     } catch (err: unknown) {
       console.error('Create store error:', err);
@@ -114,7 +114,7 @@ export default function CreateStorePage() {
       }
 
       setError(errorMessage);
-      setIsLoading(false);
+      showToast.error({ message: errorMessage });
     } finally {
       setIsLoading(false);
     }
@@ -252,7 +252,7 @@ export default function CreateStorePage() {
               <Button
                 type="submit"
                 variant="contained"
-                startIcon={<Save />}
+                startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <Save />}
                 disabled={isLoading || hosts.length === 0}
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
               >

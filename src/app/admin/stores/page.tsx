@@ -34,6 +34,9 @@ import { Store } from '@/types';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import { AxiosError } from 'axios';
+import ConfirmDialog from '@/components/common/ConfirmDialog';
+import { showToast } from '@/components/common/Toast';
+import { CircularProgress } from '@mui/material';
 
 interface ErrorResponse {
   message?: string;
@@ -47,10 +50,13 @@ export default function StoresListPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [deleteDialog, setDeleteDialog] = useState<{
+  const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     store: Store | null;
   }>({ open: false, store: null });
+
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [toggleLoadingId, setToggleLoadingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchStores();
@@ -91,30 +97,38 @@ export default function StoresListPage() {
     }
     };
 
-
-
   const handleDelete = async () => {
-    if (!deleteDialog.store) return;
+    if (!confirmDialog.store) return;
 
+    setDeleteLoading(true);
     try {
-      await adminService.deleteStore(deleteDialog.store._id);
-      setStores(stores.filter((s) => s._id !== deleteDialog.store?._id));
-      setDeleteDialog({ open: false, store: null });
+      await adminService.deleteStore(confirmDialog.store._id);
+      showToast.success({ message: 'Xóa cửa hàng thành công!' });
+      setStores(stores.filter((s) => s._id !== confirmDialog.store?._id));
+      setConfirmDialog({ open: false, store: null });
     } catch (err: unknown) {
       let errorMessage = 'Không thể xóa cửa hàng';
       if (err instanceof AxiosError) {
         const responseData = err.response?.data as ErrorResponse;
         errorMessage = responseData?.message || responseData?.error || errorMessage;
       }
-      alert(errorMessage);
+      showToast.error({ message: errorMessage });
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
   const toggleStoreStatus = async (store: Store) => {
+    setToggleLoadingId(store._id);
     try {
       await adminService.updateStore(store._id, {
         isActive: !store.isActive,
       });
+      
+      showToast.success({ 
+        message: `Đã ${!store.isActive ? 'kích hoạt' : 'tạm dừng'} cửa hàng!` 
+      });
+      
       setStores(
         stores.map((s) =>
           s._id === store._id ? { ...s, isActive: !s.isActive } : s
@@ -126,7 +140,9 @@ export default function StoresListPage() {
         const responseData = err.response?.data as ErrorResponse;
         errorMessage = responseData?.message || responseData?.error || errorMessage;
       }
-      alert(errorMessage);
+      showToast.error({ message: errorMessage });
+    } finally {
+      setToggleLoadingId(null);
     }
   };
 
@@ -222,15 +238,30 @@ export default function StoresListPage() {
                         {store.name}
                       </Typography>
                       <Chip
-                        label={store.isActive ? 'Hoạt động' : 'Tạm dừng'}
+                        label={
+                          toggleLoadingId === store._id ? (
+                            <span className="flex items-center gap-1">
+                              <CircularProgress size={12} color="inherit" />
+                              Đang xử lý...
+                            </span>
+                          ) : store.isActive ? (
+                            'Hoạt động'
+                          ) : (
+                            'Tạm dừng'
+                          )
+                        }
                         size="small"
-                        icon={store.isActive ? <CheckCircle /> : <Cancel />}
+                        icon={
+                          toggleLoadingId === store._id ? undefined : 
+                          store.isActive ? <CheckCircle /> : <Cancel />
+                        }
                         className={
                           store.isActive
                             ? 'bg-green-50 text-green-600'
                             : 'bg-red-50 text-red-600'
                         }
                         onClick={() => toggleStoreStatus(store)}
+                        disabled={toggleLoadingId === store._id}
                       />
                     </div>
                   </div>
@@ -262,7 +293,7 @@ export default function StoresListPage() {
                     </Button>
                     <IconButton
                       color="error"
-                      onClick={() => setDeleteDialog({ open: true, store })}
+                      onClick={() => setConfirmDialog({ open: true, store })}
                       className="border border-red-200 hover:bg-red-50"
                     >
                       <Delete />
@@ -275,27 +306,18 @@ export default function StoresListPage() {
         </Grid>
       )}
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog
-        open={deleteDialog.open}
-        onClose={() => setDeleteDialog({ open: false, store: null })}
-      >
-        <DialogTitle>Xác nhận xóa cửa hàng</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Bạn có chắc chắn muốn xóa cửa hàng{' '}
-            <strong>{deleteDialog.store?.name}</strong>? Hành động này không thể hoàn tác.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialog({ open: false, store: null })}>
-            Hủy
-          </Button>
-          <Button onClick={handleDelete} color="error" variant="contained">
-            Xóa
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {/* Confirm Delete Dialog */}
+      <ConfirmDialog
+        open={confirmDialog.open}
+        title="Xác nhận xóa cửa hàng"
+        message={`Bạn có chắc chắn muốn xóa cửa hàng "${confirmDialog.store?.name}"? Hành động này không thể hoàn tác và sẽ ảnh hưởng đến tất cả dữ liệu liên quan.`}
+        variant="danger"
+        confirmText="Xóa cửa hàng"
+        cancelText="Hủy"
+        loading={deleteLoading}
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmDialog({ open: false, store: null })}
+      />
     </div>
   );
 }

@@ -14,6 +14,7 @@ import {
 import { QrCode as QrCodeIcon, Download, Print, ContentCopy } from '@mui/icons-material';
 import { QRCodeSVG } from 'qrcode.react';
 import { Table } from '@/types';
+import { showToast } from '@/components/common/Toast';
 
 interface QRCodeDisplayProps {
   table: Table;
@@ -138,7 +139,7 @@ export default function QRCodeDisplay({ table, open, onClose }: QRCodeDisplayPro
 
   const handleCopyUrl = () => {
     navigator.clipboard.writeText(menuUrl);
-    alert('Đã copy link menu!');
+    showToast.success({ message: 'Đã copy link menu!' });
   };
 
   return (

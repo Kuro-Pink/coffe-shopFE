@@ -62,7 +62,7 @@ export default function CheckoutModal({ open, onClose, onSuccess }: CheckoutModa
       setIsLoading(true);
       setError('');
 
-      await publicService.createOrder({
+      const orderData = {
         storeId,
         tableId,
         customerPhone: data.customerPhone,
@@ -71,7 +71,9 @@ export default function CheckoutModal({ open, onClose, onSuccess }: CheckoutModa
           productId: item.productId,
           quantity: item.quantity,
         })),
-      });
+      };
+
+      const response = await publicService.createOrder(orderData);
 
       setSuccess(true);
 
@@ -83,7 +85,6 @@ export default function CheckoutModal({ open, onClose, onSuccess }: CheckoutModa
       }, 3000);
     } catch (err: unknown) {
       let errorMessage = 'Đặt hàng thất bại. Vui lòng thử lại.';
-
       if (err instanceof AxiosError) {
         const responseData = err.response?.data as ErrorResponse;
         errorMessage = responseData?.message || responseData?.error || errorMessage;
@@ -92,6 +93,7 @@ export default function CheckoutModal({ open, onClose, onSuccess }: CheckoutModa
       }
 
       setError(errorMessage);
+      setIsLoading(false);
     } finally {
       setIsLoading(false);
     }
