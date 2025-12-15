@@ -37,6 +37,8 @@ import { showToast } from '@/components/common/Toast';
 import { AxiosError } from 'axios';
 import { formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
+import { useStoreRequestStore } from '@/lib/stores/storeRequestStore';
+import { initAdminSocket , getSocket } from '@/lib/socket';
 
 interface ErrorResponse {
   message?: string;
@@ -46,8 +48,9 @@ interface ErrorResponse {
 type RequestStatus = 'all' | 'pending' | 'approved' | 'rejected';
 
 export default function StoreRequestsPage() {
-  const [requests, setRequests] = useState<StoreRequest[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { loading, requests, fetchRequests } = useStoreRequestStore();
+  // const [requests, setRequests] = useState<StoreRequest[]>([]);
+  // const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedTab, setSelectedTab] = useState<RequestStatus>('pending');
   
@@ -76,27 +79,48 @@ export default function StoreRequestsPage() {
 
   useEffect(() => {
     fetchRequests();
-  }, []);
 
-  const fetchRequests = async () => {
-    try {
-      setLoading(true);
-      const data = await adminService.getStoreRequests();
-      setRequests(
-        data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-      );
-    } catch (err: unknown) {
-      let errorMessage = 'Không thể tải danh sách yêu cầu';
-      if (err instanceof AxiosError) {
-        const responseData = err.response?.data as ErrorResponse;
-        errorMessage = responseData?.message || responseData?.error || errorMessage;
-      }
-      setError(errorMessage);
-      showToast.error({ message: errorMessage });
-    } finally {
-      setLoading(false);
-    }
-  };
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    const socket = initAdminSocket(token);
+
+    const refetch = () => {
+      fetchRequests();
+    };
+
+    socket.on('store_request_created', refetch);
+    socket.on('store_request_updated', refetch);
+    socket.on('store_request_deleted', refetch);
+
+    return () => {
+      socket.off('store_request_created', refetch);
+      socket.off('store_request_updated', refetch);
+      socket.off('store_request_deleted', refetch);
+    };
+  }, [fetchRequests]);
+
+
+
+  // const fetchRequests = async () => {
+  //   try {
+  //     setLoading(true);
+  //     const data = await adminService.getStoreRequests();
+  //     setRequests(
+  //       data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+  //     );
+  //   } catch (err: unknown) {
+  //     let errorMessage = 'Không thể tải danh sách yêu cầu';
+  //     if (err instanceof AxiosError) {
+  //       const responseData = err.response?.data as ErrorResponse;
+  //       errorMessage = responseData?.message || responseData?.error || errorMessage;
+  //     }
+  //     setError(errorMessage);
+  //     showToast.error({ message: errorMessage });
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   // Menu handlers
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, request: StoreRequest) => {

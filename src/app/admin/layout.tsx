@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
 import {
   Dashboard,
   Store,
@@ -9,13 +9,9 @@ import {
   AdminPanelSettings,
 } from '@mui/icons-material';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-
-const menuItems = [
-  { text: 'Dashboard', icon: <Dashboard />, path: '/admin' },
-  { text: 'Quản lý cửa hàng', icon: <Store />, path: '/admin/stores' },
-  { text: 'Tài khoản Host', icon: <People />, path: '/admin/store-requests' },
-  { text: 'Cài đặt', icon: <Settings />, path: '/admin/settings' },
-];
+import { ToastProvider } from '@/components/common/Toast';
+import { MenuItem } from '@/types';
+import { useStoreRequestStore } from '@/lib/stores/storeRequestStore';
 
 const adminTheme = {
   sidebar: {
@@ -43,7 +39,28 @@ const logo = {
   subtitle: 'Quản trị hệ thống',
 };
 
-export default function AdminLayout({ children }: { children: ReactNode }) {
+// ✅ TẠO COMPONENT CON ĐỂ DÙNG HOOK
+function AdminLayoutContent({ children }: { children: ReactNode }) {
+  const { pendingCount, fetchRequests } = useStoreRequestStore();
+
+  useEffect(() => {
+    fetchRequests();
+  }, []);
+
+  // ✅ DYNAMIC MENU ITEMS
+  const menuItems: MenuItem[] = [
+    { text: 'Dashboard', icon: <Dashboard />, path: '/admin' },
+    { text: 'Quản lý cửa hàng', icon: <Store />, path: '/admin/stores' },
+    {
+      text: 'Tài khoản Host',
+      icon: <People />,
+      path: '/admin/store-requests',
+      badge: pendingCount, 
+      badgeColor: 'warning',
+    },
+    { text: 'Cài đặt', icon: <Settings />, path: '/admin/settings' },
+  ];
+
   return (
     <DashboardLayout
       allowedRoles={['admin']}
@@ -54,5 +71,14 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     >
       {children}
     </DashboardLayout>
+  );
+}
+
+export default function AdminLayout({ children }: { children: ReactNode }) {
+  return (
+    <>
+      <ToastProvider />
+      <AdminLayoutContent>{children}</AdminLayoutContent>
+    </>
   );
 }

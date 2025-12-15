@@ -6,17 +6,12 @@ import {
   Restaurant,
   TableBar,
   Receipt,
-  BarChart,
   StoreMallDirectory,
 } from '@mui/icons-material';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-
-const menuItems = [
-  { text: 'Dashboard', icon: <Dashboard />, path: '/host' },
-  { text: 'Quản lý Menu', icon: <Restaurant />, path: '/host/menu' },
-  { text: 'Quản lý Bàn', icon: <TableBar />, path: '/host/tables' },
-  { text: 'Đơn hàng', icon: <Receipt />, path: '/host/orders' },
-];
+import { ToastProvider } from '@/components/common/Toast';
+import { MenuItem } from '@/types';
+import { useOrderBadgeStore } from '@/lib/stores/orderBadgeStore';
 
 const hostTheme = {
   sidebar: {
@@ -44,16 +39,45 @@ const logo = {
   subtitle: 'Quản lý nhà hàng',
 };
 
-export default function HostLayout({ children }: { children: ReactNode }) {
+// ✅ TẠO COMPONENT CON ĐỂ DÙNG HOOK
+function HostLayoutContent({ children }: { children: ReactNode }) {
+   const pendingCount = useOrderBadgeStore(
+    (state) => state.pendingCount
+  );
+  console.log('Pending Orders Count in Layout:', pendingCount);
+
+  // ✅ DYNAMIC MENU ITEMS VỚI BADGE
+  const menuItems: MenuItem[] = [
+    { text: 'Dashboard', icon: <Dashboard />, path: '/host' },
+    { text: 'Quản lý Menu', icon: <Restaurant />, path: '/host/menu' },
+    { text: 'Quản lý Bàn', icon: <TableBar />, path: '/host/tables' },
+    {
+      text: 'Đơn hàng',
+      icon: <Receipt />,
+      path: '/host/orders',
+      badge: pendingCount, // ✅ BADGE REAL-TIME
+      badgeColor: 'error', // Màu đỏ cho pending orders
+    },
+  ];
+
   return (
     <DashboardLayout
       allowedRoles={['host']}
       menuItems={menuItems}
       logo={logo}
       theme={hostTheme}
-      notificationCount={5}
+      notificationCount={pendingCount} 
     >
       {children}
     </DashboardLayout>
+  );
+}
+
+export default function HostLayout({ children }: { children: ReactNode }) {
+  return (
+    <>
+      <ToastProvider />
+      <HostLayoutContent>{children}</HostLayoutContent>
+    </>
   );
 }

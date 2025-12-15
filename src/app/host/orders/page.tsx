@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { usePendingOrdersCount } from '@/lib/hooks/usePendingOrdersCount'; 
 import {
   Card,
   CardContent,
@@ -29,6 +28,8 @@ import OrderNotification from '@/components/host/OrderManager/OrderNotification'
 import { AxiosError } from 'axios';
 import { showToast } from '@/components/common/Toast';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
+import { useOrderBadgeStore } from '@/lib/stores/orderBadgeStore';
+
 
 interface ErrorResponse {
   message?: string;
@@ -39,7 +40,6 @@ type OrderStatus = 'all' | 'pending' | 'completed' | 'cancelled';
 
 export default function OrdersManagementPage() {
   const { user } = useAuthStore();
-  const { refetch: refetchBadgeCount } = usePendingOrdersCount();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -65,6 +65,12 @@ export default function OrdersManagementPage() {
       disconnectSocket();
     };
   }, [user]);
+
+  const setPendingCount = useOrderBadgeStore(
+    (state) => state.setPendingCount
+  );
+  const pending = orders.filter(o => o.status === 'pending').length;
+  setPendingCount(pending);
 
   const fetchOrders = async () => {
     if (!user?.storeId) return;
@@ -107,7 +113,7 @@ export default function OrdersManagementPage() {
     });
 
     // Listen for order updates
-    socket.on('order_updated', (updatedOrder: Order) => {
+    socket.on('order_status_update', (updatedOrder: Order) => {
       console.log('🔄 Order updated:', updatedOrder);
       setOrders((prev) =>
         prev.map((o) => (o._id === updatedOrder._id ? updatedOrder : o))
@@ -133,7 +139,6 @@ export default function OrdersManagementPage() {
           o._id === orderId ? { ...o, status, completedAt: new Date().toISOString() } : o
         )
       );
-      refetchBadgeCount();
 
       const statusText = status === 'completed' ? 'hoàn thành' : 'hủy';
       showToast.success({ 

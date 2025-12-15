@@ -7,12 +7,7 @@ import Sidebar from './Sidebar';
 import Header from './Header';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
 import { useAuthStore } from '@/lib/stores/authStore';
-
-interface MenuItem {
-  text: string;
-  icon: React.ReactNode;
-  path: string;
-}
+import { MenuItem } from '@/types';
 
 interface DashboardLayoutProps {
   children: ReactNode;

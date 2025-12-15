@@ -11,14 +11,12 @@ import {
   ListItemText,
   ListItemButton,
   Divider,
+  Badge,
+  Link,
+  Chip,
 } from '@mui/material';
 import { useAuthStore } from '@/lib/stores/authStore';
-
-interface MenuItem {
-  text: string;
-  icon: React.ReactNode;
-  path: string;
-}
+import { MenuItem } from '@/types';
 
 interface SidebarProps {
   menuItems: MenuItem[];
@@ -77,35 +75,53 @@ export default function Sidebar({
 
       {/* Menu Items */}
       <List className="px-3 py-4">
-        {menuItems.map((item) => {
-          const isActive = pathname === item.path;
-          return (
-            <ListItem key={item.text} disablePadding className="mb-2">
-              <ListItemButton
-                onClick={() => router.push(item.path)}
-                className={`rounded-lg transition-all duration-200 ${
-                  isActive
-                    ? `bg-gradient-to-r ${theme.activeGradient} text-white shadow-lg`
-                    : `text-gray-300 hover:${theme.hoverBg}`
-                }`}
-              >
-                <ListItemIcon sx={{ 
-                  color: isActive ? 'white' : 'grey.400'
-                }}  >
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText
-                  primary={item.text}
-                  primaryTypographyProps={{
-                    fontSize: '0.95rem',
-                    fontWeight: isActive ? 600 : 400,
-                    color: isActive ? 'white' : 'grey.100'
-                  }}
-                />
-              </ListItemButton>
-            </ListItem>
-          );
-        })}
+       {menuItems.map((item) => (
+        <ListItem key={item.path} disablePadding>
+          <ListItemButton
+            component={Link}
+            href={item.path}
+            selected={pathname === item.path}
+            className={`rounded-lg mx-2 mb-1 ${
+              pathname === item.path
+                ? `bg-gradient-to-r ${theme.activeGradient} shadow-lg`
+                : `hover:${theme.hoverBg}`
+            }`}
+            sx={{
+              color: 'white',
+            }}
+          >
+            <ListItemIcon 
+              sx={{ 
+                color: 'inherit',
+                minWidth: 40,
+              }}
+            >
+              {item.icon}
+            </ListItemIcon>
+            <ListItemText
+              primary={item.text}
+              primaryTypographyProps={{
+                className: pathname === item.path ? 'font-semibold' : '',
+              }}
+            />
+            {item.badge && item.badge > 0 && (
+              <Chip
+                label={item.badge}
+                size="small"
+                color={item.badgeColor || 'error'}
+                sx={{
+                  height: '20px',
+                  fontSize: '0.7rem',
+                  fontWeight: 'bold',
+                  '& .MuiChip-label': {
+                    px: 1,
+                  },
+                }}
+              />
+            )}
+          </ListItemButton>
+        </ListItem>
+      ))}
       </List>
 
       {/* User Info at Bottom */}
