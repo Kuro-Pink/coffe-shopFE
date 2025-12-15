@@ -24,11 +24,6 @@ import ProductCard from '@/components/customer/ProductCard';
 import Cart from '@/components/customer/Cart';
 import { AxiosError } from 'axios';
 
-interface ErrorResponse {
-  message?: string;
-  error?: string;
-}
-
 interface MenuCategory extends Category {
   products: Product[];
 }
@@ -80,13 +75,35 @@ export default function CustomerMenuPage() {
       }))
     );
 
+    const availableProducts = products.filter(p => p.isAvailable);
+
     setCategories(categories);
-    setProducts(products.filter(p => p.isAvailable));
-    setBestSellers(products.filter(p => p.isAvailable).slice(0, 6));
+    setProducts(availableProducts);
+    setBestSellers(
+      availableProducts
+        .toSorted((a, b) => (b.soldCount ?? 0) - (a.soldCount ?? 0))
+        .slice(0, 3)
+    );
+
     setStoreName(menuData.store?.name || 'Menu');
 
-  } catch (err) {
-    setError('Không thể tải menu');
+    // Fetch table info if tableId exists
+    if (tableId) {
+      const table = await publicService.getTableInfo(tableId);
+      setTableInfo({
+        tableNumber: table.tableNumber,
+        area: table.area,
+      });
+      setTable(tableId, storeId);
+    }
+  } catch (err: unknown) {
+    console.error('❌ Error fetching data:', err);
+    const errorMessage = err instanceof AxiosError
+        ? err.response?.data?.message || err.response?.data?.error || 'Không thể tải menu'
+        : err instanceof Error
+        ? err.message
+        : 'Không thể tải menu';
+    setError(errorMessage);
   } finally {
     setLoading(false);
   }
@@ -132,7 +149,7 @@ export default function CustomerMenuPage() {
 
       {/* Category Tabs */}
       {categories.length > 0 && (
-        <Box className="bg-white border-b border-gray-200 sticky top-20 z-10 shadow-sm z-9999">
+        <Box className="bg-white border-b border-gray-200 sticky top-20 z-10 shadow-sm">
           <Container maxWidth="lg">
             <Tabs
               value={selectedCategory}
@@ -175,7 +192,7 @@ export default function CustomerMenuPage() {
             </div>
 
             {/* Best Sellers Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-3 mb-6">
               {bestSellers.map((product) => (
                 <ProductCard key={product._id} product={product} isBestSeller />
               ))}
@@ -223,7 +240,13 @@ export default function CustomerMenuPage() {
           color="primary"
           className="fixed bottom-6 right-6 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 shadow-2xl"
           onClick={() => setCartOpen(true)}
-          sx={{ width: 64, height: 64 }}
+          sx={{
+            position: 'fixed',
+            bottom: 24,
+            right: 36,
+            zIndex: 9999,
+            background: 'linear-gradient(to right, #16a34a, #14b8a6)',
+          }}
         >
           <Badge badgeContent={getTotalItems()} color="error">
             <ShoppingCart sx={{ fontSize: 32 }} />
