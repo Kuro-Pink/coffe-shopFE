@@ -29,8 +29,6 @@ export default function ProtectedRoute({
       const isAuth = currentState.isAuthenticated;
       const currentUser = currentState.user;
 
-      console.log('🔐 Auth check:', { hasToken, isAuth, user: currentUser });
-
       // Nếu chưa login → redirect login
       if (!hasToken || !isAuth) {
         console.log('❌ Not authenticated, redirecting to login');
@@ -49,7 +47,6 @@ export default function ProtectedRoute({
         return;
       }
 
-      console.log('✅ Auth check passed');
       setIsChecking(false);
     };
 

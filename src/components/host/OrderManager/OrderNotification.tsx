@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -9,6 +10,10 @@ import {
 } from '@mui/material';
 import { Notifications, Visibility, Close } from '@mui/icons-material';
 import { Order } from '@/types';
+import {
+  playNotificationSound,
+  stopNotificationSound,
+} from '@/utils/notificationSound';
 
 interface OrderNotificationProps {
   open: boolean;
@@ -23,6 +28,18 @@ export default function OrderNotification({
   onClose,
   onView,
 }: OrderNotificationProps) {
+
+  useEffect(() => {
+    if (open) {
+      playNotificationSound();
+    } else {
+      stopNotificationSound();
+    }
+
+    return () => stopNotificationSound();
+  }, [open]);
+
+
   if (!order) return null;
 
   return (
