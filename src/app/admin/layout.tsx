@@ -45,7 +45,7 @@ function AdminLayoutContent({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     fetchRequests();
-  }, []);
+  }, [fetchRequests]);
 
   // ✅ DYNAMIC MENU ITEMS
   const menuItems: MenuItem[] = [
@@ -55,7 +55,7 @@ function AdminLayoutContent({ children }: { children: ReactNode }) {
       text: 'Tài khoản Host',
       icon: <People />,
       path: '/admin/store-requests',
-      badge: pendingCount, 
+      badge: pendingCount ? pendingCount : undefined, 
       badgeColor: 'warning',
     },
     { text: 'Cài đặt', icon: <Settings />, path: '/admin/settings' },

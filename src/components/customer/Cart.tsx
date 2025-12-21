@@ -28,15 +28,16 @@ interface CartProps {
 }
 
 export default function Cart({ open, onClose }: CartProps) {
-  const items = useCartStore((state) => state.items);
+  const getCurrentItems = useCartStore((state) => state.getCurrentItems);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const removeItem = useCartStore((state) => state.removeItem);
   const clearCart = useCartStore((state) => state.clearCart);
+  
+  // Get items from current table
+  const items = getCurrentItems();
 
   // Auto update when items change
-  const totalAmount = useCartStore((state) =>
-    state.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  );
+  const totalAmount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   const [checkoutOpen, setCheckoutOpen] = useState(false);
 
@@ -199,7 +200,7 @@ export default function Cart({ open, onClose }: CartProps) {
         onSuccess={() => {
           setCheckoutOpen(false);
           onClose();
-          clearCart();
+          // ✅ DO NOT clear cart here - only clear after payment
         }}
       />
     </>

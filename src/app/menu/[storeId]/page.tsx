@@ -35,7 +35,6 @@ interface MenuResponse {
   };
 }
 
-
 export default function CustomerMenuPage() {
   const params = useParams();
   const searchParams = useSearchParams();
@@ -52,63 +51,65 @@ export default function CustomerMenuPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [cartOpen, setCartOpen] = useState(false);
 
-  const { items, getTotalItems, setTable } = useCartStore();
+  // ✅ UPDATED: Use new cart methods
+  const { getTotalItems, setTable } = useCartStore();
 
   useEffect(() => {
     fetchData();
   }, [storeId, tableId]);
 
   const fetchData = async () => {
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const menuData: MenuResponse = await publicService.getMenu(storeId);
+      const menuData: MenuResponse = await publicService.getMenu(storeId);
 
-    const categories = menuData.categories.sort(
-      (a, b) => a.order - b.order
-    );
+      const categories = menuData.categories.sort(
+        (a, b) => a.order - b.order
+      );
 
-    const products = categories.flatMap(category =>
-      category.products.map(product => ({
-        ...product,
-        categoryId: category._id,
-      }))
-    );
+      const products = categories.flatMap(category =>
+        category.products.map(product => ({
+          ...product,
+          categoryId: category._id,
+        }))
+      );
 
-    const availableProducts = products.filter(p => p.isAvailable);
+      const availableProducts = products.filter(p => p.isAvailable);
 
-    setCategories(categories);
-    setProducts(availableProducts);
-    setBestSellers(
-      availableProducts
-        .toSorted((a, b) => (b.soldCount ?? 0) - (a.soldCount ?? 0))
-        .slice(0, 3)
-    );
+      setCategories(categories);
+      setProducts(availableProducts);
+      setBestSellers(
+        availableProducts
+          .toSorted((a, b) => (b.soldCount ?? 0) - (a.soldCount ?? 0))
+          .slice(0, 3)
+      );
 
-    setStoreName(menuData.store?.name || 'Menu');
+      setStoreName(menuData.store?.name || 'Menu');
 
-    // Fetch table info if tableId exists
-    if (tableId) {
-      const table = await publicService.getTableInfo(tableId);
-      setTableInfo({
-        tableNumber: table.tableNumber,
-        area: table.area,
-      });
-      setTable(tableId, storeId);
-    }
-  } catch (err: unknown) {
-    console.error('❌ Error fetching data:', err);
-    const errorMessage = err instanceof AxiosError
+      // ✅ CRITICAL: Set table BEFORE fetching table info
+      if (tableId) {
+        // Set table first to initialize cart for this table
+        setTable(tableId, storeId);
+        
+        const table = await publicService.getTableInfo(tableId);
+        setTableInfo({
+          tableNumber: table.tableNumber,
+          area: table.area,
+        });
+      }
+    } catch (err: unknown) {
+      console.error('❌ Error fetching data:', err);
+      const errorMessage = err instanceof AxiosError
         ? err.response?.data?.message || err.response?.data?.error || 'Không thể tải menu'
         : err instanceof Error
         ? err.message
         : 'Không thể tải menu';
-    setError(errorMessage);
-  } finally {
-    setLoading(false);
-  }
-};
-
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredProducts =
     selectedCategory === 'all'
@@ -168,7 +169,7 @@ export default function CustomerMenuPage() {
       )}
 
       <Container maxWidth="lg" className="py-6">
-        {/* ✅ Best Sellers Section */}
+        {/* Best Sellers Section */}
         {bestSellers.length > 0 && selectedCategory === 'all' && (
           <div className="mb-8">
             <div className="flex items-center gap-2 mb-4">

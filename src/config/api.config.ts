@@ -32,23 +32,36 @@ export const API_ENDPOINTS = {
   HOST: {
     MY_STORE: '/host/my-store',
 
-    // Store Requests (Host side)
+    // ✅Store Requests (Host side)
     STORE_REQUESTS: '/host/store-requests',
     MY_STORE_REQUESTS: '/host/store-requests/my-requests',
 
+    // ✅Categories
     CATEGORIES: (storeId: string) => `/host/stores/${storeId}/categories`,
     CATEGORY_DETAIL: (id: string) => `/host/categories/${id}`,
     
+    // ✅Products
     PRODUCTS: (storeId: string) => `/host/stores/${storeId}/products`,
     PRODUCT_DETAIL: (id: string) => `/host/products/${id}`,
     PRODUCT_TOGGLE: (id: string) => `/host/products/${id}/toggle-availability`,
     
+    // ✅Tables with status management
     TABLES: (storeId: string) => `/host/stores/${storeId}/tables`,
     TABLE_DETAIL: (id: string) => `/host/tables/${id}`,
-    
+    TABLE_STATUS: (id: string) => `/host/tables/${id}/status`,
+    TABLE_SESSION: (id: string) => `/host/tables/${id}/session`,
+    TABLE_PERFORMANCE: (storeId: string) => `/host/stores/${storeId}/tables/performance`,
+     
+    // ✅Orders
     ORDERS: (storeId: string) => `/host/stores/${storeId}/orders`,
     ORDER_DETAIL: (id: string) => `/host/orders/${id}`,
     ORDER_STATUS: (id: string) => `/host/orders/${id}/status`,
+
+    // ✅Bills/Invoices
+    BILLS: (storeId: string) => `/host/stores/${storeId}/bills`,
+    BILL_DETAIL: (id: string) => `/host/bills/${id}`,
+    CREATE_BILL: (storeId: string) => `/host/stores/${storeId}/bills`,
+    BILL_PAYMENT: (id: string) => `/host/bills/${id}/payment`,
     
     // ✅ Analytics endpoints - 7 APIs riêng biệt
     ANALYTICS: {
@@ -63,11 +76,12 @@ export const API_ENDPOINTS = {
     },
   },
 
-  // Public/Customer endpoints
+  // ✅Public/Customer endpoints
   PUBLIC: {
     MENU: (storeId: string) => `/public/stores/${storeId}/menu`,
-    TABLE_INFO: (tableId: string) => `/public/tables/${tableId}`,
     CREATE_ORDER: '/public/orders',
+    TABLE_INFO: (tableId: string) => `/public/tables/${tableId}`,
+    TABLE_CART: (tableId: string) => `/public/tables/${tableId}/cart`,
   },
 } as const;
 

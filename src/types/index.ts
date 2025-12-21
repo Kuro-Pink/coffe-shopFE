@@ -52,9 +52,15 @@ export interface Store {
   name: string;
   address: string;
   phone: string;
+  email?: string; 
   logo?: string;
   ownerId: string;
   isActive: boolean;
+  bankAccount?: {
+    bankName: string;
+    accountNumber: string;
+    accountName: string;
+  };
   createdAt: string;
 }
 
@@ -75,8 +81,8 @@ export interface Product {
   categoryId: string;
   storeId: string;
   isAvailable: boolean;
-  createdAt: string;
   soldCount?: number;
+  createdAt: string;
 }
 
 export interface Table {
@@ -85,6 +91,14 @@ export interface Table {
   area: string;
   storeId: string;
   qrCodeUrl: string;
+  status: 'available' | 'occupied' | 'needs_cleaning'; 
+  currentSession?: {
+    customerName?: string;
+    customerPhone?: string;
+    startTime: string;
+    totalOrders: number;
+    totalAmount: number;
+  }; 
 }
 
 export interface OrderItem {
@@ -100,11 +114,14 @@ export interface Order {
   storeId: string;
   tableId: string;
   tableName: string;
+  customerName: string;
   customerPhone: string;
   customerNote?: string;
   items: OrderItem[];
   totalAmount: number;
   status: 'pending' | 'completed' | 'cancelled';
+  isPaid: boolean;
+  paymentMethod?: 'cash' | 'transfer';
   createdAt: string;
   completedAt?: string;
 }
@@ -133,6 +150,48 @@ export interface StoreRequest {
   reviewedAt?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface Bill {
+  _id: string;
+  billNumber: string;
+  storeId: string;
+  tableId: string;
+  tableName: string;
+  tableArea: string;
+  customerName: string;
+  customerPhone: string;
+  orders: Order[]; // Multiple orders combined
+  items: OrderItem[]; // All items combined
+  subtotal: number;
+  tax?: number;
+  discount?: number;
+  totalAmount: number;
+  paymentMethod: 'cash' | 'transfer';
+  amountReceived?: number;
+  changeAmount?: number;
+  sessionStartTime: string;
+  sessionEndTime: string;
+  isPaid: boolean;
+  qrPaymentUrl?: string; // ✅ VietQR or bank QR
+  createdAt: string;
+  paidAt?: string;
+}
+
+export interface TablePerformance {
+  _id: string;
+  tableNumber: string;
+  area: string;
+  totalOrders: number;
+  totalRevenue: number;
+  averageOrderValue: number;
+  averageSessionTime: number; // in minutes
+  turnoverRate: number; // customers per day
+  lastSession?: {
+    startTime: string;
+    endTime: string;
+    duration: number;
+  };
 }
 
 export interface HostRegistrationData {

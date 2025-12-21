@@ -29,6 +29,7 @@ interface CheckoutModalProps {
 }
 
 const checkoutSchema = z.object({
+  customerName: z.string().min(2, 'Tên phải có ít nhất 2 ký tự'),
   customerPhone: z.string().regex(/^[0-9]{10,11}$/, 'Số điện thoại không hợp lệ'),
   customerNote: z.string().optional(),
 });
@@ -41,7 +42,10 @@ interface ErrorResponse {
 }
 
 export default function CheckoutModal({ open, onClose, onSuccess }: CheckoutModalProps) {
-  const { items, getTotalAmount, storeId, tableId } = useCartStore();
+  const { getCurrentItems, getTotalAmount, currentStoreId, currentTableId } = useCartStore();
+  const items = getCurrentItems();
+  const totalAmount = getTotalAmount();
+  
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -56,15 +60,33 @@ export default function CheckoutModal({ open, onClose, onSuccess }: CheckoutModa
   });
 
   const onSubmit = async (data: CheckoutFormData) => {
-    if (isLoading || !storeId || !tableId) return;
+    if (isLoading || !currentStoreId || !currentTableId) {
+      console.error('❌ Missing data:', { currentStoreId, currentTableId, isLoading });
+      setError('Thiếu thông tin bàn hoặc cửa hàng');
+      return;
+    }
+
+    if (items.length === 0) {
+      setError('Giỏ hàng trống');
+      return;
+    }
 
     try {
       setIsLoading(true);
       setError('');
 
+      console.log('🚀 Creating order with data:', {
+        storeId: currentStoreId,
+        tableId: currentTableId,
+        customerName: data.customerName,
+        customerPhone: data.customerPhone,
+        items: items.length,
+      });
+
       const orderData = {
-        storeId,
-        tableId,
+        storeId: currentStoreId,
+        tableId: currentTableId,
+        customerName: data.customerName, 
         customerPhone: data.customerPhone,
         customerNote: data.customerNote || '',
         items: items.map((item) => ({
@@ -74,27 +96,33 @@ export default function CheckoutModal({ open, onClose, onSuccess }: CheckoutModa
       };
 
       const response = await publicService.createOrder(orderData);
+      console.log('✅ Order created successfully:', response);
 
       setSuccess(true);
 
-      // Auto close after 3 seconds
+      // ✅ Auto close after 3 seconds
       setTimeout(() => {
         reset();
         setSuccess(false);
+        setIsLoading(false); // ✅ CRITICAL: Reset loading state
         onSuccess();
       }, 3000);
     } catch (err: unknown) {
+      console.error('❌ Order creation failed:', err);
+      
       let errorMessage = 'Đặt hàng thất bại. Vui lòng thử lại.';
       if (err instanceof AxiosError) {
         const responseData = err.response?.data as ErrorResponse;
         errorMessage = responseData?.message || responseData?.error || errorMessage;
+        console.error('❌ API Error:', {
+          status: err.response?.status,
+          data: err.response?.data,
+        });
       } else if (err instanceof Error) {
         errorMessage = err.message;
       }
 
       setError(errorMessage);
-      setIsLoading(false);
-    } finally {
       setIsLoading(false);
     }
   };
@@ -122,7 +150,7 @@ export default function CheckoutModal({ open, onClose, onSuccess }: CheckoutModa
               Món ăn sẽ có sau ~10 phút
             </Typography>
             <Typography variant="body2" className="text-gray-500">
-              Cảm ơn quý khách!
+              Bạn có thể tiếp tục đặt thêm món
             </Typography>
           </DialogContent>
         </>
@@ -172,13 +200,23 @@ export default function CheckoutModal({ open, onClose, onSuccess }: CheckoutModa
                     Tổng cộng:
                   </Typography>
                   <Typography variant="h5" className="text-green-600 font-bold">
-                    {getTotalAmount().toLocaleString('vi-VN')} ₫
+                    {totalAmount.toLocaleString('vi-VN')} ₫
                   </Typography>
                 </div>
               </div>
 
-              {/* Customer Info */}
+              {/* Customer Info - ✅ UPDATED: Add customerName */}
               <div className="space-y-4">
+                <TextField
+                  {...register('customerName')}
+                  label="Tên khách hàng *"
+                  fullWidth
+                  error={!!errors.customerName}
+                  helperText={errors.customerName?.message || 'Để gọi tên khi mang món'}
+                  disabled={isLoading}
+                  placeholder="VD: Nguyễn Văn A"
+                />
+
                 <TextField
                   {...register('customerPhone')}
                   label="Số điện thoại *"
