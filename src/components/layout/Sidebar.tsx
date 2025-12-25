@@ -12,9 +12,9 @@ import {
   ListItemButton,
   Divider,
   Badge,
-  Link,
   Chip,
 } from '@mui/material';
+import NextLink from 'next/link';
 import { useAuthStore } from '@/lib/stores/authStore';
 import { MenuItem } from '@/types';
 
@@ -78,17 +78,16 @@ export default function Sidebar({
        {menuItems.map((item) => (
         <ListItem key={item.path} disablePadding>
           <ListItemButton
-            component={Link}
+            component={NextLink}
             href={item.path}
+            prefetch
             selected={pathname === item.path}
             className={`rounded-lg mx-2 mb-1 ${
               pathname === item.path
                 ? `bg-gradient-to-r ${theme.activeGradient} shadow-lg`
                 : `hover:${theme.hoverBg}`
             }`}
-            sx={{
-              color: 'white',
-            }}
+            sx={{ color: 'white' }}
           >
             <ListItemIcon 
               sx={{ 
