@@ -620,7 +620,16 @@ export default function TablesManagementPage() {
         />
       )}
 
-     
+      {/* ✅ Payment Dialog */}
+      <PaymentDialog
+        open={paymentDialog.open}
+        table={paymentDialog.table}
+        onClose={() => setPaymentDialog({ open: false, table: null })}
+        onSuccess={() => {
+          setPaymentDialog({ open: false, table: null });
+          fetchTables(); // Refresh tables list
+        }}
+      />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import api from '../api';
 import { API_ENDPOINTS } from '@/config/api.config';
-import { Category, Product, Table, Order } from '@/types';
+import { Category, Product, Table, Order, Bill, TablePerformance } from '@/types';
 export interface DashboardStats {
   today: {
     orders: number;
@@ -86,12 +86,21 @@ export interface CategoryPerformance {
   [key: string]: string | number;
 }
 
-export interface TablePerformance {
+export interface TableAnalytics {
   _id: string;
   tableName: string;
   orders: number;
   revenue: number;
   averageOrderValue: number;
+}
+
+
+export interface CreateBillData {
+  tableId: string;
+  orderIds: string[]; // Combine multiple orders
+  paymentMethod: 'cash' | 'transfer';
+  amountReceived?: number; // For cash payment
+  discount?: number;
 }
 
 export const storeService = {
@@ -164,6 +173,21 @@ export const storeService = {
     await api.delete(API_ENDPOINTS.HOST.TABLE_DETAIL(id));
   },
 
+  updateTableStatus: async (id: string, status: 'available' | 'occupied' | 'needs_cleaning'): Promise<Table> => {
+    const response = await api.patch(API_ENDPOINTS.HOST.TABLE_STATUS(id), { status });
+    return response.data;
+  },
+
+  getTablePerformance: async (storeId: string): Promise<TablePerformance[]> => {
+    const response = await api.get(API_ENDPOINTS.HOST.TABLE_PERFORMANCE(storeId));
+    return response.data.data;
+  },
+
+  getUnpaidOrdersByTable: async (tableId: string): Promise<Order[]> => {
+    const response = await api.get(API_ENDPOINTS.HOST.UNPAID_ORDERS(tableId));
+    return response.data.data;
+  },
+
   // ===== ORDERS =====
   getOrders: async (storeId: string): Promise<Order[]> => {
     const response = await api.get(API_ENDPOINTS.HOST.ORDERS(storeId));
@@ -180,13 +204,44 @@ export const storeService = {
     return response.data;
   },
 
-  // ✅ Analytics Methods
-  getDashboardStats: async (storeId: string): Promise<DashboardStats> => {
-    const response = await api.get(API_ENDPOINTS.HOST.ANALYTICS.DASHBOARD(storeId));
-    return response.data.data; // Backend trả về { success, message, data, statusCode }
+  getOrdersByTable: async (storeId: string, tableId: string): Promise<Order[]> => {
+    const response = await api.get(API_ENDPOINTS.HOST.ORDERS(storeId), {
+      params: { tableId },
+    });
+    return response.data;
   },
 
-  getOrdersToday: async (storeId: string, params?: { startDate?: string; endDate?: string }): Promise<OrdersTodayStats> => {
+  // ===== BILLS =====
+  getBills: async (storeId: string): Promise<Bill[]> => {
+    const response = await api.get(API_ENDPOINTS.HOST.BILLS(storeId));
+    return response.data.data;
+  },
+
+  getBill: async (id: string): Promise<Bill> => {
+    const response = await api.get(API_ENDPOINTS.HOST.BILL_DETAIL(id));
+    return response.data;
+  },
+
+  createBill: async (storeId: string, data: CreateBillData): Promise<Bill> => {
+    const response = await api.post(API_ENDPOINTS.HOST.CREATE_BILL(storeId), data);
+    return response.data.data;
+  },
+
+  markBillAsPaid: async (id: string, paymentData: {
+    paymentMethod: 'cash' | 'transfer';
+    amountReceived?: number;
+  }): Promise<Bill> => {
+    const response = await api.patch(API_ENDPOINTS.HOST.BILL_PAYMENT(id), paymentData);
+    return response.data;
+  },
+
+  // ========== ANALYTICS (Keep existing) ==========
+  getDashboardStats: async (storeId: string): Promise<DashboardStats> => {
+    const response = await api.get(API_ENDPOINTS.HOST.ANALYTICS.DASHBOARD(storeId));
+    return response.data.data;
+  },
+
+ getOrdersToday: async (storeId: string, params?: { startDate?: string; endDate?: string }): Promise<OrdersTodayStats> => {
     const response = await api.get(API_ENDPOINTS.HOST.ANALYTICS.ORDERS_TODAY(storeId), { params });
     return response.data.data;
   },
@@ -216,7 +271,7 @@ export const storeService = {
     return response.data.data;
   },
 
-  getTablePerformance: async (storeId: string): Promise<TablePerformance[]> => {
+  getTableAnalytics: async (storeId: string): Promise<TableAnalytics[]> => {
     const response = await api.get(API_ENDPOINTS.HOST.ANALYTICS.TABLES(storeId));
     return response.data.data;
   },

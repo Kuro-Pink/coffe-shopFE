@@ -51,6 +51,7 @@ export const API_ENDPOINTS = {
     TABLE_STATUS: (id: string) => `/host/tables/${id}/status`,
     TABLE_SESSION: (id: string) => `/host/tables/${id}/session`,
     TABLE_PERFORMANCE: (storeId: string) => `/host/stores/${storeId}/tables/performance`,
+    UNPAID_ORDERS: (tableId: string) => `/host/tables/${tableId}/unpaid-orders`,
      
     // ✅Orders
     ORDERS: (storeId: string) => `/host/stores/${storeId}/orders`,
