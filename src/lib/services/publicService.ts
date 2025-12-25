@@ -5,6 +5,7 @@ import { Category, Product, Table } from '@/types';
 export interface CreateOrderData {
   storeId: string;
   tableId: string;
+  customerName: string;
   customerPhone: string;
   customerNote?: string;
   items: {

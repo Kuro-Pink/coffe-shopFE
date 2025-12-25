@@ -45,6 +45,13 @@ export default function Cart({ open, onClose }: CartProps) {
     setCheckoutOpen(true);
   };
 
+  const handleOrderSuccess = () => {
+    console.log('🎉 Order success - Clearing cart...');
+    setCheckoutOpen(false);
+    clearCart(); // ✅ Clear cart của bàn hiện tại
+    onClose(); // Close drawer
+  };
+
   return (
     <>
       <Drawer
@@ -197,11 +204,7 @@ export default function Cart({ open, onClose }: CartProps) {
       <CheckoutModal
         open={checkoutOpen}
         onClose={() => setCheckoutOpen(false)}
-        onSuccess={() => {
-          setCheckoutOpen(false);
-          onClose();
-          // ✅ DO NOT clear cart here - only clear after payment
-        }}
+        onSuccess={handleOrderSuccess}
       />
     </>
   );
