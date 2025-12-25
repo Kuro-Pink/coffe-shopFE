@@ -8,14 +8,11 @@ import {
   Button,
   Grid,
   IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   TextField,
   Box,
   Chip,
   InputAdornment,
+  Tooltip,
 } from '@mui/material';
 import {
   Add,
@@ -24,8 +21,12 @@ import {
   QrCode,
   TableBar,
   Search,
-  Download,
-  Print,
+  AccessTime,
+  CheckCircle,
+  CleaningServices,
+  Person,
+  Phone,
+  Warning,
 } from '@mui/icons-material';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -39,7 +40,10 @@ import QRCodeDisplay from '@/components/host/TableManager/QRCodeDisplay';
 import { AxiosError } from 'axios';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import FormDialog from '@/components/common/FormDialog';
+import PaymentDialog from '@/components/host/TableManager/PaymentDialog';
 import { showToast } from '@/components/common/Toast';
+import { formatDistanceToNow } from 'date-fns';
+import { vi } from 'date-fns/locale';
 
 const tableSchema = z.object({
   tableNumber: z.string().min(1, 'Số bàn không được để trống'),
@@ -75,8 +79,14 @@ export default function TablesManagementPage() {
     table: Table | null;
   }>({ open: false, table: null });
 
+  const [paymentDialog, setPaymentDialog] = useState<{
+    open: boolean;
+    table: Table | null;
+  }>({ open: false, table: null });
+
   const [submitLoading, setSubmitLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [statusLoading, setStatusLoading] = useState<string | null>(null);
 
   const {
     register,
@@ -91,6 +101,9 @@ export default function TablesManagementPage() {
   useEffect(() => {
     if (user?.storeId) {
       fetchTables();
+      // ✅ Auto refresh every 30s to update session times
+      const interval = setInterval(fetchTables, 30000);
+      return () => clearInterval(interval);
     }
   }, [user]);
 
@@ -153,6 +166,7 @@ export default function TablesManagementPage() {
         showToast.success({ message: 'Cập nhật bàn thành công!' });
       } else {
         await storeService.createTable(user.storeId, data);
+        console.log('Created table with data:', data);
         showToast.success({ message: 'Thêm bàn mới thành công!' });
       }
 
@@ -191,6 +205,93 @@ export default function TablesManagementPage() {
     }
   };
 
+  const handleUpdateStatus = async (
+    tableId: string,
+    status: 'available' | 'occupied' | 'needs_cleaning'
+  ) => {
+    setStatusLoading(tableId);
+    try {
+      await storeService.updateTableStatus(tableId, status);
+      
+      const statusMessages = {
+        available: 'Bàn đã sẵn sàng',
+        occupied: 'Đánh dấu có khách',
+        needs_cleaning: 'Đánh dấu cần dọn',
+      };
+      
+      showToast.success({ message: statusMessages[status] });
+      await fetchTables();
+    } catch (err: unknown) {
+      let errorMessage = 'Không thể cập nhật trạng thái bàn';
+      if (err instanceof AxiosError) {
+        const responseData = err.response?.data as ErrorResponse;
+        errorMessage = responseData?.message || responseData?.error || errorMessage;
+      }
+      showToast.error({ message: errorMessage });
+    } finally {
+      setStatusLoading(null);
+    }
+  };
+
+  const getStatusConfig = (table: Table) => {
+    const status = table.status || 'available';
+    
+    switch (status) {
+      case 'occupied':
+        return {
+          color: 'error' as const,
+          icon: <AccessTime />,
+          label: 'Có khách',
+          bgColor: 'bg-red-50',
+          borderColor: 'border-red-300',
+          gradientFrom: 'from-red-500',
+          gradientTo: 'to-pink-600',
+        };
+      case 'needs_cleaning':
+        return {
+          color: 'warning' as const,
+          icon: <CleaningServices />,
+          label: 'Cần dọn',
+          bgColor: 'bg-orange-50',
+          borderColor: 'border-orange-300',
+          gradientFrom: 'from-orange-500',
+          gradientTo: 'to-yellow-600',
+        };
+      default:
+        return {
+          color: 'success' as const,
+          icon: <CheckCircle />,
+          label: 'Sẵn sàng',
+          bgColor: 'bg-green-50',
+          borderColor: 'border-green-300',
+          gradientFrom: 'from-green-500',
+          gradientTo: 'to-teal-600',
+        };
+    }
+  };
+
+  const isSessionTooLong = (startTime?: string): boolean => {
+    if (!startTime) return false;
+
+    const start = new Date(startTime);
+    if (isNaN(start.getTime())) return false;
+
+    const sessionMinutes = (Date.now() - start.getTime()) / 60000;
+    return sessionMinutes > 90;
+  };
+
+  const formatFromNow = (value?: string) => {
+    if (!value) return '—';
+
+    const date = new Date(value);
+    if (isNaN(date.getTime())) return '—';
+
+    return formatDistanceToNow(date, {
+      locale: vi,
+      addSuffix: true,
+    });
+  };
+
   if (!user?.storeId) {
     return (
       <Card className="shadow-lg">
@@ -208,6 +309,14 @@ export default function TablesManagementPage() {
 
   if (loading) return <LoadingSpinner />;
 
+  // ✅ Calculate statistics
+  const stats = {
+    total: tables.length,
+    available: tables.filter(t => (t.status || 'available') === 'available').length,
+    occupied: tables.filter(t => (t.status || 'available') === 'occupied').length,
+    needsCleaning: tables.filter(t => (t.status || 'available') === 'needs_cleaning').length,
+  };
+
   return (
     <div>
       {/* Header */}
@@ -216,26 +325,47 @@ export default function TablesManagementPage() {
           <Typography variant="h4" className="font-bold text-gray-800 mb-2">
             Quản lý Bàn
           </Typography>
-          <Typography variant="body2" className="text-gray-600">
-            Quản lý bàn và tạo QR code cho khách hàng
+          <Typography variant="body2" className="text-gray-600 mb-3">
+            Quản lý bàn và theo dõi trạng thái phục vụ
           </Typography>
+          
+          {/* ✅ Status Summary */}
+          <div className="flex gap-2 flex-wrap">
+            <Chip
+              icon={<TableBar />}
+              label={`Tổng: ${stats.total}`}
+              size="small"
+              className="bg-blue-50 text-blue-600"
+            />
+            <Chip
+              icon={<CheckCircle />}
+              label={`Sẵn sàng: ${stats.available}`}
+              size="small"
+              className="bg-green-50 text-green-600"
+            />
+            <Chip
+              icon={<AccessTime />}
+              label={`Có khách: ${stats.occupied}`}
+              size="small"
+              className="bg-red-50 text-red-600"
+            />
+            <Chip
+              icon={<CleaningServices />}
+              label={`Cần dọn: ${stats.needsCleaning}`}
+              size="small"
+              className="bg-orange-50 text-orange-600"
+            />
+          </div>
         </div>
 
-        <div className="flex gap-2">
-          <Chip
-            icon={<TableBar />}
-            label={`${tables.length} bàn`}
-            className="bg-blue-50 text-blue-600"
-          />
-          <Button
-            variant="contained"
-            startIcon={<Add />}
-            onClick={() => setFormDialog({ open: true, table: null })}
-            className="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700"
-          >
-            Thêm bàn mới
-          </Button>
-        </div>
+        <Button
+          variant="contained"
+          startIcon={<Add />}
+          onClick={() => setFormDialog({ open: true, table: null })}
+          className="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700"
+        >
+          Thêm bàn mới
+        </Button>
       </div>
 
       {error && <ErrorMessage message={error} />}
@@ -286,63 +416,151 @@ export default function TablesManagementPage() {
         </Card>
       ) : (
         <Grid container spacing={3}>
-          {filteredTables.map((table) => (
-            <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={table._id}>
-              <Card className="hover:shadow-xl transition-all duration-300 border-0 h-full">
-                <CardContent>
-                  {/* Table Icon */}
-                  <div className="flex justify-center mb-4">
-                    <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg">
-                      <TableBar className="text-white text-4xl" />
+          {filteredTables.map((table) => {
+            const statusConfig = getStatusConfig(table);
+            const isLongSession = table.currentSession 
+              ? isSessionTooLong(table.currentSession.startTime)
+              : false;
+
+            return (
+              <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={table._id}>
+                <Card 
+                  className={`hover:shadow-xl transition-all duration-300 border-2 ${statusConfig.borderColor} ${statusConfig.bgColor} h-full`}
+                >
+                  <CardContent>
+                    {/* Status Badge & Warning */}
+                    <div className="flex items-center justify-between mb-3">
+                      <Chip
+                        icon={statusConfig.icon}
+                        label={statusConfig.label}
+                        color={statusConfig.color}
+                        size="small"
+                        className="font-semibold"
+                      />
+                      
+                      {/* ✅ Long session warning */}
+                      {isLongSession && (
+                        <Tooltip title="Khách ngồi quá lâu! Kiểm tra xem có cần gì không?">
+                          <Warning className="text-orange-600 animate-pulse" />
+                        </Tooltip>
+                      )}
+                      
+                      <div className="flex gap-1">
+                        <IconButton
+                          size="small"
+                          onClick={() => handleOpenDialog(table)}
+                          className="hover:bg-blue-50"
+                        >
+                          <Edit fontSize="small" />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          onClick={() => setConfirmDialog({ open: true, table })}
+                          className="hover:bg-red-50"
+                        >
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Table Info */}
-                  <div className="text-center mb-4">
-                    <Typography variant="h5" className="font-bold text-gray-800 mb-1">
-                      {table.tableNumber}
-                    </Typography>
-                    <Chip
-                      label={table.area}
-                      size="small"
-                      className="bg-blue-50 text-blue-600"
-                    />
-                  </div>
+                    {/* Table Icon */}
+                    <div className="flex justify-center mb-4">
+                      <div className={`w-20 h-20 bg-gradient-to-br ${statusConfig.gradientFrom} ${statusConfig.gradientTo} rounded-2xl flex items-center justify-center shadow-lg`}>
+                        <TableBar className="text-white text-4xl" />
+                      </div>
+                    </div>
 
-                  {/* Actions */}
-                  <div className="space-y-2">
-                    <Button
-                      fullWidth
-                      variant="contained"
-                      startIcon={<QrCode />}
-                      onClick={() => setQrDialog({ open: true, table })}
-                      className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700"
-                    >
-                      Xem QR Code
-                    </Button>
+                    {/* Table Info */}
+                    <div className="text-center mb-4">
+                      <Typography variant="h5" className="font-bold text-gray-800 mb-1">
+                        {table.tableNumber}
+                      </Typography>
+                      <Chip
+                        label={table.area}
+                        size="small"
+                        className="bg-blue-50 text-blue-600"
+                      />
+                    </div>
 
-                    <div className="flex gap-2">
+                    {/* ✅ Session Info (if occupied) */}
+                    {table.currentSession && (
+                      <div className="bg-white rounded-lg p-3 mb-3 border border-gray-200">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Person fontSize="small" className="text-gray-600" />
+                          <Typography variant="body2" className="font-semibold">
+                            {table.currentSession.customerName || 'Khách'}
+                          </Typography>
+                        </div>
+                        
+                        <div className="flex items-center gap-2 mb-1">
+                          <Phone fontSize="small" className="text-gray-600" />
+                          <Typography variant="caption" className="text-gray-600">
+                            {table.currentSession.customerPhone}
+                          </Typography>
+                        </div>
+                        
+                        <div className="flex items-center gap-2 mb-2">
+                          <AccessTime fontSize="small" className="text-gray-600" />
+                          <Typography
+                            variant="caption"
+                            className={isLongSession ? 'text-orange-600 font-semibold' : 'text-gray-600'}
+                          >
+                            Ngồi: {formatFromNow(table.currentSession?.startTime)}
+                          </Typography>
+                        </div>
+                        <Typography variant="caption" className="text-green-600 font-bold block">
+                          💰 {table.currentSession.totalAmount.toLocaleString('vi-VN')} ₫
+                        </Typography>
+                        <Typography variant="caption" className="text-gray-500 block">
+                          {table.currentSession.totalOrders} đơn hàng
+                        </Typography>
+                      </div>
+                    )}
+
+                    {/* Actions */}
+                    <div className="space-y-2">
                       <Button
                         fullWidth
-                        variant="outlined"
-                        startIcon={<Edit />}
-                        onClick={() => handleOpenDialog(table)}
+                        variant="contained"
+                        startIcon={<QrCode />}
+                        onClick={() => setQrDialog({ open: true, table })}
+                        className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700"
                       >
-                        Sửa
+                        Xem QR Code
                       </Button>
-                      <IconButton
-                        color="error"
-                        onClick={() => setConfirmDialog({ open: true, table })}
-                        className="border border-red-200 hover:bg-red-50"
-                      >
-                        <Delete />
-                      </IconButton>
+
+                      {/* ✅ Status Action Buttons */}
+                      {(table.status || 'available') === 'occupied' && (
+                        <Button
+                          fullWidth
+                          variant="contained"
+                          size="small"
+                          onClick={() => setPaymentDialog({ open: true, table })}
+                          disabled={statusLoading === table._id}
+                          className="bg-orange-600 hover:bg-orange-700"
+                        >
+                          {statusLoading === table._id ? 'Đang xử lý...' : '💳 Thanh toán'}
+                        </Button>
+                      )}
+
+                      {(table.status || 'available') === 'needs_cleaning' && (
+                        <Button
+                          fullWidth
+                          variant="contained"
+                          size="small"
+                          onClick={() => handleUpdateStatus(table._id, 'available')}
+                          disabled={statusLoading === table._id}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          {statusLoading === table._id ? 'Đang xử lý...' : 'Đã dọn xong'}
+                        </Button>
+                      )}
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
+                  </CardContent>
+                </Card>
+              </Grid>
+            );
+          })}
         </Grid>
       )}
 
@@ -401,6 +619,8 @@ export default function TablesManagementPage() {
           onClose={() => setQrDialog({ open: false, table: null })}
         />
       )}
+
+     
     </div>
   );
 }

@@ -40,7 +40,7 @@ import {
   BestSeller,
   CustomerInsights,
   CategoryPerformance,
-  TablePerformance,
+  TableAnalytics,
 } from '@/lib/services/storeService';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
@@ -74,7 +74,7 @@ interface AllStats {
   bestSellers: BestSeller[];
   customers: CustomerInsights;
   categories: CategoryPerformance[];
-  tables: TablePerformance[];
+  tables: TableAnalytics[];
 }
 
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444'];
@@ -115,7 +115,7 @@ export default function StatsPage() {
         storeService.getBestSellers(user.storeId),
         storeService.getCustomerInsights(user.storeId),
         storeService.getCategoryPerformance(user.storeId),
-        storeService.getTablePerformance(user.storeId),
+        storeService.getTableAnalytics(user.storeId),
       ]);
 
       setStats({
