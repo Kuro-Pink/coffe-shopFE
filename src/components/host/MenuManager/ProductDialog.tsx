@@ -22,6 +22,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Category, Product } from "@/types";
 import { storeService } from "@/lib/services/storeService";
 import { AxiosError } from "axios";
+import { Controller } from "react-hook-form";
 
 interface ProductDialogProps {
   open: boolean;
@@ -65,30 +66,46 @@ export default function ProductDialog({
     register,
     handleSubmit,
     setValue,
+    control, 
     reset,
-    formState: { errors }
-  } = useForm<ProductFormData>({
+    formState: { errors },
+    } = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
-  });
+    defaultValues: {
+        name: "",
+        description: "",
+        price: 0,
+        categoryId: "",
+        isAvailable: true,
+    },
+    });
 
   // Load dữ liệu vào form nếu đang edit
   useEffect(() => {
     if (product) {
-      setValue("name", product.name);
-      setValue("description", product.description);
-      setValue("price", product.price);
-      setValue("categoryId", product.categoryId);
-      setValue("isAvailable", product.isAvailable);
+      // Edit
+      reset({
+        name: product.name ?? "",
+        description: product.description ?? "",
+        price: product.price ?? 0,
+        categoryId: product.categoryId ?? "",
+        isAvailable: product.isAvailable ?? true,
+      });
       setImagePreview(product.image || "");
     } else {
+      // Create trong category
       reset({
+        name: "",
+        description: "",
+        price: 0,
+        categoryId: defaultCategoryId!, // 🔥 ÉP LUÔN
         isAvailable: true,
-        categoryId: defaultCategoryId || "",
       });
       setImagePreview("");
     }
+
     setImageFile(null);
-  }, [product, open]);
+  }, [product, open, reset, defaultCategoryId]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -201,36 +218,24 @@ export default function ProductDialog({
             }}
           />
 
-          <TextField
-            {...register("categoryId")}
-            label="Danh mục"
-            select
-            fullWidth
-            error={!!errors.categoryId}
-            helperText={errors.categoryId?.message}
-            disabled={isLoading}
-          >
-            <MenuItem value="" disabled>
-              -- Chọn danh mục --
-            </MenuItem>
-
-            {categories.map((cat) => (
-              <MenuItem key={cat._id} value={cat._id}>
-                {cat.name}
-              </MenuItem>
-            ))}
-          </TextField>
-
-          <FormControlLabel
-            control={
-              <Switch
-                {...register("isAvailable")}
-                defaultChecked
-                disabled={isLoading}
+          <Controller
+            name="isAvailable"
+            control={control}
+            defaultValue={true}
+            render={({ field }) => (
+              <FormControlLabel
+                label="Còn hàng"
+                control={
+                  <Switch
+                    checked={!!field.value}
+                    onChange={(e) => field.onChange(e.target.checked)}
+                    disabled={isLoading}
+                  />
+                }
               />
-            }
-            label="Còn hàng"
+            )}
           />
+
         </DialogContent>
 
         <DialogActions>

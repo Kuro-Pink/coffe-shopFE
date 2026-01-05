@@ -11,6 +11,8 @@ import ErrorMessage from '@/components/common/ErrorMessage';
 import MenuFilter from '@/components/host/MenuManager/MenuFilter';
 import CategoryCard from '@/components/host/MenuManager/CategoryCard';
 import { AxiosError } from 'axios';
+import CategoryDialog from '@/components/host/MenuManager/CategoryDialog';
+import ProductDialog from '@/components/host/MenuManager/ProductDialog';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import { showToast } from '@/components/common/Toast';
 
@@ -331,6 +333,32 @@ export default function MenuManagementPage() {
           ))}
         </div>
       )}
+
+      {/* ===== CATEGORY ADD / EDIT DIALOG ===== */}
+      <CategoryDialog
+        open={categoryDialog.open}
+        category={categoryDialog.category}
+        storeId={user.storeId}
+        onClose={() => setCategoryDialog({ open: false, category: null })}
+        onSuccess={async () => {
+          await fetchData();
+          setCategoryDialog({ open: false, category: null });
+        }}
+      />
+
+      {/* ===== PRODUCT ADD / EDIT DIALOG ===== */}
+      <ProductDialog
+        open={productDialog.open}
+        product={productDialog.product}
+        categories={categories}
+        storeId={user.storeId}
+        defaultCategoryId={productDialog.categoryId}
+        onClose={() => setProductDialog({ open: false, product: null })}
+        onSuccess={async () => {
+          await fetchData();
+          setProductDialog({ open: false, product: null });
+        }}
+      />
 
       {/* Confirm Delete Dialog */}
       <ConfirmDialog
