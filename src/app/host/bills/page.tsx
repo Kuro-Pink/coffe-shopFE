@@ -68,7 +68,6 @@ export default function BillsManagementPage() {
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
   const [paymentMethodFilter, setPaymentMethodFilter] = useState<'all' | 'cash' | 'transfer'>('all');
-  const [staffFilter, setStaffFilter] = useState<string>('all');
 
   // Pagination
   const [page, setPage] = useState(1);
@@ -78,9 +77,6 @@ export default function BillsManagementPage() {
   const [detailOpen, setDetailOpen] = useState(false);
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
 
-  // Staff list for filter
-  const [staffList, setStaffList] = useState<string[]>([]);
-
   useEffect(() => {
     if (storeId) {
       fetchBills();
@@ -89,17 +85,21 @@ export default function BillsManagementPage() {
 
   useEffect(() => {
     applyFilters();
-  }, [bills, searchQuery, dateFilter, customStartDate, customEndDate, paymentMethodFilter, staffFilter]);
+  }, [
+    bills,
+    searchQuery,
+    dateFilter,
+    customStartDate,
+    customEndDate,
+    paymentMethodFilter,
+  ]);
+
 
   const fetchBills = async () => {
     try {
       setLoading(true);
       const data = await storeService.getBills(storeId!);
       setBills(data);
-      
-      // Extract unique staff names
-      const uniqueStaff = Array.from(new Set(data.map(b => b.staffName).filter(Boolean))) as string[];
-      setStaffList(uniqueStaff);
     } catch (err) {
       console.error('Failed to fetch bills:', err);
     } finally {
@@ -156,15 +156,9 @@ export default function BillsManagementPage() {
       filtered = filtered.filter(bill => bill.paymentMethod === paymentMethodFilter);
     }
 
-    // Staff filter
-    if (staffFilter !== 'all') {
-      filtered = filtered.filter(bill => bill.staffName === staffFilter);
-    }
-
     // Sort by date (newest first)
     filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-    console.log('Filtered bills before setting:', filtered);
     setFilteredBills(filtered);
     setPage(1); // Reset to first page when filters change
   };
@@ -206,7 +200,6 @@ export default function BillsManagementPage() {
             <div class="info-row"><strong>Bàn:</strong> ${bill.tableName}</div>
             <div class="info-row"><strong>Khách hàng:</strong> ${bill.customerName}</div>
             <div class="info-row"><strong>SĐT:</strong> ${bill.customerPhone}</div>
-            <div class="info-row"><strong>Thu ngân:</strong> ${bill.staffName || 'N/A'}</div>
           </div>
 
           <table>
@@ -219,19 +212,27 @@ export default function BillsManagementPage() {
               </tr>
             </thead>
             <tbody>
-              ${bill.orders?.flatMap(order => 
-                order.items.map(item => `
-                  <tr>
-                    <td>${item.name}</td>
-                    <td>${item.quantity}</td>
-                    <td>${item.price.toLocaleString('vi-VN')} ₫</td>
-                    <td>${(item.price * item.quantity).toLocaleString('vi-VN')} ₫</td>
-                  </tr>
-                `)
-              ).join('') || '<tr><td colspan="4">Không có thông tin món</td></tr>'}
+              ${bill.items?.map(item => `
+                <tr>
+                  <td>${item.name}</td>
+                  <td style="text-align:center;">${item.quantity}</td>
+                  <td style="text-align:right;">
+                    ${item.price.toLocaleString('vi-VN')} ₫
+                  </td>
+                  <td style="text-align:right;">
+                    ${(item.price * item.quantity).toLocaleString('vi-VN')} ₫
+                  </td>
+                </tr>
+              `).join('') || `
+                <tr>
+                  <td colspan="4" style="text-align:center;">
+                    Không có thông tin món
+                  </td>
+                </tr>
+              `}
             </tbody>
           </table>
-
+          
           <div class="info">
             <div class="info-row"><strong>Phương thức:</strong> ${bill.paymentMethod === 'cash' ? '💵 Tiền mặt' : '🏦 Chuyển khoản'}</div>
             ${bill.paymentMethod === 'cash' && bill.amountReceived ? `
@@ -266,7 +267,6 @@ export default function BillsManagementPage() {
       'SĐT': bill.customerPhone,
       'Tổng tiền': bill.totalAmount,
       'Phương thức': bill.paymentMethod === 'cash' ? 'Tiền mặt' : 'Chuyển khoản',
-      'Thu ngân': bill.staffName || 'N/A',
     }));
 
     // Create workbook
@@ -435,21 +435,6 @@ export default function BillsManagementPage() {
                   <MenuItem value="transfer">🏦 Chuyển khoản</MenuItem>
                 </Select>
               </FormControl>
-
-              <FormControl fullWidth>
-                <InputLabel>Thu ngân</InputLabel>
-                <Select
-                  value={staffFilter}
-                  label="Thu ngân"
-                  onChange={(e) => setStaffFilter(e.target.value)}
-                  startAdornment={<Person className="mr-2 text-gray-400" />}
-                >
-                  <MenuItem value="all">Tất cả</MenuItem>
-                  {staffList.map(staff => (
-                    <MenuItem key={staff} value={staff}>{staff}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
             </div>
           </Stack>
         </CardContent>
@@ -478,7 +463,6 @@ export default function BillsManagementPage() {
                   <TableCell className="font-bold">Khách hàng</TableCell>
                   <TableCell className="font-bold">Tổng tiền</TableCell>
                   <TableCell className="font-bold">PT Thanh toán</TableCell>
-                  <TableCell className="font-bold">Thu ngân</TableCell>
                   <TableCell className="font-bold" align="center">Thao tác</TableCell>
                 </TableRow>
               </TableHead>
@@ -522,15 +506,10 @@ export default function BillsManagementPage() {
                     </TableCell>
                     <TableCell>
                       <Chip
-                        label={bill.paymentMethod === 'cash' ? '💵 Tiền mặt' : '🏦 CK'}
+                        label={bill.paymentMethod === 'cash' ? '💵 Tiền mặt' : '🏦 Chuyển khoản'}
                         size="small"
                         color={bill.paymentMethod === 'cash' ? 'success' : 'info'}
                       />
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" className="text-gray-700">
-                        {bill.staffName || 'N/A'}
-                      </Typography>
                     </TableCell>
                     <TableCell align="center">
                       <IconButton
@@ -629,22 +608,14 @@ export default function BillsManagementPage() {
                     </Typography>
                   </div>
                   <div>
-                    <Typography variant="caption" className="text-gray-600">
-                      Thu ngân
-                    </Typography>
-                    <Typography variant="body2" className="font-semibold">
-                      {selectedBill.staffName || 'N/A'}
-                    </Typography>
-                  </div>
-                  <div>
-                    <Typography variant="caption" className="text-gray-600">
+                    <Typography variant="caption" className="text-gray-600 pr-2">
                       Phương thức thanh toán
                     </Typography>
                     <Chip
                       label={selectedBill.paymentMethod === 'cash' ? '💵 Tiền mặt' : '🏦 Chuyển khoản'}
                       size="small"
                       color={selectedBill.paymentMethod === 'cash' ? 'success' : 'info'}
-                      className="mt-1"
+                      className="pr-2"
                     />
                   </div>
                 </div>
@@ -654,7 +625,7 @@ export default function BillsManagementPage() {
 
               {/* Items */}
               <Typography variant="subtitle2" className="font-bold mb-3">
-                Chi tiết món ({selectedBill.orders?.reduce((sum, o) => sum + o.items.length, 0) || 0} món)
+                Chi tiết món ({selectedBill.items?.length || 0} món) 
               </Typography>
               
               <TableContainer component={Paper} variant="outlined">
@@ -668,21 +639,20 @@ export default function BillsManagementPage() {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {selectedBill.orders?.flatMap(order =>
-                      order.items.map((item, idx) => (
-                        <TableRow key={`${order.orderNumber}-${idx}`}>
-                          <TableCell>{item.name}</TableCell>
-                          <TableCell align="center">{item.quantity}</TableCell>
-                          <TableCell align="right">
-                            {item.price.toLocaleString('vi-VN')} ₫
-                          </TableCell>
-                          <TableCell align="right" className="font-semibold">
-                            {(item.price * item.quantity).toLocaleString('vi-VN')} ₫
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
+                    {selectedBill.items?.map((item, idx) => (
+                      <TableRow key={item._id || idx}>
+                        <TableCell>{item.name}</TableCell>
+                        <TableCell align="center">{item.quantity}</TableCell>
+                        <TableCell align="right">
+                          {item.price.toLocaleString('vi-VN')} ₫
+                        </TableCell>
+                        <TableCell align="right" className="font-semibold">
+                          {(item.price * item.quantity).toLocaleString('vi-VN')} ₫
+                        </TableCell>
+                      </TableRow>
+                    ))}
                   </TableBody>
+
                 </Table>
               </TableContainer>
 
