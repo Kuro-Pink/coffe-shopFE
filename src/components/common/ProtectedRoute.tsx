@@ -7,7 +7,7 @@ import LoadingSpinner from './LoadingSpinner';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  allowedRoles?: ('admin' | 'host')[];
+  allowedRoles?: ('admin' | 'host' | 'staff')[];
 }
 
 export default function ProtectedRoute({ 
