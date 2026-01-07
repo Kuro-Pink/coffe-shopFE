@@ -7,13 +7,15 @@ import {
   TableBar,
   Receipt,
   StoreMallDirectory,
+  AssignmentTurnedIn,
+  Person,
 } from '@mui/icons-material';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { ToastProvider, showToast } from '@/components/common/Toast';
-import { MenuItem } from '@/types';
+import { SidebarMenuItem  } from '@/types';
 import { useAuthStore } from '@/lib/stores/authStore';
 import { useOrderBadgeStore } from '@/lib/stores/orderBadgeStore';
-import { initSocket, disconnectSocket } from '@/lib/socket';
+import { initSocket } from '@/lib/socket';
 import { Socket } from 'socket.io-client';
 import { useOrderNotifyStore } from '@/lib/stores/orderNotifyStore';
 import {
@@ -98,24 +100,21 @@ function HostLayoutContent({ children }: { children: ReactNode }) {
     socket.on('order_status_update', (updatedOrder) => {
       updateOrder(updatedOrder);
     });
+  }, [user?.storeId]);
 
-    return () => {
-      socketRef.current = null;
-      disconnectSocket();
-    };
-  }, [user?.storeId, addOrder, updateOrder]);
-
-  const menuItems: MenuItem[] = [
+  const menuItems: SidebarMenuItem[] = [
     { text: 'Dashboard', icon: <Dashboard />, path: '/host' },
     { text: 'Quản lý Menu', icon: <Restaurant />, path: '/host/menu' },
     { text: 'Quản lý Bàn', icon: <TableBar />, path: '/host/tables' },
+    { text: 'Quản lý Nhân viên', icon: <Person />, path: '/host/staff' },
     {
       text: 'Đơn hàng',
-      icon: <Receipt />,
+      icon: <AssignmentTurnedIn />,
       path: '/host/orders',
       badge: pendingCount > 0 ? pendingCount : undefined,
       badgeColor: 'error',
     },
+    { text: 'Hóa đơn', icon: <Receipt />, path: '/host/bills' },
   ];
 
   return (
