@@ -7,6 +7,7 @@ export interface ToastOptions {
 
 export type ModalSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 export type ModalVariant = 'default' | 'danger' | 'warning' | 'success' | 'info';
+export type StaffType = 'cashier' | 'bar' | 'kitchen';
 
 export interface ConfirmDialogProps {
   open: boolean;
@@ -31,7 +32,7 @@ export interface FormDialogProps {
   onCancel: () => void;
   children: React.ReactNode;
 }
-export interface MenuItem {
+export interface SidebarMenuItem  {
   text: string;
   icon: React.ReactNode;
   path: string;
@@ -42,9 +43,10 @@ export interface User {
   _id: string;
   email: string;
   name: string;
-  role: 'admin' | 'host';
+  role: 'admin' | 'host'| 'staff';
   phone?: string;
   storeId?: string;
+  staffType?: StaffType;
 }
 
 export interface Store {
@@ -119,9 +121,23 @@ export interface Order {
   customerNote?: string;
   items: OrderItem[];
   totalAmount: number;
-  status: 'pending' | 'completed' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
   isPaid: boolean;
   paymentMethod?: 'cash' | 'transfer';
+  confirmedBy?: {
+    _id: string;
+    name: string;
+    staffType: StaffType;
+  };
+  confirmedAt?: string;
+  completedBy?: {
+    _id: string;
+    name: string;
+  };
+  paidBy?: {
+    _id: string;
+    name: string;
+  };
   createdAt: string;
   completedAt?: string;
 }
@@ -206,4 +222,38 @@ export interface HostRegistrationData {
   storeAddress: string;
   storePhone: string;
   storeLogo?: string;
+}
+
+export interface Staff {
+  _id: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: 'staff';
+  staffType: StaffType;
+  storeId: string;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface StaffStats {
+  totalStaff: number;
+  activeStaff: number;
+  inactiveStaff: number;
+  byCashier: number;
+  byBar: number;
+  byKitchen: number;
+}
+
+export interface StaffPerformance {
+  staffId: string;
+  staffName: string;
+  staffType: StaffType;
+  ordersProcessed: number;
+  totalRevenue: number;
+  avgOrderValue: number;
+  hoursWorked?: number;
+  ordersPerHour?: number;
+  firstOrder?: string;
+  lastOrder?: string;
 }

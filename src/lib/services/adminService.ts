@@ -52,23 +52,23 @@ export const adminService = {
 
   // Store Requests Management
   getStoreRequests: async (): Promise<StoreRequest[]> => {
-    const response = await api.get(API_ENDPOINTS.ADMIN.STORE_REQUESTS);
+    const response = await api.get(API_ENDPOINTS.ADMIN.STORE_REQUESTS.LIST);
     return response.data.data;
   },
 
   approveStoreRequest: async (requestId: string): Promise<void> => {
-    const response = await api.post(API_ENDPOINTS.ADMIN.APPROVE_REQUEST(requestId));
+    const response = await api.post(API_ENDPOINTS.ADMIN.STORE_REQUESTS.APPROVE(requestId));
     return response.data;
   },
 
   rejectStoreRequest: async (requestId: string, reason: string): Promise<void> => {
-    const response = await api.post(API_ENDPOINTS.ADMIN.REJECT_REQUEST(requestId), {
+    const response = await api.post(API_ENDPOINTS.ADMIN.STORE_REQUESTS.REJECT(requestId), {
       rejectionReason: reason,
     });
     return response.data;
   },
 
    deleteStoreRequest: async (requestId: string): Promise<void> => {
-    await api.delete(API_ENDPOINTS.ADMIN.STORE_REQUEST_DETAIL(requestId));
+    await api.delete(API_ENDPOINTS.ADMIN.STORE_REQUESTS.DETAIL(requestId));
   },
 };

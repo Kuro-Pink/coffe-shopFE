@@ -10,7 +10,7 @@ import {
 } from '@mui/icons-material';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { ToastProvider } from '@/components/common/Toast';
-import { MenuItem } from '@/types';
+import { SidebarMenuItem  } from '@/types';
 import { useStoreRequestStore } from '@/lib/stores/storeRequestStore';
 
 const adminTheme = {
@@ -48,7 +48,7 @@ function AdminLayoutContent({ children }: { children: ReactNode }) {
   }, [fetchRequests]);
 
   // ✅ DYNAMIC MENU ITEMS
-  const menuItems: MenuItem[] = [
+  const menuItems: SidebarMenuItem[] = [
     { text: 'Dashboard', icon: <Dashboard />, path: '/admin' },
     { text: 'Quản lý cửa hàng', icon: <Store />, path: '/admin/stores' },
     {

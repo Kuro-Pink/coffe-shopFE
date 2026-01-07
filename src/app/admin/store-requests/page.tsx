@@ -371,15 +371,24 @@ export default function StoreRequestsPage() {
                     <Typography variant="caption" className="font-semibold text-gray-700 block mb-2">
                       Thông tin chủ sở hữu:
                     </Typography>
-                    <Typography variant="body2" className="mb-1">
-                      {request.userId.name}
-                    </Typography>
-                    <Typography variant="body2" className="text-sm text-gray-600">
-                      {request.userId.email}
-                    </Typography>
-                    <Typography variant="body2" className="text-sm text-gray-600">
-                      {request.userId.phone}
-                    </Typography>
+                    {request.userId ? (
+                      <>
+                        <Typography variant="body2" className="mb-1">
+                          {request.userId.name}
+                        </Typography>
+                        <Typography variant="body2" className="text-sm text-gray-600">
+                          {request.userId.email}
+                        </Typography>
+                        <Typography variant="body2" className="text-sm text-gray-600">
+                          {request.userId.phone}
+                        </Typography>
+                      </>
+                    ) : (
+                      <Typography variant="body2" className="text-red-600 italic">
+                        ⚠️ Tài khoản Host không tồn tại
+                      </Typography>
+                    )}
+
                   </div>
 
                   {/* Time */}

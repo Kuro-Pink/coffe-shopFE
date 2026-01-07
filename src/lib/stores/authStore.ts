@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { User } from '@/types';
 import { setCookie, getCookie, deleteCookie } from '@/utils/cookies';
+import { disconnectSocket } from '@/lib/socket';
 
 interface AuthState {
   user: User | null;
@@ -33,6 +34,7 @@ export const useAuthStore = create<AuthState>()(
       },
       
       logout: () => {
+        disconnectSocket();
         // ✅ Xóa cả cookie và localStorage
         deleteCookie('token');
         

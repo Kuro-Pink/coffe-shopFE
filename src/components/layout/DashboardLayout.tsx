@@ -7,12 +7,12 @@ import Sidebar from './Sidebar';
 import Header from './Header';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
 import { useAuthStore } from '@/lib/stores/authStore';
-import { MenuItem } from '@/types';
+import { SidebarMenuItem  } from '@/types';
 
 interface DashboardLayoutProps {
   children: ReactNode;
   allowedRoles: ('admin' | 'host')[];
-  menuItems: MenuItem[];
+  menuItems: SidebarMenuItem[];
   logo: {
     icon: React.ReactNode;
     title: string;

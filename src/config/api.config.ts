@@ -21,50 +21,58 @@ export const API_ENDPOINTS = {
     STORE_DETAIL: (id: string) => `/admin/stores/${id}`,
     
     // Store Requests
-    STORE_REQUESTS: '/admin/store-requests',
-    STORE_REQUESTS_STATS: '/admin/store-requests/stats',
-    STORE_REQUEST_DETAIL: (id: string) => `/admin/store-requests/${id}`,
-    APPROVE_REQUEST: (id: string) => `/admin/store-requests/${id}/approve`,
-    REJECT_REQUEST: (id: string) => `/admin/store-requests/${id}/reject`,
+    STORE_REQUESTS: {
+      LIST: '/admin/store-requests',
+      STATS: '/admin/store-requests/stats',
+      DETAIL: (id: string) => `/admin/store-requests/${id}`,
+      APPROVE: (id: string) => `/admin/store-requests/${id}/approve`,
+      REJECT: (id: string) => `/admin/store-requests/${id}/reject`,
+    }
+
   },
 
   // Store/Host endpoints
   HOST: {
     MY_STORE: '/host/my-store',
-
-    // ✅Store Requests (Host side)
     STORE_REQUESTS: '/host/store-requests',
     MY_STORE_REQUESTS: '/host/store-requests/my-requests',
-
-    // ✅Categories
-    CATEGORIES: (storeId: string) => `/host/stores/${storeId}/categories`,
-    CATEGORY_DETAIL: (id: string) => `/host/categories/${id}`,
-    
-    // ✅Products
-    PRODUCTS: (storeId: string) => `/host/stores/${storeId}/products`,
-    PRODUCT_DETAIL: (id: string) => `/host/products/${id}`,
-    PRODUCT_TOGGLE: (id: string) => `/host/products/${id}/toggle-availability`,
-    
-    // ✅Tables with status management
-    TABLES: (storeId: string) => `/host/stores/${storeId}/tables`,
-    TABLE_DETAIL: (id: string) => `/host/tables/${id}`,
-    TABLE_STATUS: (id: string) => `/host/tables/${id}/status`,
-    TABLE_SESSION: (id: string) => `/host/tables/${id}/session`,
-    TABLE_PERFORMANCE: (storeId: string) => `/host/stores/${storeId}/tables/performance`,
-    UNPAID_ORDERS: (tableId: string) => `/host/tables/${tableId}/unpaid-orders`,
-     
-    // ✅Orders
-    ORDERS: (storeId: string) => `/host/stores/${storeId}/orders`,
-    ORDER_DETAIL: (id: string) => `/host/orders/${id}`,
-    ORDER_STATUS: (id: string) => `/host/orders/${id}/status`,
-
-    // ✅Bills/Invoices
-    BILLS: (storeId: string) => `/host/stores/${storeId}/bills`,
-    BILL_DETAIL: (id: string) => `/host/bills/${id}`,
-    CREATE_BILL: (storeId: string) => `/host/stores/${storeId}/bills`,
-    BILL_PAYMENT: (id: string) => `/host/bills/${id}/payment`,
-    
-    // ✅ Analytics endpoints - 7 APIs riêng biệt
+    CATEGORY: {
+      LIST: (storeId: string) => `/host/stores/${storeId}/categories`,
+      DETAIL: (id: string) => `/host/categories/${id}`,
+    },
+    PRODUCTS: {
+      LIST: (storeId: string) => `/host/stores/${storeId}/products`,
+      DETAIL: (id: string) => `/host/products/${id}`,
+      TOGGLE: (id: string) => `/host/products/${id}/toggle-availability`,
+    },
+    TABLES: {
+      LIST: (storeId: string) => `/host/stores/${storeId}/tables`,
+      DETAIL: (id: string) => `/host/tables/${id}`,
+      STATUS: (id: string) => `/host/tables/${id}/status`,
+      SESSION: (id: string) => `/host/tables/${id}/session`,
+      PERFORMANCE: (storeId: string) => `/host/stores/${storeId}/tables/performance`,
+      UNPAID_ORDERS: (tableId: string) => `/host/tables/${tableId}/unpaid-orders`,
+    },
+    ORDERS: {
+      LIST: (storeId: string) => `/host/stores/${storeId}/orders`,
+      DETAIL: (id: string) => `/host/orders/${id}`,
+      STATUS: (id: string) => `/host/orders/${id}/status`,
+    },
+    BILLS: {
+      LIST: (storeId: string) => `/host/stores/${storeId}/bills`,
+      DETAIL: (id: string) => `/host/bills/${id}`,
+      PAYMENT: (id: string) => `/host/bills/${id}/payment`,
+    },
+    STAFF: {
+      LIST: (storeId: string) => `/host/stores/${storeId}/staff`,
+      DETAIL: (id: string) => `/host/staff/${id}`,
+      CREATE: (storeId: string) => `/host/stores/${storeId}/staff`,
+      UPDATE: (id: string) => `/host/staff/${id}`,
+      DELETE: (id: string) => `/host/staff/${id}`,
+      TOGGLE_STATUS: (id: string) => `/host/staff/${id}/toggle-status`,
+      STATS: (storeId: string) => `/host/stores/${storeId}/staff/stats`,
+      PERFORMANCE: (storeId: string) => `/host/stores/${storeId}/reports/staff-performance`,
+    },
     ANALYTICS: {
       DASHBOARD: (storeId: string) => `/host/stores/${storeId}/analytics/dashboard`,
       ORDERS_TODAY: (storeId: string) => `/host/stores/${storeId}/orders/today`,
@@ -72,12 +80,15 @@ export const API_ENDPOINTS = {
       PEAK_HOURS: (storeId: string) => `/host/stores/${storeId}/analytics/peak-hours`,
       BEST_SELLERS: (storeId: string) => `/host/stores/${storeId}/analytics/best-sellers`,
       CUSTOMERS: (storeId: string) => `/host/stores/${storeId}/analytics/customers`,
-      CATEGORIES: (storeId: string) => `/host/stores/${storeId}/analytics/categories`,
+      BY_CATEGORY: (storeId: string) => `/host/stores/${storeId}/analytics/categories`,
       TABLES: (storeId: string) => `/host/stores/${storeId}/analytics/tables`,
     },
   },
-
-  // ✅Public/Customer endpoints
+  STAFF: {
+    ORDERS: '/staff/orders',
+    ORDER_DETAIL: (id: string) => `/staff/orders/${id}`,
+    ORDER_STATUS: (id: string) => `/staff/orders/${id}/status`,
+  },
   PUBLIC: {
     MENU: (storeId: string) => `/public/stores/${storeId}/menu`,
     CREATE_ORDER: '/public/orders',

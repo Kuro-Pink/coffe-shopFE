@@ -16,10 +16,10 @@ import {
 } from '@mui/material';
 import NextLink from 'next/link';
 import { useAuthStore } from '@/lib/stores/authStore';
-import { MenuItem } from '@/types';
+import { SidebarMenuItem  } from '@/types';
 
 interface SidebarProps {
-  menuItems: MenuItem[];
+  menuItems: SidebarMenuItem[];
   drawerWidth: number;
   mobileOpen: boolean;
   onDrawerToggle: () => void;

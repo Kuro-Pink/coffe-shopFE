@@ -106,106 +106,106 @@ export interface CreateBillData {
 export const storeService = {
   // ===== CATEGORIES =====
   getCategories: async (storeId: string): Promise<Category[]> => {
-    const response = await api.get(API_ENDPOINTS.HOST.CATEGORIES(storeId));
+    const response = await api.get(API_ENDPOINTS.HOST.CATEGORY.LIST(storeId));
     return response.data.data;
   },
 
   createCategory: async (storeId: string, data: { name: string; order: number }): Promise<Category> => {
-    const response = await api.post(API_ENDPOINTS.HOST.CATEGORIES(storeId), data);
+    const response = await api.post(API_ENDPOINTS.HOST.CATEGORY.LIST(storeId), data);
     return response.data;
   },
 
   updateCategory: async (id: string, data: { name: string; order: number }): Promise<Category> => {
-    const response = await api.put(API_ENDPOINTS.HOST.CATEGORY_DETAIL(id), data);
+    const response = await api.put(API_ENDPOINTS.HOST.CATEGORY.DETAIL(id), data);
     return response.data;
   },
 
   deleteCategory: async (id: string): Promise<void> => {
-    await api.delete(API_ENDPOINTS.HOST.CATEGORY_DETAIL(id));
+    await api.delete(API_ENDPOINTS.HOST.CATEGORY.DETAIL(id));
   },
 
   // ===== PRODUCTS =====
   getProducts: async (storeId: string): Promise<Product[]> => {
-    const response = await api.get(API_ENDPOINTS.HOST.PRODUCTS(storeId));
+    const response = await api.get(API_ENDPOINTS.HOST.PRODUCTS.LIST(storeId));
     return response.data.data;
   },
 
   createProduct: async (storeId: string, data: FormData): Promise<Product> => {
-    const response = await api.post(API_ENDPOINTS.HOST.PRODUCTS(storeId), data, {
+    const response = await api.post(API_ENDPOINTS.HOST.PRODUCTS.LIST(storeId), data, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return response.data;
   },
 
   updateProduct: async (id: string, data: FormData): Promise<Product> => {
-    const response = await api.put(API_ENDPOINTS.HOST.PRODUCT_DETAIL(id), data, {
+    const response = await api.put(API_ENDPOINTS.HOST.PRODUCTS.DETAIL(id), data, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return response.data;
   },
 
   deleteProduct: async (id: string): Promise<void> => {
-    await api.delete(API_ENDPOINTS.HOST.PRODUCT_DETAIL(id));
+    await api.delete(API_ENDPOINTS.HOST.PRODUCTS.DETAIL(id));
   },
 
   toggleProductAvailability: async (id: string): Promise<Product> => {
-    const response = await api.patch(API_ENDPOINTS.HOST.PRODUCT_TOGGLE(id));
+    const response = await api.patch(API_ENDPOINTS.HOST.PRODUCTS.TOGGLE(id));
     return response.data;
   },
 
   // ===== TABLES =====
   getTables: async (storeId: string): Promise<Table[]> => {
-    const response = await api.get(API_ENDPOINTS.HOST.TABLES(storeId));
+    const response = await api.get(API_ENDPOINTS.HOST.TABLES.LIST(storeId));
     return response.data.data;
   },
 
   createTable: async (storeId: string, data: { tableNumber: string; area: string }): Promise<Table> => {
-    const response = await api.post(API_ENDPOINTS.HOST.TABLES(storeId), data);
+    const response = await api.post(API_ENDPOINTS.HOST.TABLES.LIST(storeId), data);
     return response.data;
   },
 
   updateTable: async (id: string, data: { tableNumber: string; area: string }): Promise<Table> => {
-    const response = await api.put(API_ENDPOINTS.HOST.TABLE_DETAIL(id), data);
+    const response = await api.put(API_ENDPOINTS.HOST.TABLES.DETAIL(id), data);
     return response.data;
   },
 
   deleteTable: async (id: string): Promise<void> => {
-    await api.delete(API_ENDPOINTS.HOST.TABLE_DETAIL(id));
+    await api.delete(API_ENDPOINTS.HOST.TABLES.DETAIL(id));
   },
 
   updateTableStatus: async (id: string, status: 'available' | 'occupied' | 'needs_cleaning'): Promise<Table> => {
-    const response = await api.patch(API_ENDPOINTS.HOST.TABLE_STATUS(id), { status });
+    const response = await api.patch(API_ENDPOINTS.HOST.TABLES.STATUS(id), { status });
     return response.data;
   },
 
   getTablePerformance: async (storeId: string): Promise<TablePerformance[]> => {
-    const response = await api.get(API_ENDPOINTS.HOST.TABLE_PERFORMANCE(storeId));
+    const response = await api.get(API_ENDPOINTS.HOST.TABLES.PERFORMANCE(storeId));
     return response.data.data;
   },
 
   getUnpaidOrdersByTable: async (tableId: string): Promise<Order[]> => {
-    const response = await api.get(API_ENDPOINTS.HOST.UNPAID_ORDERS(tableId));
+    const response = await api.get(API_ENDPOINTS.HOST.TABLES.UNPAID_ORDERS(tableId));
     return response.data.data;
   },
 
   // ===== ORDERS =====
   getOrders: async (storeId: string): Promise<Order[]> => {
-    const response = await api.get(API_ENDPOINTS.HOST.ORDERS(storeId));
+    const response = await api.get(API_ENDPOINTS.HOST.ORDERS.LIST(storeId));
     return response.data.data;
   },
 
   getOrder: async (id: string): Promise<Order> => {
-    const response = await api.get(API_ENDPOINTS.HOST.ORDER_DETAIL(id));
+    const response = await api.get(API_ENDPOINTS.HOST.ORDERS.DETAIL(id));
     return response.data;
   },
 
   updateOrderStatus: async (id: string, status: 'completed' | 'cancelled'): Promise<Order> => {
-    const response = await api.patch(API_ENDPOINTS.HOST.ORDER_STATUS(id), { status });
+    const response = await api.patch(API_ENDPOINTS.HOST.ORDERS.STATUS(id), { status });
     return response.data;
   },
 
   getOrdersByTable: async (storeId: string, tableId: string): Promise<Order[]> => {
-    const response = await api.get(API_ENDPOINTS.HOST.ORDERS(storeId), {
+    const response = await api.get(API_ENDPOINTS.HOST.ORDERS.LIST(storeId), {
       params: { tableId },
     });
     return response.data;
@@ -213,17 +213,17 @@ export const storeService = {
 
   // ===== BILLS =====
   getBills: async (storeId: string): Promise<Bill[]> => {
-    const response = await api.get(API_ENDPOINTS.HOST.BILLS(storeId));
+    const response = await api.get(API_ENDPOINTS.HOST.BILLS.LIST(storeId));
     return response.data.data;
   },
 
   getBill: async (id: string): Promise<Bill> => {
-    const response = await api.get(API_ENDPOINTS.HOST.BILL_DETAIL(id));
+    const response = await api.get(API_ENDPOINTS.HOST.BILLS.DETAIL(id));
     return response.data;
   },
 
   createBill: async (storeId: string, data: CreateBillData): Promise<Bill> => {
-    const response = await api.post(API_ENDPOINTS.HOST.CREATE_BILL(storeId), data);
+    const response = await api.post(API_ENDPOINTS.HOST.BILLS.LIST(storeId), data);
     return response.data.data;
   },
 
@@ -231,7 +231,7 @@ export const storeService = {
     paymentMethod: 'cash' | 'transfer';
     amountReceived?: number;
   }): Promise<Bill> => {
-    const response = await api.patch(API_ENDPOINTS.HOST.BILL_PAYMENT(id), paymentData);
+    const response = await api.patch(API_ENDPOINTS.HOST.BILLS.PAYMENT(id), paymentData);
     return response.data;
   },
 
@@ -267,7 +267,7 @@ export const storeService = {
   },
 
   getCategoryPerformance: async (storeId: string): Promise<CategoryPerformance[]> => {
-    const response = await api.get(API_ENDPOINTS.HOST.ANALYTICS.CATEGORIES(storeId));
+    const response = await api.get(API_ENDPOINTS.HOST.ANALYTICS.BY_CATEGORY(storeId));
     return response.data.data;
   },
 
