@@ -335,25 +335,25 @@ export default function TablesManagementPage() {
               icon={<TableBar />}
               label={`Tổng: ${stats.total}`}
               size="small"
-              className="bg-blue-50 text-blue-600"
+              color="primary"
             />
             <Chip
               icon={<CheckCircle />}
               label={`Sẵn sàng: ${stats.available}`}
               size="small"
-              className="bg-green-50 text-green-600"
+              color="success"
             />
             <Chip
               icon={<AccessTime />}
               label={`Có khách: ${stats.occupied}`}
               size="small"
-              className="bg-red-50 text-red-600"
+              color="error"
             />
             <Chip
               icon={<CleaningServices />}
               label={`Cần dọn: ${stats.needsCleaning}`}
               size="small"
-              className="bg-orange-50 text-orange-600"
+              color="warning"
             />
           </div>
         </div>
