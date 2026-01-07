@@ -24,30 +24,35 @@ import { vi } from 'date-fns/locale';
 import { staffOrderService } from '@/lib/services/staffService';
 import { Order } from '@/types';
 import StaffOrderCard from '@/components/staff/StaffOrderCard';
+import { useAuthStore } from '@/lib/stores/authStore';
+
 export default function StaffDashboard() {
-const [orders, setOrders] = useState<Order[]>([]);
-const [loading, setLoading] = useState(true);
-const [error, setError] = useState('');
-const [currentTab, setCurrentTab] = useState<'pending' | 'confirmed' | 'completed' | 'all'>('pending');
-useEffect(() => {
-fetchOrders();
-// Auto refresh every 30 seconds
-const interval = setInterval(fetchOrders, 30000);
-return () => clearInterval(interval);
-}, [currentTab]);
-const fetchOrders = async () => {
-try {
-setError('');
-const status = currentTab === 'all' ? undefined : currentTab;
-const data = await staffOrderService.getOrders({ status });
-setOrders(data);
-} catch (err) {
-console.error('Failed to fetch orders:', err);
-setError('Không thể tải đơn hàng');
-} finally {
-setLoading(false);
-}
-};
+  const { user } = useAuthStore(); 
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [currentTab, setCurrentTab] = useState<'pending' | 'confirmed' | 'completed' | 'all'>('pending');
+
+  useEffect(() => {
+    if (user?.storeId) {
+      fetchOrders();
+    }
+  }, [user]);
+
+  const fetchOrders = async () => {
+    if (!user?.storeId) return;
+    try {
+      setError('');
+      const status = currentTab === 'all' ? undefined : currentTab;
+      const data = await staffOrderService.getOrders(user.storeId);
+      setOrders(data);
+    } catch (err) {
+      console.error('Failed to fetch orders:', err);
+      setError('Không thể tải đơn hàng');
+    } finally {
+      setLoading(false);
+    }
+  };
 const handleStatusUpdate = async (orderId: string, status: 'confirmed' | 'completed' | 'cancelled') => {
 try {
 await staffOrderService.updateOrderStatus(orderId, status);

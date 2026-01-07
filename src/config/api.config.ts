@@ -85,7 +85,7 @@ export const API_ENDPOINTS = {
     },
   },
   STAFF: {
-    ORDERS: '/staff/orders',
+    ORDERS: (storeId: string) => `/staff/store/${storeId}/orders`,
     ORDER_DETAIL: (id: string) => `/staff/orders/${id}`,
     ORDER_STATUS: (id: string) => `/staff/orders/${id}/status`,
   },

@@ -67,8 +67,8 @@ export const staffService = {
 // ✅ Staff-side service (for staff role)
 export const staffOrderService = {
     // Get orders (staff only sees their store)
-    getOrders: async (params?: { status?: Order['status'] }): Promise<Order[]> => {
-        const response = await api.get(API_ENDPOINTS.STAFF.ORDERS, { params });
+    getOrders: async (storeId: string): Promise<Order[]> => {
+        const response = await api.get(API_ENDPOINTS.STAFF.ORDERS(storeId));
         return response.data.data;
     },
     // Get order detail
@@ -81,6 +81,7 @@ export const staffOrderService = {
         id: string,
         status: Extract<Order['status'], 'confirmed' | 'completed' | 'cancelled'>
     ): Promise<Order> => {
+        console.log('Updated order status response:', id);
         const response = await api.patch(API_ENDPOINTS.STAFF.ORDER_STATUS(id), { status });
         return response.data.data;
     },
