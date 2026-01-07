@@ -240,9 +240,11 @@ export interface StaffStats {
   totalStaff: number;
   activeStaff: number;
   inactiveStaff: number;
-  byCashier: number;
-  byBar: number;
-  byKitchen: number;
+   staffByType: {
+    cashier: number;
+    bar: number;
+    kitchen: number;
+  };
 }
 
 export interface StaffPerformance {
