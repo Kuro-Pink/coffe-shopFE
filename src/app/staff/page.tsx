@@ -1,0 +1,238 @@
+'use client';
+import { useState, useEffect } from 'react';
+import {
+Card,
+CardContent,
+Typography,
+Chip,
+Button,
+Grid,
+Tabs,
+Tab,
+Box,
+CircularProgress,
+Alert,
+} from '@mui/material';
+import {
+Pending,
+CheckCircle,
+Cancel,
+Refresh,
+} from '@mui/icons-material';
+import { format } from 'date-fns';
+import { vi } from 'date-fns/locale';
+import { staffOrderService } from '@/lib/services/staffService';
+import { Order } from '@/types';
+import StaffOrderCard from '@/components/staff/StaffOrderCard';
+export default function StaffDashboard() {
+const [orders, setOrders] = useState<Order[]>([]);
+const [loading, setLoading] = useState(true);
+const [error, setError] = useState('');
+const [currentTab, setCurrentTab] = useState<'pending' | 'confirmed' | 'completed' | 'all'>('pending');
+useEffect(() => {
+fetchOrders();
+// Auto refresh every 30 seconds
+const interval = setInterval(fetchOrders, 30000);
+return () => clearInterval(interval);
+}, [currentTab]);
+const fetchOrders = async () => {
+try {
+setError('');
+const status = currentTab === 'all' ? undefined : currentTab;
+const data = await staffOrderService.getOrders({ status });
+setOrders(data);
+} catch (err) {
+console.error('Failed to fetch orders:', err);
+setError('Không thể tải đơn hàng');
+} finally {
+setLoading(false);
+}
+};
+const handleStatusUpdate = async (orderId: string, status: 'confirmed' | 'completed' | 'cancelled') => {
+try {
+await staffOrderService.updateOrderStatus(orderId, status);
+fetchOrders();
+} catch (err) {
+console.error('Failed to update order:', err);
+setError('Không thể cập nhật đơn hàng');
+}
+};
+const getOrdersByStatus = (status: string) => {
+return orders.filter(order => order.status === status);
+};
+const pendingCount = getOrdersByStatus('pending').length;
+const confirmedCount = getOrdersByStatus('confirmed').length;
+const completedCount = getOrdersByStatus('completed').length;
+if (loading) {
+return (
+<Box className="flex items-center justify-center min-h-screen">
+<CircularProgress />
+</Box>
+);
+}
+return (
+<div>
+{/* Header */}
+<div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+<div>
+<Typography variant="h4" className="font-bold text-gray-800 mb-2">
+Đơn hàng
+</Typography>
+<Typography variant="body2" className="text-gray-600">
+{format(new Date(), 'EEEE, dd MMMM yyyy', { locale: vi })}
+</Typography>
+</div>
+    <Button
+      variant="outlined"
+      startIcon={<Refresh />}
+      onClick={fetchOrders}
+    >
+      Làm mới
+    </Button>
+  </div>
+
+  {/* Stats Cards */}
+  <Grid container spacing={3} className="mb-6">
+    <Grid size={{ xs: 12, sm: 4 }}>
+      <Card className="bg-gradient-to-br from-orange-500 to-orange-600 text-white">
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div>
+              <Typography variant="body2" className="opacity-90 mb-1">
+                Chờ xác nhận
+              </Typography>
+              <Typography variant="h3" className="font-bold">
+                {pendingCount}
+              </Typography>
+            </div>
+            <Pending className="text-6xl opacity-20" />
+          </div>
+        </CardContent>
+      </Card>
+    </Grid>
+
+    <Grid size={{ xs: 12, sm: 4 }}>
+      <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div>
+              <Typography variant="body2" className="opacity-90 mb-1">
+                Đang làm
+              </Typography>
+              <Typography variant="h3" className="font-bold">
+                {confirmedCount}
+              </Typography>
+            </div>
+            <CheckCircle className="text-6xl opacity-20" />
+          </div>
+        </CardContent>
+      </Card>
+    </Grid>
+
+    <Grid size={{ xs: 12, sm: 4 }}>
+      <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white">
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div>
+              <Typography variant="body2" className="opacity-90 mb-1">
+                Hoàn thành
+              </Typography>
+              <Typography variant="h3" className="font-bold">
+                {completedCount}
+              </Typography>
+            </div>
+            <CheckCircle className="text-6xl opacity-20" />
+          </div>
+        </CardContent>
+      </Card>
+    </Grid>
+  </Grid>
+
+  {/* Error Alert */}
+  {error && (
+    <Alert severity="error" className="mb-4" onClose={() => setError('')}>
+      {error}
+    </Alert>
+  )}
+
+  {/* Tabs */}
+  <Card className="mb-4">
+    <Tabs
+      value={currentTab}
+      onChange={(_, value) => setCurrentTab(value)}
+      variant="fullWidth"
+    >
+      <Tab
+        label={
+          <div className="flex items-center gap-2">
+            <span>Chờ xác nhận</span>
+            {pendingCount > 0 && (
+              <Chip
+                label={pendingCount}
+                size="small"
+                color="warning"
+                className="h-6"
+              />
+            )}
+          </div>
+        }
+        value="pending"
+      />
+      <Tab
+        label={
+          <div className="flex items-center gap-2">
+            <span>Đang làm</span>
+            {confirmedCount > 0 && (
+              <Chip
+                label={confirmedCount}
+                size="small"
+                color="primary"
+                className="h-6"
+              />
+            )}
+          </div>
+        }
+        value="confirmed"
+      />
+      <Tab
+        label={
+          <div className="flex items-center gap-2">
+            <span>Hoàn thành</span>
+          </div>
+        }
+        value="completed"
+      />
+      <Tab label="Tất cả" value="all" />
+    </Tabs>
+  </Card>
+
+  {/* Orders List */}
+  {orders.length === 0 ? (
+    <Card>
+      <CardContent className="text-center py-12">
+        <Pending className="text-gray-300 text-6xl mb-4" />
+        <Typography variant="h6" className="text-gray-600 mb-2">
+          Không có đơn hàng
+        </Typography>
+        <Typography variant="body2" className="text-gray-500">
+          {currentTab === 'pending' && 'Chưa có đơn hàng mới'}
+          {currentTab === 'confirmed' && 'Không có đơn đang làm'}
+          {currentTab === 'completed' && 'Chưa có đơn hoàn thành hôm nay'}
+          {currentTab === 'all' && 'Chưa có đơn hàng nào'}
+        </Typography>
+      </CardContent>
+    </Card>
+  ) : (
+    <div className="space-y-4">
+      {orders.map((order) => (
+        <StaffOrderCard
+          key={order._id}
+          order={order}
+          onStatusUpdate={handleStatusUpdate}
+        />
+      ))}
+    </div>
+  )}
+</div>
+);
+}

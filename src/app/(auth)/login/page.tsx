@@ -63,6 +63,8 @@ export default function LoginPage() {
         router.push('/admin');
       } else if (user.role === 'host') {
         router.push('/host');
+      }else if (user.role === 'staff') {
+        router.push('/staff'); 
       }
     } catch (err: unknown) {
       console.error('Login error:', err);

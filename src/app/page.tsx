@@ -15,6 +15,8 @@ export default function HomePage() {
       router.push('/admin');
     } else if (user?.role === 'host') {
       router.push('/host');
+    }else if (user?.role === 'staff') {
+      router.push('/staff');
     }
   }, [isAuthenticated, user, router]);
 
