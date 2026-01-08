@@ -9,7 +9,8 @@ import {
   StoreMallDirectory,
   AssignmentTurnedIn,
   Person,
-  TrendingUp
+  TrendingUp,
+  Inventory
 } from '@mui/icons-material';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { ToastProvider, showToast } from '@/components/common/Toast';
@@ -109,6 +110,7 @@ function HostLayoutContent({ children }: { children: ReactNode }) {
     { text: 'Quản lý Bàn', icon: <TableBar />, path: '/host/tables' },
     { text: 'Quản lý Nhân viên', icon: <Person />, path: '/host/staff' },
     { text: 'Hiệu suất Nhân viên', icon: <TrendingUp />, path: '/host/staff/performance' },
+    { text: 'Quản lý Kho', icon: <Inventory />, path: '/host/inventory' },
     {
       text: 'Đơn hàng',
       icon: <AssignmentTurnedIn />,
