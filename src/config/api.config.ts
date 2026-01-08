@@ -73,6 +73,26 @@ export const API_ENDPOINTS = {
       STATS: (storeId: string) => `/host/stores/${storeId}/staff/stats`,
       PERFORMANCE: (storeId: string) => `/host/stores/${storeId}/reports/staff-performance`,
     },
+    INVENTORY: {
+      // Ingredients
+      INGREDIENTS: {
+        LIST: (storeId: string) => `/host/stores/${storeId}/ingredients`,
+        DETAIL: (id: string) => `/host/ingredients/${id}`,
+        CREATE: (storeId: string) => `/host/stores/${storeId}/ingredients`,
+        UPDATE: (id: string) => `/host/ingredients/${id}`,
+        DELETE: (id: string) => `/host/ingredients/${id}`,
+        ADJUST_STOCK: (id: string) => `/host/ingredients/${id}/adjust-stock`,
+        LOW_STOCK: (storeId: string) => `/host/stores/${storeId}/ingredients?lowStock=true`,
+      },
+      // Product Recipe
+      PRODUCT_RECIPE: (productId: string) => `/host/products/${productId}/recipe`,
+      PRODUCT_AVAILABILITY: (productId: string) => `/host/products/${productId}/availability`,
+      
+      // Reports
+      INVENTORY_SUMMARY: (storeId: string) => `/host/stores/${storeId}/inventory/summary`,
+      INVENTORY_TRANSACTIONS: (storeId: string) => `/host/stores/${storeId}/inventory/transactions`,
+      USAGE_REPORT: (storeId: string) => `/host/stores/${storeId}/inventory/usage-report`,
+    },
     ANALYTICS: {
       DASHBOARD: (storeId: string) => `/host/stores/${storeId}/analytics/dashboard`,
       ORDERS_TODAY: (storeId: string) => `/host/stores/${storeId}/orders/today`,

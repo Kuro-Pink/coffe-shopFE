@@ -84,6 +84,7 @@ export interface Product {
   storeId: string;
   isAvailable: boolean;
   soldCount?: number;
+  recipe?: ProductIngredient[];
   createdAt: string;
 }
 
@@ -259,3 +260,68 @@ export interface StaffPerformance {
   firstOrder?: string;
   lastOrder?: string;
 }
+
+export interface Ingredient {
+  _id: string;
+  name: string;
+  unit: string; // g, ml, kg, l, pieces
+  quantity: number;
+  minQuantity: number;
+  cost: number; // cost per unit
+  storeId: string;
+  isLowStock?: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProductIngredient {
+  ingredientId: string;
+  ingredientName?: string;
+  amount: number;
+}
+
+export interface ProductRecipe {
+  productId: string;
+  ingredients: ProductIngredient[];
+}
+
+export interface InventoryTransaction {
+  _id: string;
+  ingredientId: {
+    _id: string;
+    name: string;
+    unit: string;
+  };
+  type: 'in' | 'out'; // in = nhập, out = xuất
+  quantity: number;
+  quantityBefore: number;
+  quantityAfter: number;
+  orderId?: {
+    _id: string;
+    orderNumber: string;
+  };
+  note?: string;
+  createdBy: {
+    _id: string;
+    name: string;
+  };
+  createdAt: string;
+}
+
+export interface InventorySummary {
+  totalIngredients: number;
+  lowStockCount: number;
+  lowStockIngredients: Ingredient[];
+  outOfStockCount: number;
+  totalInventoryValue: number;
+}
+
+export interface UsageReport {
+  ingredientId: string;
+  ingredientName: string;
+  unit: string;
+  totalUsed: number;
+  totalCost: number;
+  ordersCount: number;
+}
+
