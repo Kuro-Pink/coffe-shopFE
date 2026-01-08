@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -10,19 +10,22 @@ import {
   TextField,
   Avatar,
   Box,
+  Tabs,
+  Tab,
   MenuItem,
   FormControlLabel,
   Switch,
-  InputAdornment
-} from "@mui/material";
-import { CloudUpload } from "@mui/icons-material";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Category, Product } from "@/types";
-import { storeService } from "@/lib/services/storeService";
-import { AxiosError } from "axios";
-import { Controller } from "react-hook-form";
+  InputAdornment,
+} from '@mui/material';
+import { CloudUpload } from '@mui/icons-material';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Category, Product } from '@/types';
+import { storeService } from '@/lib/services/storeService';
+import { AxiosError } from 'axios';
+import { Controller } from 'react-hook-form';
+import RecipeManager from './RecipeManager';
 
 interface ProductDialogProps {
   open: boolean;
@@ -40,10 +43,10 @@ interface ErrorResponse {
 }
 
 const productSchema = z.object({
-  name: z.string().min(2, "Tên sản phẩm phải có ít nhất 2 ký tự."),
-  description: z.string().min(5, "Mô tả phải có ít nhất 5 ký tự."),
-  price: z.number().min(1000, "Giá phải >= 1,000 VNĐ."),
-  categoryId: z.string().min(1, "Vui lòng chọn danh mục."),
+  name: z.string().min(2, 'Tên sản phẩm phải có ít nhất 2 ký tự.'),
+  description: z.string().min(5, 'Mô tả phải có ít nhất 5 ký tự.'),
+  price: z.number().min(1000, 'Giá phải >= 1,000 VNĐ.'),
+  categoryId: z.string().min(1, 'Vui lòng chọn danh mục.'),
   isAvailable: z.boolean().optional(),
 });
 
@@ -59,49 +62,53 @@ export default function ProductDialog({
   onSuccess,
 }: ProductDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [imagePreview, setImagePreview] = useState<string>("");
+  const [imagePreview, setImagePreview] = useState<string>('');
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [currentTab, setCurrentTab] = useState(0);
+  const [recipeChanged, setRecipeChanged] = useState(false);
 
   const {
     register,
     handleSubmit,
     setValue,
-    control, 
+    control,
     reset,
     formState: { errors },
-    } = useForm<ProductFormData>({
+  } = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: {
-        name: "",
-        description: "",
-        price: 0,
-        categoryId: "",
-        isAvailable: true,
+      name: '',
+      description: '',
+      price: 0,
+      categoryId: '',
+      isAvailable: true,
     },
-    });
+  });
+
+  useEffect(() => {
+    setCurrentTab(0);
+  }, [open, product]);
 
   // Load dữ liệu vào form nếu đang edit
   useEffect(() => {
     if (product) {
-      // Edit
       reset({
-        name: product.name ?? "",
-        description: product.description ?? "",
+        name: product.name ?? '',
+        description: product.description ?? '',
         price: product.price ?? 0,
-        categoryId: product.categoryId ?? "",
+        categoryId: product.categoryId, // 🔥 BẮT BUỘC
         isAvailable: product.isAvailable ?? true,
       });
-      setImagePreview(product.image || "");
+      setImagePreview(product.image || '');
     } else {
-      // Create trong category
       reset({
-        name: "",
-        description: "",
+        name: '',
+        description: '',
         price: 0,
-        categoryId: defaultCategoryId!, // 🔥 ÉP LUÔN
+        categoryId: defaultCategoryId!, // 🔥 BẮT BUỘC
         isAvailable: true,
       });
-      setImagePreview("");
+      setImagePreview('');
     }
 
     setImageFile(null);
@@ -124,14 +131,14 @@ export default function ProductDialog({
 
     try {
       const formData = new FormData();
-      formData.append("name", data.name);
-      formData.append("description", data.description);
-      formData.append("price", data.price.toString());
-      formData.append("categoryId", data.categoryId);
-      formData.append("isAvailable", (data.isAvailable ?? true).toString());
+      formData.append('name', data.name);
+      formData.append('description', data.description);
+      formData.append('price', data.price.toString());
+      formData.append('categoryId', data.categoryId);
+      formData.append('isAvailable', (data.isAvailable ?? true).toString());
 
       if (imageFile) {
-        formData.append("image", imageFile);
+        formData.append('image', imageFile);
       }
 
       if (product) {
@@ -145,7 +152,7 @@ export default function ProductDialog({
       onSuccess();
       onClose();
     } catch (err) {
-      let errorMessage = "Thao tác thất bại";
+      let errorMessage = 'Thao tác thất bại';
       if (err instanceof AxiosError) {
         const data = err.response?.data as ErrorResponse;
         errorMessage = data?.message || data?.error || errorMessage;
@@ -156,101 +163,125 @@ export default function ProductDialog({
     }
   };
 
+  const handleRecipeSaved = () => {
+    setRecipeChanged(true);
+  };
+
+  const handleClose = () => {
+    if (recipeChanged) {
+      onSuccess();
+    }
+    setRecipeChanged(false);
+    onClose();
+  };
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>
-        {product ? "Chỉnh sửa sản phẩm" : "Thêm sản phẩm mới"}
-      </DialogTitle>
+      <DialogTitle>{product ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới'}</DialogTitle>
 
       <form onSubmit={handleSubmit(onSubmit)}>
         <DialogContent className="space-y-4">
-          {/* Image */}
-          <Box className="text-center">
-            <Avatar
-              src={imagePreview}
-              variant="rounded"
-              className="w-32 h-32 mx-auto mb-3"
-            >
-              <CloudUpload className="text-4xl" />
-            </Avatar>
+          {/* Tabs */}
+          <Tabs value={currentTab} onChange={(_, v) => setCurrentTab(v)} sx={{ mb: 2 }}>
+            <Tab label="Thông tin" />
+            <Tab label="Công thức" disabled={!product} />
+          </Tabs>
 
-            <Button
-              variant="outlined"
-              component="label"
-              startIcon={<CloudUpload />}
-            >
-              {imagePreview ? "Thay đổi ảnh" : "Tải ảnh lên"}
-              <input hidden type="file" accept="image/*" onChange={handleImageUpload} />
-            </Button>
-          </Box>
+          {/* TAB 1: THÔNG TIN */}
+          {currentTab === 0 && (
+            <>
+              {/* Image */}
+              <Box className="text-center">
+                <Avatar src={imagePreview} variant="rounded" className="w-32 h-32 mx-auto mb-3">
+                  <CloudUpload className="text-4xl" />
+                </Avatar>
 
-          {/* Fields */}
-          <TextField
-            {...register("name")}
-            label="Tên sản phẩm"
-            fullWidth
-            error={!!errors.name}
-            helperText={errors.name?.message}
-            disabled={isLoading}
-          />
+                <Button variant="outlined" component="label" startIcon={<CloudUpload />}>
+                  {imagePreview ? 'Thay đổi ảnh' : 'Tải ảnh lên'}
+                  <input hidden type="file" accept="image/*" onChange={handleImageUpload} />
+                </Button>
+              </Box>
 
-          <TextField
-            {...register("description")}
-            label="Mô tả"
-            fullWidth
-            multiline
-            rows={3}
-            error={!!errors.description}
-            helperText={errors.description?.message}
-            disabled={isLoading}
-          />
-
-          <TextField
-            {...register("price", { valueAsNumber: true })}
-            label="Giá (VNĐ)"
-            type="number"
-            fullWidth
-            error={!!errors.price}
-            helperText={errors.price?.message}
-            disabled={isLoading}
-            InputProps={{
-              endAdornment: <InputAdornment position="end">₫</InputAdornment>,
-            }}
-          />
-
-          <Controller
-            name="isAvailable"
-            control={control}
-            defaultValue={true}
-            render={({ field }) => (
-              <FormControlLabel
-                label="Còn hàng"
-                control={
-                  <Switch
-                    checked={!!field.value}
-                    onChange={(e) => field.onChange(e.target.checked)}
-                    disabled={isLoading}
-                  />
-                }
+              {/* Fields */}
+              <TextField
+                {...register('name')}
+                label="Tên sản phẩm"
+                fullWidth
+                error={!!errors.name}
+                helperText={errors.name?.message}
+                disabled={isLoading}
               />
-            )}
-          />
 
+              <TextField
+                {...register('description')}
+                label="Mô tả"
+                fullWidth
+                multiline
+                rows={3}
+                error={!!errors.description}
+                helperText={errors.description?.message}
+                disabled={isLoading}
+              />
+
+              <TextField
+                {...register('price', { valueAsNumber: true })}
+                label="Giá (VNĐ)"
+                type="number"
+                fullWidth
+                error={!!errors.price}
+                helperText={errors.price?.message}
+                disabled={isLoading}
+                InputProps={{
+                  endAdornment: <InputAdornment position="end">₫</InputAdornment>,
+                }}
+              />
+
+              <Controller
+                name="isAvailable"
+                control={control}
+                defaultValue={true}
+                render={({ field }) => (
+                  <FormControlLabel
+                    label="Còn hàng"
+                    control={
+                      <Switch
+                        checked={!!field.value}
+                        onChange={(e) => field.onChange(e.target.checked)}
+                        disabled={isLoading}
+                      />
+                    }
+                  />
+                )}
+              />
+            </>
+          )}
+
+          {/* TAB 2: CÔNG THỨC */}
+          {currentTab === 1 && product && (
+            <RecipeManager
+              productId={product._id}
+              storeId={storeId}
+              onRecipeSaved={handleRecipeSaved}
+            />
+          )}
         </DialogContent>
 
         <DialogActions>
-          <Button onClick={onClose} disabled={isLoading}>
+          <Button onClick={handleClose} disabled={isLoading}>
             Hủy
           </Button>
 
-          <Button
-            type="submit"
-            variant="contained"
-            disabled={isLoading}
-            className="bg-green-600"
-          >
-            {isLoading ? "Đang lưu..." : product ? "Cập nhật" : "Thêm"}
-          </Button>
+          {currentTab === 0 && (
+            <Button type="submit" variant="contained" disabled={isLoading} className="bg-green-600">
+              {isLoading ? 'Đang lưu...' : product ? 'Cập nhật' : 'Thêm'}
+            </Button>
+          )}
+
+          {currentTab === 1 && (
+            <Button variant="contained" onClick={handleClose} className="bg-green-600">
+              Đóng
+            </Button>
+          )}
         </DialogActions>
       </form>
     </Dialog>

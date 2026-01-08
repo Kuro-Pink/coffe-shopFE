@@ -104,13 +104,11 @@ export const inventoryService = {
     return response.data.data;
   },
   // Get transaction history
-  getTransactions: async (
-    storeId: string,
-    params?: { ingredientId?: string; startDate?: string; endDate?: string },
-  ): Promise<InventoryTransaction[]> => {
-    const response = await api.get(API_ENDPOINTS.HOST.INVENTORY.INVENTORY_TRANSACTIONS(storeId), {
-      params,
-    });
+  getTransactions: async (storeId: string): Promise<InventoryTransaction[]> => {
+    const response = await api.get(
+      API_ENDPOINTS.HOST.INVENTORY.INVENTORY_TRANSACTIONS(storeId),
+      {},
+    );
     return response.data.data;
   },
   // Get usage report
