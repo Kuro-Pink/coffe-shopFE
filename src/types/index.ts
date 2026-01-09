@@ -2,7 +2,13 @@ export type ToastType = 'success' | 'error' | 'warning' | 'info';
 
 export interface ToastOptions {
   duration?: number;
-  position?: 'top-right' | 'top-center' | 'top-left' | 'bottom-right' | 'bottom-center' | 'bottom-left';
+  position?:
+    | 'top-right'
+    | 'top-center'
+    | 'top-left'
+    | 'bottom-right'
+    | 'bottom-center'
+    | 'bottom-left';
 }
 
 export type ModalSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
@@ -32,7 +38,7 @@ export interface FormDialogProps {
   onCancel: () => void;
   children: React.ReactNode;
 }
-export interface SidebarMenuItem  {
+export interface SidebarMenuItem {
   text: string;
   icon: React.ReactNode;
   path: string;
@@ -43,7 +49,7 @@ export interface User {
   _id: string;
   email: string;
   name: string;
-  role: 'admin' | 'host'| 'staff';
+  role: 'admin' | 'host' | 'staff';
   phone?: string;
   storeId?: string;
   staffType?: StaffType;
@@ -54,7 +60,7 @@ export interface Store {
   name: string;
   address: string;
   phone: string;
-  email?: string; 
+  email?: string;
   logo?: string;
   ownerId: string;
   isActive: boolean;
@@ -94,14 +100,14 @@ export interface Table {
   area: string;
   storeId: string;
   qrCodeUrl: string;
-  status: 'available' | 'occupied' | 'needs_cleaning'; 
+  status: 'available' | 'occupied' | 'needs_cleaning';
   currentSession?: {
     customerName?: string;
     customerPhone?: string;
     startTime: string;
     totalOrders: number;
     totalAmount: number;
-  }; 
+  };
 }
 
 export interface OrderItem {
@@ -217,7 +223,7 @@ export interface HostRegistrationData {
   email: string;
   password: string;
   phone: string;
-  
+
   // Store info
   storeName: string;
   storeAddress: string;
@@ -241,7 +247,7 @@ export interface StaffStats {
   totalStaff: number;
   activeStaff: number;
   inactiveStaff: number;
-   staffByType: {
+  staffByType: {
     cashier: number;
     bar: number;
     kitchen: number;
@@ -318,10 +324,11 @@ export interface InventorySummary {
 
 export interface UsageReport {
   ingredientId: string;
-  ingredientName: string;
+  name: string;
   unit: string;
   totalUsed: number;
   totalCost: number;
+  cost: number;
+  timesUsed: number;
   ordersCount: number;
 }
-

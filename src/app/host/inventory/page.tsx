@@ -26,6 +26,7 @@ import {
   AttachMoney,
   Search,
   History,
+  BarChart,
 } from '@mui/icons-material';
 import { useAuthStore } from '@/lib/stores/authStore';
 import { inventoryService } from '@/lib/services/inventoryService';
@@ -34,6 +35,7 @@ import IngredientDialog from '@/components/host/InventoryManager/IngredientDialo
 import StockAdjustDialog from '@/components/host/InventoryManager/StockAdjustDialog';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import TransactionHistory from '@/components/host/InventoryManager/TransactionHistory';
+import UsageReport from '@/components/host/InventoryManager/UsageReport';
 export default function InventoryManagementPage() {
   const router = useRouter();
   const { user } = useAuthStore();
@@ -42,8 +44,9 @@ export default function InventoryManagementPage() {
   const [summary, setSummary] = useState<InventorySummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [currentTab, setCurrentTab] = useState<'all' | 'lowStock' | 'transactions'>('all');
-  // Dialog states
+  const [currentTab, setCurrentTab] = useState<'all' | 'lowStock' | 'transactions' | 'usage'>(
+    'all',
+  ); // Dialog states
   const [ingredientDialogOpen, setIngredientDialogOpen] = useState(false);
   const [editingIngredient, setEditingIngredient] = useState<Ingredient | null>(null);
   const [adjustDialogOpen, setAdjustDialogOpen] = useState(false);
@@ -256,12 +259,23 @@ export default function InventoryManagementPage() {
             }
             value="transactions"
           />
+          <Tab
+            label={
+              <div className="flex items-center gap-2">
+                <BarChart />
+                <span>Báo cáo</span>
+              </div>
+            }
+            value="usage"
+          />
         </Tabs>
       </Card>
 
       {/* Content */}
       {currentTab === 'transactions' ? (
         <TransactionHistory storeId={user?.storeId || ''} />
+      ) : currentTab === 'usage' ? (
+        <UsageReport storeId={user?.storeId || ''} />
       ) : (
         <>
           {/* Search */}
