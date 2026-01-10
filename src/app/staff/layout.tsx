@@ -1,75 +1,136 @@
-
 'use client';
-import { ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
-import { AppBar, Toolbar, Typography, Button, Container, Chip } from '@mui/material';
+import { ReactNode, useEffect, useRef } from 'react';
+import { TableBar, Receipt, Person } from '@mui/icons-material';
+import DashboardLayout from '@/components/layout/DashboardLayout';
+import { ToastProvider, showToast } from '@/components/common/Toast';
+import { SidebarMenuItem } from '@/types';
 import { useAuthStore } from '@/lib/stores/authStore';
-import ProtectedRoute from '@/components/common/ProtectedRoute';
-import { Restaurant, Coffee, AttachMoney, Logout } from '@mui/icons-material';
-export default function StaffLayout({ children }: { children: ReactNode }) {
-    const router = useRouter();
-    const { user, logout } = useAuthStore();
-    const handleLogout = () => {
-        logout();
-        router.push('/login');
-        };
-        const getStaffIcon = () => {
-            switch (user?.staffType) {
-            case 'cashier':
-                return <AttachMoney />;
-            case 'bar':
-                return <Coffee />;
-            case 'kitchen':
-                return <Restaurant />;
-            default:
-                return null;
-            }
-        };
-        const getStaffTypeLabel = () => {
-        switch (user?.staffType) {
-        case 'cashier':
-            return 'Thu ngân';
-        case 'bar':
-            return 'Pha chế';
-        case 'kitchen':
-            return 'Bếp';
-        default:
-            return 'Nhân viên';
-        }
+import { useOrderBadgeStore } from '@/lib/stores/orderBadgeStore';
+import { initSocket } from '@/lib/socket';
+import { Socket } from 'socket.io-client';
+import { useOrderNotifyStore } from '@/lib/stores/orderNotifyStore';
+import { playNotificationSound, stopNotificationSound } from '@/utils/notificationSound';
+import OrderNotification from '@/components/host/OrderManager/OrderNotification';
+import { useRouter } from 'next/navigation';
+import { useSoundStore } from '@/lib/stores/soundStore';
+function StaffLayoutContent({ children }: { children: ReactNode }) {
+  const router = useRouter();
+  const user = useAuthStore((s) => s.user);
+  const showNotify = useOrderNotifyStore((s) => s.show);
+  const closeNotify = useOrderNotifyStore((s) => s.close);
+  const notifyOpen = useOrderNotifyStore((s) => s.open);
+  const notifyOrder = useOrderNotifyStore((s) => s.order);
+  const fetchOrders = useOrderBadgeStore((s) => s.fetchOrders);
+  const pendingCount = useOrderBadgeStore((s) => s.pendingCount);
+  const addOrder = useOrderBadgeStore((s) => s.addOrder);
+  const updateOrder = useOrderBadgeStore((s) => s.updateOrder);
+  const soundEnabled = useSoundStore((s) => s.enabled);
+  const socketRef = useRef<Socket | null>(null);
+  const staffTheme = {
+    sidebar: {
+      gradient: 'from-cyan-600 to-blue-600',
+      bgGradient: 'from-cyan-900 to-blue-800',
+      activeGradient: 'from-cyan-600 to-blue-600',
+      hoverBg: 'bg-blue-700',
+      dividerColor: 'bg-blue-700',
+      bottomBg: 'bg-blue-900/50',
+      bottomBorder: 'border-blue-700',
+      avatarGradient: 'from-cyan-500 to-blue-600',
+    },
+    topbar: {
+      bgColor: 'bg-gradient-to-r from-blue-600 to-cyan-600',
+      borderColor: 'border-blue-200',
+      textColor: 'border-blue-800',
+      iconColor: 'text-blue-700',
+      avatarGradient: 'from-cyan-500 to-blue-600',
+    },
+  };
+  // 🔹 FETCH ORDERS 1 LẦN
+  useEffect(() => {
+    if (user?.storeId) {
+      fetchOrders(user.storeId);
+    }
+  }, [user?.storeId, fetchOrders]);
+  // 🔹 SOCKET GLOBAL
+  useEffect(() => {
+    if (!user?.storeId || socketRef.current) return;
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    const socket = initSocket(user.storeId, token);
+    socketRef.current = socket;
+
+    // 🔔 NEW ORDER
+    socket.on('new_order', (order) => {
+      addOrder(order);
+      showNotify(order);
+
+      if (soundEnabled) {
+        playNotificationSound();
+      }
+
+      showToast.success({
+        message: `🔔 Có đơn hàng mới #${order._id.slice(-6)}`,
+      });
+    });
+
+    // 🔄 UPDATE ORDER
+    socket.on('order_status_update', (updatedOrder) => {
+      updateOrder(updatedOrder);
+    });
+
+    return () => {
+      socket.disconnect();
     };
-return (
-    <ProtectedRoute allowedRoles={['staff']}>
-        <div className="min-h-screen bg-gray-50">
-            {/* Header */}
-            <AppBar position="static" className="bg-gradient-to-r from-teal-600 to-cyan-600">
-                <Toolbar>
-                    <div className="flex items-center gap-2 mr-2">
-                        {getStaffIcon()}
-                    </div>
-                    <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                        {getStaffTypeLabel()} Dashboard
-                    </Typography>
-                    <div className="flex items-center gap-3">
-                        <Chip
-                        label={user?.name}
-                        variant="outlined"
-                        className="text-white border-white"
-                        />
-                        <Button
-                        color="inherit"
-                        startIcon={<Logout />}
-                        onClick={handleLogout}
-                        >
-                        Đăng xuất
-                        </Button>
-                    </div>
-                </Toolbar>
-            </AppBar>
-            {/* Content */}
-            <Container maxWidth="xl" className="py-8">
-            {children}
-            </Container>
-        </div>
-    </ProtectedRoute>
-);
+  }, [user?.storeId, addOrder, updateOrder, showNotify, soundEnabled]);
+  console.log('StaffLayout render pendingCount', { pendingCount });
+  const menuItems: SidebarMenuItem[] = [
+    {
+      text: 'Đơn hàng',
+      icon: <Receipt />,
+      path: '/staff',
+      badge: pendingCount > 0 ? pendingCount : undefined,
+      badgeColor: 'error',
+    },
+    { text: 'Quản lý Bàn', icon: <TableBar />, path: '/staff/tables' },
+  ];
+  return (
+    <>
+      <DashboardLayout
+        allowedRoles={['staff']}
+        menuItems={menuItems}
+        logo={{
+          icon: <Person className="text-cyan-600" />,
+          title: 'Staff Panel',
+          subtitle: 'Nhân viên phục vụ',
+        }}
+        theme={staffTheme}
+        notificationCount={pendingCount}
+      >
+        {children}
+      </DashboardLayout>
+      {/* 🔔 GLOBAL ORDER NOTIFICATION */}
+      <OrderNotification
+        open={notifyOpen}
+        order={notifyOrder}
+        onClose={() => {
+          stopNotificationSound();
+          closeNotify();
+        }}
+        onView={() => {
+          stopNotificationSound();
+          closeNotify();
+          router.push('/staff/orders');
+        }}
+      />
+    </>
+  );
+}
+export default function StaffLayout({ children }: { children: ReactNode }) {
+  return (
+    <>
+      <ToastProvider />
+      <StaffLayoutContent>{children}</StaffLayoutContent>
+    </>
+  );
 }

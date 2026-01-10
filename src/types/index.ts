@@ -128,7 +128,7 @@ export interface Order {
   customerNote?: string;
   items: OrderItem[];
   totalAmount: number;
-  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+  status: 'pending' | 'completed' | 'cancelled';
   isPaid: boolean;
   paymentMethod?: 'cash' | 'transfer';
   confirmedBy?: {

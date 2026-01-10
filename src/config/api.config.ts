@@ -19,7 +19,7 @@ export const API_ENDPOINTS = {
     STATS: '/admin/stats',
     STORES: '/admin/stores',
     STORE_DETAIL: (id: string) => `/admin/stores/${id}`,
-    
+
     // Store Requests
     STORE_REQUESTS: {
       LIST: '/admin/store-requests',
@@ -27,8 +27,7 @@ export const API_ENDPOINTS = {
       DETAIL: (id: string) => `/admin/store-requests/${id}`,
       APPROVE: (id: string) => `/admin/store-requests/${id}/approve`,
       REJECT: (id: string) => `/admin/store-requests/${id}/reject`,
-    }
-
+    },
   },
 
   // Store/Host endpoints
@@ -87,7 +86,7 @@ export const API_ENDPOINTS = {
       // Product Recipe
       PRODUCT_RECIPE: (productId: string) => `/host/products/${productId}/recipe`,
       PRODUCT_AVAILABILITY: (productId: string) => `/host/products/${productId}/availability`,
-      
+
       // Reports
       INVENTORY_SUMMARY: (storeId: string) => `/host/stores/${storeId}/inventory/summary`,
       INVENTORY_TRANSACTIONS: (storeId: string) => `/host/stores/${storeId}/inventory/transactions`,
@@ -105,9 +104,24 @@ export const API_ENDPOINTS = {
     },
   },
   STAFF: {
-    ORDERS: (storeId: string) => `/staff/store/${storeId}/orders`,
-    ORDER_DETAIL: (id: string) => `/staff/orders/${id}`,
-    ORDER_STATUS: (id: string) => `/staff/orders/${id}/status`,
+    TABLES: {
+      LIST: (storeId: string) => `/staff/stores/${storeId}/tables`,
+      DETAIL: (id: string) => `/staff/tables/${id}`,
+      STATUS: (id: string) => `/staff/tables/${id}/status`,
+      SESSION: (id: string) => `/staff/tables/${id}/session`,
+      PERFORMANCE: (storeId: string) => `/staff/stores/${storeId}/tables/performance`,
+      UNPAID_ORDERS: (tableId: string) => `/staff/tables/${tableId}/unpaid-orders`,
+    },
+    ORDERS: {
+      LIST: (storeId: string) => `/staff/stores/${storeId}/orders`,
+      DETAIL: (id: string) => `/staff/orders/${id}`,
+      STATUS: (id: string) => `/staff/orders/${id}/status`,
+    },
+    BILLS: {
+      LIST: (storeId: string) => `/staff/stores/${storeId}/bills`,
+      DETAIL: (id: string) => `/staff/bills/${id}`,
+      PAYMENT: (id: string) => `/staff/bills/${id}/payment`,
+    },
   },
   PUBLIC: {
     MENU: (storeId: string) => `/public/stores/${storeId}/menu`,

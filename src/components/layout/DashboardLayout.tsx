@@ -7,11 +7,11 @@ import Sidebar from './Sidebar';
 import Header from './Header';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
 import { useAuthStore } from '@/lib/stores/authStore';
-import { SidebarMenuItem  } from '@/types';
+import { SidebarMenuItem } from '@/types';
 
 interface DashboardLayoutProps {
   children: ReactNode;
-  allowedRoles: ('admin' | 'host')[];
+  allowedRoles: ('admin' | 'host' | 'staff')[];
   menuItems: SidebarMenuItem[];
   logo: {
     icon: React.ReactNode;
@@ -84,7 +84,7 @@ export default function DashboardLayout({
           component="main"
           sx={{
             flexGrow: 1,
-            ml: { md: `${DRAWER_WIDTH}px` },  
+            ml: { md: `${DRAWER_WIDTH}px` },
             height: '100vh',
             overflow: 'auto',
           }}
