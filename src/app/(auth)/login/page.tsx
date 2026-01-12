@@ -5,7 +5,15 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { TextField, Button, Card, CardContent, InputAdornment, IconButton, Typography } from '@mui/material';
+import {
+  TextField,
+  Button,
+  Card,
+  CardContent,
+  InputAdornment,
+  IconButton,
+  Typography,
+} from '@mui/material';
 import { Visibility, VisibilityOff, RestaurantMenu } from '@mui/icons-material';
 import { useAuthStore } from '@/lib/stores/authStore';
 import { authService } from '@/lib/services/authService';
@@ -51,7 +59,7 @@ export default function LoginPage() {
       setError('');
 
       const response = await authService.login(data);
-      
+
       // Dữ liệu thật từ backend
       const { user, token } = response.data;
 
@@ -63,24 +71,24 @@ export default function LoginPage() {
         router.push('/admin');
       } else if (user.role === 'host') {
         router.push('/host');
-      }else if (user.role === 'staff') {
-        router.push('/staff'); 
+      } else if (user.role === 'staff') {
+        router.push('host/orders');
       }
     } catch (err: unknown) {
       console.error('Login error:', err);
-      
+
       let errorMessage = 'Đăng nhập thất bại. Vui lòng kiểm tra lại email và mật khẩu.';
-      
+
       if (err instanceof AxiosError) {
         const responseData = err.response?.data as ErrorResponse;
         errorMessage = responseData?.message || responseData?.error || errorMessage;
       } else if (err instanceof Error) {
         errorMessage = err.message;
       }
-      
+
       setError(errorMessage);
       setIsLoading(false);
-      
+
       reset({ email: data.email, password: '' });
     } finally {
       setIsLoading(false);
@@ -88,7 +96,7 @@ export default function LoginPage() {
   };
 
   return (
-   <div className="fixed inset-0 w-screen h-screen bg-gradient-to-br from-teal-600/60 via-blue-600/60 to-purple-500/60 flex items-center justify-center p-4">
+    <div className="fixed inset-0 w-screen h-screen bg-gradient-to-br from-teal-600/60 via-blue-600/60 to-purple-500/60 flex items-center justify-center p-4">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-white/20 rounded-full blur-3xl"></div>
@@ -136,7 +144,7 @@ export default function LoginPage() {
                       )}
                     </IconButton>
                   </InputAdornment>
-                )
+                ),
               }}
             />
 
@@ -166,7 +174,5 @@ export default function LoginPage() {
         </CardContent>
       </Card>
     </div>
-
-
   );
 }

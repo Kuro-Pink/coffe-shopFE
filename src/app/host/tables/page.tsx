@@ -11,6 +11,8 @@ import {
   TextField,
   Box,
   Chip,
+  Tab,
+  Tabs,
   InputAdornment,
   Tooltip,
 } from '@mui/material';
@@ -44,6 +46,7 @@ import PaymentDialog from '@/components/host/TableManager/PaymentDialog';
 import { showToast } from '@/components/common/Toast';
 import { formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
+import { canManage } from '@/utils/permissions';
 
 const tableSchema = z.object({
   tableNumber: z.string().min(1, 'Số bàn không được để trống'),
@@ -88,6 +91,8 @@ export default function TablesManagementPage() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [statusLoading, setStatusLoading] = useState<string | null>(null);
 
+  const [currentTab, setCurrentTab] = useState<'view' | 'manage'>('view');
+
   const {
     register,
     handleSubmit,
@@ -112,7 +117,7 @@ export default function TablesManagementPage() {
       const filtered = tables.filter(
         (table) =>
           table.tableNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          table.area.toLowerCase().includes(searchQuery.toLowerCase())
+          table.area.toLowerCase().includes(searchQuery.toLowerCase()),
       );
       setFilteredTables(filtered);
     } else {
@@ -207,18 +212,18 @@ export default function TablesManagementPage() {
 
   const handleUpdateStatus = async (
     tableId: string,
-    status: 'available' | 'occupied' | 'needs_cleaning'
+    status: 'available' | 'occupied' | 'needs_cleaning',
   ) => {
     setStatusLoading(tableId);
     try {
       await storeService.updateTableStatus(tableId, status);
-      
+
       const statusMessages = {
         available: 'Bàn đã sẵn sàng',
         occupied: 'Đánh dấu có khách',
         needs_cleaning: 'Đánh dấu cần dọn',
       };
-      
+
       showToast.success({ message: statusMessages[status] });
       await fetchTables();
     } catch (err: unknown) {
@@ -235,7 +240,7 @@ export default function TablesManagementPage() {
 
   const getStatusConfig = (table: Table) => {
     const status = table.status || 'available';
-    
+
     switch (status) {
       case 'occupied':
         return {
@@ -312,9 +317,9 @@ export default function TablesManagementPage() {
   // ✅ Calculate statistics
   const stats = {
     total: tables.length,
-    available: tables.filter(t => (t.status || 'available') === 'available').length,
-    occupied: tables.filter(t => (t.status || 'available') === 'occupied').length,
-    needsCleaning: tables.filter(t => (t.status || 'available') === 'needs_cleaning').length,
+    available: tables.filter((t) => (t.status || 'available') === 'available').length,
+    occupied: tables.filter((t) => (t.status || 'available') === 'occupied').length,
+    needsCleaning: tables.filter((t) => (t.status || 'available') === 'needs_cleaning').length,
   };
 
   return (
@@ -328,15 +333,10 @@ export default function TablesManagementPage() {
           <Typography variant="body2" className="text-gray-600 mb-3">
             Quản lý bàn và theo dõi trạng thái phục vụ
           </Typography>
-          
+
           {/* ✅ Status Summary */}
           <div className="flex gap-2 flex-wrap">
-            <Chip
-              icon={<TableBar />}
-              label={`Tổng: ${stats.total}`}
-              size="small"
-              color="primary"
-            />
+            <Chip icon={<TableBar />} label={`Tổng: ${stats.total}`} size="small" color="primary" />
             <Chip
               icon={<CheckCircle />}
               label={`Sẵn sàng: ${stats.available}`}
@@ -357,19 +357,27 @@ export default function TablesManagementPage() {
             />
           </div>
         </div>
-
-        <Button
-          variant="contained"
-          startIcon={<Add />}
-          onClick={() => setFormDialog({ open: true, table: null })}
-          className="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700"
-        >
-          Thêm bàn mới
-        </Button>
+        {currentTab === 'manage' && canManage(user, 'tables') && (
+          <Button
+            variant="contained"
+            startIcon={<Add />}
+            onClick={() => setFormDialog({ open: true, table: null })}
+            className="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700"
+          >
+            Thêm bàn mới
+          </Button>
+        )}
       </div>
-
       {error && <ErrorMessage message={error} />}
-
+      {/* // After header, before table list: */}
+      {canManage(user, 'tables') && (
+        <Card className="mb-6">
+          <Tabs value={currentTab} onChange={(_, v) => setCurrentTab(v)}>
+            <Tab label="Vận hành" value="view" />
+            <Tab label="Quản lý" value="manage" />
+          </Tabs>
+        </Card>
+      )}
       {/* Search Bar */}
       <Card className="mb-6 shadow-md">
         <CardContent>
@@ -388,7 +396,6 @@ export default function TablesManagementPage() {
           />
         </CardContent>
       </Card>
-
       {/* Tables Grid */}
       {filteredTables.length === 0 ? (
         <Card className="shadow-lg">
@@ -402,7 +409,7 @@ export default function TablesManagementPage() {
             <Typography variant="body2" className="text-gray-600 mb-6">
               {searchQuery ? 'Thử tìm kiếm với từ khóa khác' : 'Thêm bàn đầu tiên để bắt đầu'}
             </Typography>
-            {!searchQuery && (
+            {!searchQuery && currentTab === 'manage' && canManage(user, 'tables') && (
               <Button
                 variant="contained"
                 startIcon={<Add />}
@@ -418,13 +425,13 @@ export default function TablesManagementPage() {
         <Grid container spacing={3}>
           {filteredTables.map((table) => {
             const statusConfig = getStatusConfig(table);
-            const isLongSession = table.currentSession 
+            const isLongSession = table.currentSession
               ? isSessionTooLong(table.currentSession.startTime)
               : false;
 
             return (
               <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={table._id}>
-                <Card 
+                <Card
                   className={`hover:shadow-xl transition-all duration-300 border-2 ${statusConfig.borderColor} ${statusConfig.bgColor} h-full`}
                 >
                   <CardContent>
@@ -437,35 +444,39 @@ export default function TablesManagementPage() {
                         size="small"
                         className="font-semibold"
                       />
-                      
+
                       {/* ✅ Long session warning */}
                       {isLongSession && (
                         <Tooltip title="Khách ngồi quá lâu! Kiểm tra xem có cần gì không?">
                           <Warning className="text-orange-600 animate-pulse" />
                         </Tooltip>
                       )}
-                      
-                      <div className="flex gap-1">
-                        <IconButton
-                          size="small"
-                          onClick={() => handleOpenDialog(table)}
-                          className="hover:bg-blue-50"
-                        >
-                          <Edit fontSize="small" />
-                        </IconButton>
-                        <IconButton
-                          size="small"
-                          onClick={() => setConfirmDialog({ open: true, table })}
-                          className="hover:bg-red-50"
-                        >
-                          <Delete fontSize="small" />
-                        </IconButton>
-                      </div>
+                      {/* // Hide Edit/Delete buttons in View tab */}
+                      {currentTab === 'manage' && canManage(user, 'tables') && (
+                        <div className="flex gap-1">
+                          <IconButton
+                            size="small"
+                            onClick={() => handleOpenDialog(table)}
+                            className="hover:bg-blue-50"
+                          >
+                            <Edit fontSize="small" />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            onClick={() => setConfirmDialog({ open: true, table })}
+                            className="hover:bg-red-50"
+                          >
+                            <Delete fontSize="small" />
+                          </IconButton>
+                        </div>
+                      )}
                     </div>
 
                     {/* Table Icon */}
                     <div className="flex justify-center mb-4">
-                      <div className={`w-20 h-20 bg-gradient-to-br ${statusConfig.gradientFrom} ${statusConfig.gradientTo} rounded-2xl flex items-center justify-center shadow-lg`}>
+                      <div
+                        className={`w-20 h-20 bg-gradient-to-br ${statusConfig.gradientFrom} ${statusConfig.gradientTo} rounded-2xl flex items-center justify-center shadow-lg`}
+                      >
                         <TableBar className="text-white text-4xl" />
                       </div>
                     </div>
@@ -475,11 +486,7 @@ export default function TablesManagementPage() {
                       <Typography variant="h5" className="font-bold text-gray-800 mb-1">
                         {table.tableNumber}
                       </Typography>
-                      <Chip
-                        label={table.area}
-                        size="small"
-                        className="bg-blue-50 text-blue-600"
-                      />
+                      <Chip label={table.area} size="small" className="bg-blue-50 text-blue-600" />
                     </div>
 
                     {/* ✅ Session Info (if occupied) */}
@@ -491,19 +498,21 @@ export default function TablesManagementPage() {
                             {table.currentSession.customerName || 'Khách'}
                           </Typography>
                         </div>
-                        
+
                         <div className="flex items-center gap-2 mb-1">
                           <Phone fontSize="small" className="text-gray-600" />
                           <Typography variant="caption" className="text-gray-600">
                             {table.currentSession.customerPhone}
                           </Typography>
                         </div>
-                        
+
                         <div className="flex items-center gap-2 mb-2">
                           <AccessTime fontSize="small" className="text-gray-600" />
                           <Typography
                             variant="caption"
-                            className={isLongSession ? 'text-orange-600 font-semibold' : 'text-gray-600'}
+                            className={
+                              isLongSession ? 'text-orange-600 font-semibold' : 'text-gray-600'
+                            }
                           >
                             Ngồi: {formatFromNow(table.currentSession?.startTime)}
                           </Typography>
@@ -563,7 +572,6 @@ export default function TablesManagementPage() {
           })}
         </Grid>
       )}
-
       {/* Form Dialog - Create/Edit */}
       <FormDialog
         open={formDialog.open}
@@ -597,7 +605,6 @@ export default function TablesManagementPage() {
           />
         </div>
       </FormDialog>
-
       {/* Confirm Delete Dialog */}
       <ConfirmDialog
         open={confirmDialog.open}
@@ -610,7 +617,6 @@ export default function TablesManagementPage() {
         onConfirm={handleDelete}
         onCancel={() => setConfirmDialog({ open: false, table: null })}
       />
-
       {/* QR Code Dialog */}
       {qrDialog.table && (
         <QRCodeDisplay
@@ -619,7 +625,6 @@ export default function TablesManagementPage() {
           onClose={() => setQrDialog({ open: false, table: null })}
         />
       )}
-
       {/* ✅ Payment Dialog */}
       <PaymentDialog
         open={paymentDialog.open}
