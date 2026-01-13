@@ -13,6 +13,7 @@ export interface CreateStaffData {
 export interface UpdateStaffData {
   name?: string;
   phone?: string;
+  password?: string;
   staffType?: StaffType;
   isActive?: boolean;
 }
