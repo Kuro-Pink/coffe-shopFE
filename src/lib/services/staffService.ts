@@ -62,36 +62,3 @@ export const staffService = {
     return response.data.data;
   },
 };
-// ✅ Staff-side service (for staff role)
-export const staffOrderService = {
-  getTables: async (storeId: string): Promise<Table[]> => {
-    const response = await api.get(API_ENDPOINTS.STAFF.TABLES.LIST(storeId));
-    return response.data.data;
-  },
-  updateTableStatus: async (
-    id: string,
-    status: 'available' | 'occupied' | 'needs_cleaning',
-  ): Promise<Table> => {
-    const response = await api.patch(API_ENDPOINTS.STAFF.TABLES.STATUS(id), { status });
-    return response.data;
-  },
-  // Get orders (staff only sees their store)
-  getOrders: async (storeId: string): Promise<Order[]> => {
-    const response = await api.get(API_ENDPOINTS.STAFF.ORDERS.LIST(storeId));
-    return response.data.data;
-  },
-  // Get order detail
-  getOrderById: async (id: string): Promise<Order> => {
-    const response = await api.get(API_ENDPOINTS.STAFF.ORDERS.DETAIL(id));
-    return response.data.data;
-  },
-  // Update order status (auto-track staff)
-  updateOrderStatus: async (
-    id: string,
-    status: Extract<Order['status'], 'completed' | 'cancelled'>,
-  ): Promise<Order> => {
-    console.log('Updated order status response:', id);
-    const response = await api.patch(API_ENDPOINTS.STAFF.ORDERS.STATUS(id), { status });
-    return response.data.data;
-  },
-};
