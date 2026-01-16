@@ -130,7 +130,7 @@ function HostLayoutContent({ children }: { children: ReactNode }) {
     menuItems.push({ text: 'Thực đơn', icon: <Restaurant />, path: '/host/menu' });
   }
   if (canAccess(user, 'tables')) {
-    menuItems.push({ text: 'Khu vực & Bàn', icon: <TableBar />, path: '/host/tables' });
+    menuItems.push({ text: 'Chỗ ngồi', icon: <TableBar />, path: '/host/tables' });
   }
   if (canAccess(user, 'orders')) {
     menuItems.push({
@@ -152,16 +152,25 @@ function HostLayoutContent({ children }: { children: ReactNode }) {
     menuItems.push({ text: 'Công nợ', icon: <MoneyOff />, path: '/host/unpaid-bills' });
   }
   // Host-only management items
-  if (canAccess(user, 'staff')) {
-    menuItems.push({ text: 'Quản lý Nhân viên', icon: <Person />, path: '/host/staff' });
-  }
-  if (canAccess(user, 'staff')) {
-    menuItems.push({
-      text: 'Hiệu suất Nhân viên',
-      icon: <TrendingUp />,
-      path: '/host/staff/performance',
-    });
-  }
+ if (canAccess(user, 'staff')) {
+menuItems.push({
+    text: 'Nhân viên',
+    icon: <Person />,
+    children: [
+      {
+        text: 'Quản lý nhân viên',
+        icon: <Person />,
+        path: '/host/staff', // tab cũ
+      },
+      {
+        text: 'Hiệu suất nhân viên',
+        icon: <TrendingUp />,
+        path: '/host/staff/performance',
+      },
+    ],
+  });
+}
+
   if (canAccess(user, 'inventory')) {
     menuItems.push({ text: 'Quản lý Kho', icon: <Inventory />, path: '/host/inventory' });
   }

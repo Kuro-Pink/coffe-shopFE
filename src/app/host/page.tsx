@@ -192,10 +192,22 @@ export default function StatsPage() {
                     <ShoppingCart className="text-white" />
                   </div>
                   <Chip
-                    label={`${stats.dashboard.today.growth >= 0 ? '+' : ''}${Math.trunc(stats.dashboard.today.growth)}%`}
+                    label={`${stats.dashboard.today.growth >= 0 ? '+' : ''}${Math.trunc(
+                      stats.dashboard.today.growth,
+                    )}%`}
                     size="small"
-                    icon={stats.dashboard.today.growth >= 0 ? <TrendingUp fontSize="small" /> : <TrendingDown fontSize="small" />}
-                    className={stats.dashboard.today.growth >= 0 ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}
+                    icon={
+                      stats.dashboard.today.growth >= 0 ? (
+                        <TrendingUp fontSize="small" />
+                      ) : (
+                        <TrendingDown fontSize="small" />
+                      )
+                    }
+                    className={
+                      stats.dashboard.today.growth >= 0
+                        ? 'bg-green-50 text-green-600'
+                        : 'bg-red-50 text-red-600'
+                    }
                   />
                 </div>
                 <Typography color="textSecondary" className="text-sm mb-1">
@@ -223,9 +235,15 @@ export default function StatsPage() {
                     <AttachMoney className="text-white" />
                   </div>
                   <Chip
-                    label={`${stats.dashboard.today.growth >= 0 ? '+' : ''}${Math.round(stats.dashboard.today.growth)}%`}
+                    label={`${stats.dashboard.today.growth >= 0 ? '+' : ''}${Math.round(
+                      stats.dashboard.today.growth,
+                    )}%`}
                     size="small"
-                    className={stats.dashboard.today.growth >= 0 ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}
+                    className={
+                      stats.dashboard.today.growth >= 0
+                        ? 'bg-green-50 text-green-600'
+                        : 'bg-red-50 text-red-600'
+                    }
                   />
                 </div>
                 <Typography color="textSecondary" className="text-sm mb-1">
@@ -253,9 +271,15 @@ export default function StatsPage() {
                     <TrendingUp className="text-white" />
                   </div>
                   <Chip
-                    label={`${stats.dashboard.thisMonth.growth >= 0 ? '+' : ''}${Math.round(stats.dashboard.thisMonth.growth)}%`}
+                    label={`${stats.dashboard.thisMonth.growth >= 0 ? '+' : ''}${Math.round(
+                      stats.dashboard.thisMonth.growth,
+                    )}%`}
                     size="small"
-                    className={stats.dashboard.thisMonth.growth >= 0 ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}
+                    className={
+                      stats.dashboard.thisMonth.growth >= 0
+                        ? 'bg-green-50 text-green-600'
+                        : 'bg-red-50 text-red-600'
+                    }
                   />
                 </div>
                 <Typography color="textSecondary" className="text-sm mb-1">
@@ -382,7 +406,7 @@ export default function StatsPage() {
               <div className="flex items-center gap-2 mb-4">
                 <Schedule className="text-orange-600" />
                 <Typography variant="h6" className="font-bold">
-                  ⏰ Giờ cao điểm
+                  Giờ cao điểm
                 </Typography>
               </div>
               {stats.peakHours.length === 0 ? (
@@ -416,7 +440,7 @@ export default function StatsPage() {
               <div className="flex items-center gap-2 mb-4">
                 <EmojiEvents className="text-yellow-600" />
                 <Typography variant="h6" className="font-bold">
-                  🏆 Top sản phẩm bán chạy
+                  Top sản phẩm bán chạy
                 </Typography>
               </div>
               {stats.bestSellers.length === 0 ? (
@@ -432,8 +456,12 @@ export default function StatsPage() {
                       <TableRow>
                         <TableCell className="font-bold">#</TableCell>
                         <TableCell className="font-bold">Món ăn</TableCell>
-                        <TableCell align="right" className="font-bold">SL</TableCell>
-                        <TableCell align="right" className="font-bold">Doanh thu</TableCell>
+                        <TableCell align="right" className="font-bold">
+                          SL
+                        </TableCell>
+                        <TableCell align="right" className="font-bold">
+                          Doanh thu
+                        </TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -481,7 +509,7 @@ export default function StatsPage() {
               <div className="flex items-center gap-2 mb-4">
                 <CategoryIcon className="text-purple-600" />
                 <Typography variant="h6" className="font-bold">
-                  📊 Hiệu suất theo danh mục
+                  Hiệu suất theo danh mục
                 </Typography>
               </div>
               {stats.categories.length === 0 ? (
@@ -530,9 +558,7 @@ export default function StatsPage() {
                               </Typography>
                             </TableCell>
                             <TableCell align="right">
-                              <Typography variant="body2">
-                                {cat.totalQuantity} món
-                              </Typography>
+                              <Typography variant="body2">{cat.totalQuantity} món</Typography>
                             </TableCell>
                             <TableCell align="right">
                               <Typography variant="body2" className="text-green-600 font-bold">
@@ -560,7 +586,7 @@ export default function StatsPage() {
               <div className="flex items-center gap-2 mb-4">
                 <People className="text-blue-600" />
                 <Typography variant="h6" className="font-bold">
-                  👥 Khách hàng thân thiết
+                  Khách hàng thân thiết
                 </Typography>
               </div>
               {stats.customers.topCustomers.length === 0 ? (
@@ -575,8 +601,12 @@ export default function StatsPage() {
                     <TableHead>
                       <TableRow>
                         <TableCell className="font-bold">SĐT</TableCell>
-                        <TableCell align="right" className="font-bold">Đơn</TableCell>
-                        <TableCell align="right" className="font-bold">Tổng chi</TableCell>
+                        <TableCell align="right" className="font-bold">
+                          Đơn
+                        </TableCell>
+                        <TableCell align="right" className="font-bold">
+                          Tổng chi
+                        </TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -619,7 +649,7 @@ export default function StatsPage() {
               <div className="flex items-center gap-2 mb-4">
                 <TableBar className="text-green-600" />
                 <Typography variant="h6" className="font-bold">
-                  🪑 Hiệu suất theo bàn
+                  Hiệu suất theo bàn
                 </Typography>
               </div>
               {stats.tables.length === 0 ? (
@@ -634,8 +664,12 @@ export default function StatsPage() {
                     <TableHead>
                       <TableRow>
                         <TableCell className="font-bold">Bàn</TableCell>
-                        <TableCell align="right" className="font-bold">Đơn</TableCell>
-                        <TableCell align="right" className="font-bold">Doanh thu</TableCell>
+                        <TableCell align="right" className="font-bold">
+                          Đơn
+                        </TableCell>
+                        <TableCell align="right" className="font-bold">
+                          Doanh thu
+                        </TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>

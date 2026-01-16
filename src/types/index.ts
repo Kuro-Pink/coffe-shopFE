@@ -41,9 +41,10 @@ export interface FormDialogProps {
 export interface SidebarMenuItem {
   text: string;
   icon: React.ReactNode;
-  path: string;
+  path?: string;
   badge?: number;
   badgeColor?: 'primary' | 'secondary' | 'error' | 'warning' | 'info' | 'success';
+  children?: SidebarMenuItem[];
 }
 export interface User {
   _id: string;
