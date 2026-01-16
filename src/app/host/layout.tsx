@@ -12,6 +12,8 @@ import {
   Inventory,
   AccessTime,
   MoneyOff,
+  BarChart,
+  History,
 } from '@mui/icons-material';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { ToastProvider, showToast } from '@/components/common/Toast';
@@ -152,27 +154,47 @@ function HostLayoutContent({ children }: { children: ReactNode }) {
     menuItems.push({ text: 'Công nợ', icon: <MoneyOff />, path: '/host/unpaid-bills' });
   }
   // Host-only management items
- if (canAccess(user, 'staff')) {
-menuItems.push({
-    text: 'Nhân viên',
-    icon: <Person />,
-    children: [
-      {
-        text: 'Quản lý nhân viên',
-        icon: <Person />,
-        path: '/host/staff', // tab cũ
-      },
-      {
-        text: 'Hiệu suất nhân viên',
-        icon: <TrendingUp />,
-        path: '/host/staff/performance',
-      },
-    ],
-  });
-}
+  if (canAccess(user, 'staff')) {
+    menuItems.push({
+      text: 'Nhân viên',
+      icon: <Person />,
+      children: [
+        {
+          text: 'Quản lý nhân viên',
+          icon: <Person />,
+          path: '/host/staff', // tab cũ
+        },
+        {
+          text: 'Hiệu suất nhân viên',
+          icon: <TrendingUp />,
+          path: '/host/staff/performance',
+        },
+      ],
+    });
+  }
 
   if (canAccess(user, 'inventory')) {
-    menuItems.push({ text: 'Quản lý Kho', icon: <Inventory />, path: '/host/inventory' });
+    menuItems.push({
+      text: 'Kho bãi',
+      icon: <Inventory />,
+      children: [
+        {
+          text: 'Quản lý Kho',
+          icon: <Inventory />,
+          path: '/host/inventory',
+        },
+        {
+          text: 'Lịch sử xuất nhập',
+          icon: <History />,
+          path: '/host/inventory/transactions',
+        },
+        {
+          text: 'Báo cáo sử dụng',
+          icon: <BarChart />,
+          path: '/host/inventory/usage',
+        },
+      ],
+    });
   }
   return (
     <>

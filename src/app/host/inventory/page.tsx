@@ -25,8 +25,6 @@ import {
   TrendingDown,
   AttachMoney,
   Search,
-  History,
-  BarChart,
 } from '@mui/icons-material';
 import { useAuthStore } from '@/lib/stores/authStore';
 import { inventoryService } from '@/lib/services/inventoryService';
@@ -34,33 +32,38 @@ import { Ingredient, InventorySummary } from '@/types';
 import IngredientDialog from '@/components/host/InventoryManager/IngredientDialog';
 import StockAdjustDialog from '@/components/host/InventoryManager/StockAdjustDialog';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
-import TransactionHistory from '@/components/host/InventoryManager/TransactionHistory';
-import UsageReport from '@/components/host/InventoryManager/UsageReport';
+
 export default function InventoryManagementPage() {
   const router = useRouter();
   const { user } = useAuthStore();
+
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [filteredIngredients, setFilteredIngredients] = useState<Ingredient[]>([]);
   const [summary, setSummary] = useState<InventorySummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [currentTab, setCurrentTab] = useState<'all' | 'lowStock' | 'transactions' | 'usage'>(
+  const [stockFilter, setStockFilter] = useState<'all' | 'inStock' | 'lowStock' | 'outOfStock'>(
     'all',
-  ); // Dialog states
+  );
+
+  // Dialog states
   const [ingredientDialogOpen, setIngredientDialogOpen] = useState(false);
   const [editingIngredient, setEditingIngredient] = useState<Ingredient | null>(null);
   const [adjustDialogOpen, setAdjustDialogOpen] = useState(false);
   const [adjustingIngredient, setAdjustingIngredient] = useState<Ingredient | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingIngredient, setDeletingIngredient] = useState<Ingredient | null>(null);
+
   useEffect(() => {
     if (user?.storeId) {
       fetchData();
     }
   }, [user?.storeId]);
+
   useEffect(() => {
     filterIngredients();
-  }, [ingredients, searchTerm, currentTab]);
+  }, [ingredients, searchTerm, stockFilter]);
+
   const fetchData = async () => {
     if (!user?.storeId) return;
     try {
@@ -77,22 +80,34 @@ export default function InventoryManagementPage() {
       setLoading(false);
     }
   };
+
   const filterIngredients = () => {
     let filtered = ingredients;
-    // Search filter
+
     if (searchTerm) {
       filtered = filtered.filter((ing) =>
         ing.name.toLowerCase().includes(searchTerm.toLowerCase()),
       );
     }
 
-    // Tab filter
-    if (currentTab === 'lowStock') {
-      filtered = filtered.filter((ing) => ing.quantity <= ing.minQuantity);
+    // Filter by stock status
+    if (stockFilter === 'inStock') {
+      filtered = filtered.filter((ing) => ing.quantity > ing.minQuantity);
+    } else if (stockFilter === 'lowStock') {
+      filtered = filtered.filter((ing) => ing.quantity > 0 && ing.quantity <= ing.minQuantity);
+    } else if (stockFilter === 'outOfStock') {
+      filtered = filtered.filter((ing) => ing.quantity === 0);
     }
 
     setFilteredIngredients(filtered);
   };
+
+  // Calculate counts for badges
+  const inStockCount = ingredients.filter((ing) => ing.quantity > ing.minQuantity).length;
+  const lowStockCountActual = ingredients.filter(
+    (ing) => ing.quantity > 0 && ing.quantity <= ing.minQuantity,
+  ).length;
+
   const handleDelete = async () => {
     if (!deletingIngredient) return;
     try {
@@ -104,6 +119,7 @@ export default function InventoryManagementPage() {
       console.error('Failed to delete ingredient:', error);
     }
   };
+
   const getStockStatus = (ingredient: Ingredient) => {
     if (ingredient.quantity === 0) {
       return { label: 'Hết hàng', color: 'error' as const };
@@ -113,6 +129,7 @@ export default function InventoryManagementPage() {
     }
     return { label: 'Còn hàng', color: 'success' as const };
   };
+
   if (loading) {
     return (
       <Box className="flex items-center justify-center min-h-screen">
@@ -120,6 +137,7 @@ export default function InventoryManagementPage() {
       </Box>
     );
   }
+
   return (
     <div>
       {/* Header */}
@@ -222,14 +240,18 @@ export default function InventoryManagementPage() {
         </Grid>
       )}
 
-      {/* Tabs */}
+      {/* Stock Filter Tabs */}
       <Card className="mb-6">
-        <Tabs value={currentTab} onChange={(_, value) => setCurrentTab(value)} variant="fullWidth">
+        <Tabs
+          value={stockFilter}
+          onChange={(_, value) => setStockFilter(value)}
+          variant="fullWidth"
+        >
           <Tab
             label={
               <div className="flex items-center gap-2">
                 <span>Tất cả</span>
-                {summary && <Chip label={summary.totalIngredients} size="small" className="h-6" />}
+                <Chip label={ingredients.length} size="small" className="h-6" />
               </div>
             }
             value="all"
@@ -237,14 +259,18 @@ export default function InventoryManagementPage() {
           <Tab
             label={
               <div className="flex items-center gap-2">
+                <span>Còn hàng</span>
+                <Chip label={inStockCount} size="small" color="success" className="h-6" />
+              </div>
+            }
+            value="inStock"
+          />
+          <Tab
+            label={
+              <div className="flex items-center gap-2">
                 <span>Sắp hết</span>
-                {summary && summary.lowStockCount > 0 && (
-                  <Chip
-                    label={summary.lowStockCount}
-                    size="small"
-                    color="warning"
-                    className="h-6"
-                  />
+                {lowStockCountActual > 0 && (
+                  <Chip label={lowStockCountActual} size="small" color="warning" className="h-6" />
                 )}
               </div>
             }
@@ -253,180 +279,184 @@ export default function InventoryManagementPage() {
           <Tab
             label={
               <div className="flex items-center gap-2">
-                <History />
-                <span>Lịch sử</span>
+                <span>Hết hàng</span>
+                {summary && summary.outOfStockCount > 0 && (
+                  <Chip
+                    label={summary.outOfStockCount}
+                    size="small"
+                    color="error"
+                    className="h-6"
+                  />
+                )}
               </div>
             }
-            value="transactions"
-          />
-          <Tab
-            label={
-              <div className="flex items-center gap-2">
-                <BarChart />
-                <span>Báo cáo</span>
-              </div>
-            }
-            value="usage"
+            value="outOfStock"
           />
         </Tabs>
       </Card>
 
-      {/* Content */}
-      {currentTab === 'transactions' ? (
-        <TransactionHistory storeId={user?.storeId || ''} />
-      ) : currentTab === 'usage' ? (
-        <UsageReport storeId={user?.storeId || ''} />
-      ) : (
-        <>
-          {/* Search */}
-          <Card className="mb-6">
-            <CardContent>
-              <TextField
-                fullWidth
-                placeholder="Tìm nguyên liệu..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                InputProps={{
-                  startAdornment: <Search className="text-gray-400 mr-2" />,
+      {/* Search */}
+      <Card className="mb-6">
+        <CardContent>
+          <TextField
+            fullWidth
+            placeholder="Tìm nguyên liệu..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            InputProps={{
+              startAdornment: <Search className="text-gray-400 mr-2" />,
+            }}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Low Stock Alert */}
+      {stockFilter === 'all' && lowStockCountActual > 0 && (
+        <Alert severity="warning" className="mb-6">
+          <strong>Cảnh báo:</strong> Có {lowStockCountActual} nguyên liệu sắp hết. Hãy nhập kho kịp
+          thời!
+        </Alert>
+      )}
+
+      {/* Out of Stock Alert */}
+      {stockFilter === 'all' && summary && summary.outOfStockCount > 0 && (
+        <Alert severity="error" className="mb-6">
+          <strong>Cảnh báo:</strong> Có {summary.outOfStockCount} nguyên liệu đã hết hàng!
+        </Alert>
+      )}
+
+      {/* Ingredients List */}
+      {filteredIngredients.length === 0 ? (
+        <Card>
+          <CardContent className="text-center py-12">
+            <Inventory className="text-gray-300 text-6xl mb-4" />
+            <Typography variant="h6" className="text-gray-600 mb-2">
+              {searchTerm
+                ? 'Không tìm thấy nguyên liệu'
+                : stockFilter === 'lowStock'
+                ? 'Không có nguyên liệu sắp hết'
+                : stockFilter === 'outOfStock'
+                ? 'Không có nguyên liệu hết hàng'
+                : stockFilter === 'inStock'
+                ? 'Không có nguyên liệu còn hàng'
+                : 'Chưa có nguyên liệu nào'}
+            </Typography>
+            <Typography variant="body2" className="text-gray-500 mb-4">
+              {searchTerm
+                ? 'Thử tìm kiếm với từ khóa khác'
+                : stockFilter === 'lowStock'
+                ? 'Tất cả nguyên liệu đều còn đủ'
+                : stockFilter === 'outOfStock'
+                ? 'Tất cả nguyên liệu đều còn trong kho'
+                : stockFilter === 'inStock'
+                ? 'Không có nguyên liệu nào trong trạng thái này'
+                : 'Bắt đầu bằng cách thêm nguyên liệu đầu tiên'}
+            </Typography>
+            {!searchTerm && stockFilter === 'all' && (
+              <Button
+                variant="contained"
+                startIcon={<Add />}
+                onClick={() => {
+                  setEditingIngredient(null);
+                  setIngredientDialogOpen(true);
                 }}
-              />
-            </CardContent>
-          </Card>
+              >
+                Thêm nguyên liệu
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      ) : (
+        <Grid container spacing={3}>
+          {filteredIngredients.map((ingredient) => {
+            const status = getStockStatus(ingredient);
+            return (
+              <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={ingredient._id}>
+                <Card className="hover:shadow-lg transition-shadow">
+                  <CardContent>
+                    <div className="flex items-start justify-between mb-3">
+                      <Typography variant="h6" className="font-semibold">
+                        {ingredient.name}
+                      </Typography>
+                      <Chip label={status.label} color={status.color} size="small" />
+                    </div>
 
-          {/* Low Stock Alert */}
-          {currentTab === 'all' && summary && summary.lowStockCount > 0 && (
-            <Alert severity="warning" className="mb-6">
-              <strong>Cảnh báo:</strong> Có {summary.lowStockCount} nguyên liệu sắp hết. Hãy nhập
-              kho kịp thời!
-            </Alert>
-          )}
+                    <div className="space-y-2 mb-4">
+                      <div className="flex justify-between items-center">
+                        <Typography variant="body2" className="text-gray-600">
+                          Tồn kho:
+                        </Typography>
+                        <Typography variant="h6" className="font-bold">
+                          {ingredient.quantity.toLocaleString()} {ingredient.unit}
+                        </Typography>
+                      </div>
 
-          {/* Ingredients List */}
-          {filteredIngredients.length === 0 ? (
-            <Card>
-              <CardContent className="text-center py-12">
-                <Inventory className="text-gray-300 text-6xl mb-4" />
-                <Typography variant="h6" className="text-gray-600 mb-2">
-                  {searchTerm
-                    ? 'Không tìm thấy nguyên liệu'
-                    : currentTab === 'lowStock'
-                    ? 'Không có nguyên liệu sắp hết'
-                    : 'Chưa có nguyên liệu nào'}
-                </Typography>
-                <Typography variant="body2" className="text-gray-500 mb-4">
-                  {searchTerm
-                    ? 'Thử tìm kiếm với từ khóa khác'
-                    : currentTab === 'lowStock'
-                    ? 'Tất cả nguyên liệu đều còn đủ'
-                    : 'Bắt đầu bằng cách thêm nguyên liệu đầu tiên'}
-                </Typography>
-                {!searchTerm && currentTab === 'all' && (
-                  <Button
-                    variant="contained"
-                    startIcon={<Add />}
-                    onClick={() => {
-                      setEditingIngredient(null);
-                      setIngredientDialogOpen(true);
-                    }}
-                  >
-                    Thêm nguyên liệu
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          ) : (
-            <Grid container spacing={3}>
-              {filteredIngredients.map((ingredient) => {
-                const status = getStockStatus(ingredient);
-                return (
-                  <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={ingredient._id}>
-                    <Card className="hover:shadow-lg transition-shadow">
-                      <CardContent>
-                        <div className="flex items-start justify-between mb-3">
-                          <Typography variant="h6" className="font-semibold">
-                            {ingredient.name}
-                          </Typography>
-                          <Chip label={status.label} color={status.color} size="small" />
-                        </div>
+                      <div className="flex justify-between items-center">
+                        <Typography variant="body2" className="text-gray-600">
+                          Tối thiểu:
+                        </Typography>
+                        <Typography variant="body2">
+                          {ingredient.minQuantity.toLocaleString()} {ingredient.unit}
+                        </Typography>
+                      </div>
 
-                        <div className="space-y-2 mb-4">
-                          <div className="flex justify-between items-center">
-                            <Typography variant="body2" className="text-gray-600">
-                              Tồn kho:
-                            </Typography>
-                            <Typography variant="h6" className="font-bold">
-                              {ingredient.quantity.toLocaleString()} {ingredient.unit}
-                            </Typography>
-                          </div>
+                      <div className="flex justify-between items-center">
+                        <Typography variant="body2" className="text-gray-600">
+                          Đơn giá:
+                        </Typography>
+                        <Typography variant="body2">
+                          {ingredient.cost.toLocaleString()} ₫/{ingredient.unit}
+                        </Typography>
+                      </div>
 
-                          <div className="flex justify-between items-center">
-                            <Typography variant="body2" className="text-gray-600">
-                              Tối thiểu:
-                            </Typography>
-                            <Typography variant="body2">
-                              {ingredient.minQuantity.toLocaleString()} {ingredient.unit}
-                            </Typography>
-                          </div>
+                      <div className="flex justify-between items-center pt-2 border-t">
+                        <Typography variant="body2" className="text-gray-600 font-semibold">
+                          Giá trị:
+                        </Typography>
+                        <Typography variant="body1" className="font-bold text-green-600">
+                          {(ingredient.quantity * ingredient.cost).toLocaleString()} ₫
+                        </Typography>
+                      </div>
+                    </div>
 
-                          <div className="flex justify-between items-center">
-                            <Typography variant="body2" className="text-gray-600">
-                              Đơn giá:
-                            </Typography>
-                            <Typography variant="body2">
-                              {ingredient.cost.toLocaleString()} ₫/{ingredient.unit}
-                            </Typography>
-                          </div>
-
-                          <div className="flex justify-between items-center pt-2 border-t">
-                            <Typography variant="body2" className="text-gray-600 font-semibold">
-                              Giá trị:
-                            </Typography>
-                            <Typography variant="body1" className="font-bold text-green-600">
-                              {(ingredient.quantity * ingredient.cost).toLocaleString()} ₫
-                            </Typography>
-                          </div>
-                        </div>
-
-                        <div className="flex gap-2">
-                          <Button
-                            size="small"
-                            variant="contained"
-                            onClick={() => {
-                              setAdjustingIngredient(ingredient);
-                              setAdjustDialogOpen(true);
-                            }}
-                            fullWidth
-                          >
-                            Điều chỉnh
-                          </Button>
-                          <IconButton
-                            size="small"
-                            onClick={() => {
-                              setEditingIngredient(ingredient);
-                              setIngredientDialogOpen(true);
-                            }}
-                          >
-                            <Edit />
-                          </IconButton>
-                          <IconButton
-                            size="small"
-                            color="error"
-                            onClick={() => {
-                              setDeletingIngredient(ingredient);
-                              setDeleteDialogOpen(true);
-                            }}
-                          >
-                            <Delete />
-                          </IconButton>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                );
-              })}
-            </Grid>
-          )}
-        </>
+                    <div className="flex gap-2">
+                      <Button
+                        size="small"
+                        variant="contained"
+                        onClick={() => {
+                          setAdjustingIngredient(ingredient);
+                          setAdjustDialogOpen(true);
+                        }}
+                        fullWidth
+                      >
+                        Điều chỉnh
+                      </Button>
+                      <IconButton
+                        size="small"
+                        onClick={() => {
+                          setEditingIngredient(ingredient);
+                          setIngredientDialogOpen(true);
+                        }}
+                      >
+                        <Edit />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        color="error"
+                        onClick={() => {
+                          setDeletingIngredient(ingredient);
+                          setDeleteDialogOpen(true);
+                        }}
+                      >
+                        <Delete />
+                      </IconButton>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Grid>
+            );
+          })}
+        </Grid>
       )}
 
       {/* Ingredient Dialog */}
