@@ -20,6 +20,7 @@ import { useAuthStore } from '@/lib/stores/authStore';
 import { SidebarMenuItem } from '@/types';
 import { useState, useEffect } from 'react';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
+import { useOrderBadgeStore } from '@/lib/stores/orderBadgeStore';
 
 interface SidebarProps {
   menuItems: SidebarMenuItem[];
@@ -54,6 +55,7 @@ export default function Sidebar({
   const router = useRouter();
   const pathname = usePathname();
   const { user } = useAuthStore();
+  const pendingCount = useOrderBadgeStore((s) => s.pendingCount);
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>(() => {
     const state: Record<string, boolean> = {};
 
@@ -116,6 +118,9 @@ export default function Sidebar({
                 >
                   <ListItemIcon sx={{ color: 'inherit', minWidth: 40 }}>{item.icon}</ListItemIcon>
                   <ListItemText primary={item.text} />
+                  {item.text === 'Đơn hàng' && pendingCount > 0 && (
+                    <Badge badgeContent={pendingCount} color="error" />
+                  )}
                   {hasChildren && (openMenus[item.text] ? <ExpandLess /> : <ExpandMore />)}
                 </ListItemButton>
               </ListItem>
@@ -142,7 +147,10 @@ export default function Sidebar({
                           <ListItemIcon sx={{ color: 'inherit', minWidth: 36 }}>
                             {child.icon}
                           </ListItemIcon>
-                          <ListItemText primary={child.text} />
+                          <ListItemText primary={item.text} />
+                          {item.text === 'Đơn hàng' && pendingCount > 0 && (
+                            <Badge badgeContent={pendingCount} color="error" />
+                          )}
                         </ListItemButton>
                       </ListItem>
                     );
