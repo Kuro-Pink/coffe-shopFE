@@ -145,7 +145,7 @@ function HostLayoutContent({ children }: { children: ReactNode }) {
         socketRef.current = null;
       }
     };
-  }, [user?.storeId]);
+  }, [user?.storeId, addOrder, updateOrder, showNotify]);
   // ✅ Dynamic Menu Items based on Role
   const menuItems: SidebarMenuItem[] = [];
   // Host-only items
