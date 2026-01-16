@@ -72,6 +72,19 @@ export const API_ENDPOINTS = {
       STATS: (storeId: string) => `/host/stores/${storeId}/staff/stats`,
       PERFORMANCE: (storeId: string) => `/host/stores/${storeId}/reports/staff-performance`,
     },
+    SHIFTS: {
+      ALL: (storeId: string) => `/host/stores/${storeId}/shifts`,
+      ACTIVE: (storeId: string) => `/host/stores/${storeId}/shifts/active`,
+      STATS: (storeId: string) => `/host/stores/${storeId}/shifts/stats`,
+      REPORT: (shiftId: string) => `/host/shifts/${shiftId}/report`,
+      STAFF_HISTORY: (staffId: string) => `/host/staff/${staffId}/shifts`,
+    },
+    UNPAID_BILLS: {
+      TODAY: (storeId: string) => `/host/stores/${storeId}/unpaid-bills/today`,
+      BY_STAFF: (staffId: string) => `/host/staff/${staffId}/unpaid-bills`,
+      DETAIL: (id: string) => `/host/unpaid-bills/${id}`,
+      COLLECT: (id: string) => `/host/unpaid-bills/${id}/collect`,
+    },
     INVENTORY: {
       // Ingredients
       INGREDIENTS: {
@@ -104,23 +117,12 @@ export const API_ENDPOINTS = {
     },
   },
   STAFF: {
-    TABLES: {
-      LIST: (storeId: string) => `/staff/stores/${storeId}/tables`,
-      DETAIL: (id: string) => `/staff/tables/${id}`,
-      STATUS: (id: string) => `/staff/tables/${id}/status`,
-      SESSION: (id: string) => `/staff/tables/${id}/session`,
-      PERFORMANCE: (storeId: string) => `/staff/stores/${storeId}/tables/performance`,
-      UNPAID_ORDERS: (tableId: string) => `/staff/tables/${tableId}/unpaid-orders`,
-    },
-    ORDERS: {
-      LIST: (storeId: string) => `/staff/stores/${storeId}/orders`,
-      DETAIL: (id: string) => `/staff/orders/${id}`,
-      STATUS: (id: string) => `/staff/orders/${id}/status`,
-    },
-    BILLS: {
-      LIST: (storeId: string) => `/staff/stores/${storeId}/bills`,
-      DETAIL: (id: string) => `/staff/bills/${id}`,
-      PAYMENT: (id: string) => `/staff/bills/${id}/payment`,
+    MY_SHIFT: {
+      CURRENT: '/staff/my-shift/current',
+      CHECK_IN: '/staff/my-shift/check-in',
+      CHECK_OUT: '/staff/my-shift/check-out',
+      HISTORY: '/staff/my-shifts', // ?startDate=...&endDate=...
+      STATS: '/staff/my-shifts/stats', // ?startDate=...&endDate=...
     },
   },
   PUBLIC: {

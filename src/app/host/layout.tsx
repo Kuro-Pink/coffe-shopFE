@@ -148,10 +148,10 @@ function HostLayoutContent({ children }: { children: ReactNode }) {
   }
   // Staff-only items
   if (canAccess(user, 'my-shift')) {
-    menuItems.push({ text: 'Ca làm việc', icon: <AccessTime />, path: '/host/my-shift' });
+    menuItems.push({ text: 'Ca làm việc', icon: <AccessTime />, path: '/host/staff/my-shift' });
   }
   if (canAccess(user, 'unpaid-bills')) {
-    menuItems.push({ text: 'Công nợ', icon: <MoneyOff />, path: '/host/unpaid-bills' });
+    menuItems.push({ text: 'Công nợ', icon: <MoneyOff />, path: '/host/bills/unpaid-bills' });
   }
   // Host-only management items
   if (canAccess(user, 'staff')) {

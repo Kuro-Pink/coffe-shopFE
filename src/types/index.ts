@@ -54,6 +54,7 @@ export interface User {
   phone?: string;
   storeId?: string;
   staffType?: StaffType;
+  currentShift?: Shift;
 }
 
 export interface Store {
@@ -112,6 +113,7 @@ export interface Table {
 }
 
 export interface OrderItem {
+  _id: string;
   productId: string;
   name: string;
   price: number;
@@ -332,4 +334,125 @@ export interface UsageReport {
   cost: number;
   timesUsed: number;
   ordersCount: number;
+}
+
+export interface Shift {
+  _id: string;
+  staffId: StaffReference | string; // Có thể là object hoặc string tùy populate
+  storeId: StoreReference | string;
+
+  // Timestamps
+  checkInTime: string;
+  checkOutTime?: string;
+
+  // Work metrics
+  ordersProcessed: number;
+  ordersCompleted: number;
+  ordersCancelled: number;
+  totalRevenue: number;
+  averageOrderValue?: number; // ✅ Backend có field này
+  hoursWorked: number | null; // ✅ null nếu chưa check-out
+
+  // Status
+  status: 'active' | 'completed';
+
+  // Location tracking
+  checkInLocation?: Location;
+  checkOutLocation?: Location;
+
+  // Notes
+  notes?: string;
+
+  // Timestamps
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface UnpaidBill {
+  _id: string;
+  billNumber: string;
+  tableNumber: string;
+  customerName?: string;
+  customerPhone: string;
+  totalAmount: number;
+  paidAmount: number;
+  balance: number; // Còn nợ
+  createdAt: string;
+  staffId: string;
+  staffName: string;
+}
+
+export interface ShiftReport {
+  // Identity
+  shiftId: string;
+  staffId: string;
+  staffName: string;
+
+  // Time
+  checkInTime: string;
+  checkOutTime?: string;
+  hoursWorked: number;
+
+  // Orders
+  ordersProcessed: number;
+  ordersCompleted: number;
+  ordersCancelled: number;
+
+  // Money
+  initialCash: number;
+  cashCollected: number;
+  transferCollected: number;
+
+  systemRevenue: number;
+  totalRevenue: number;
+  discrepancy: number;
+
+  // Debt
+  unpaidOrders: number;
+  unpaidAmount: number;
+
+  // Notes
+  notes?: string;
+}
+
+export interface StaffShiftStats {
+  totalShifts: number;
+  totalHours: number;
+  totalOrdersProcessed: number;
+  totalOrdersCompleted: number;
+  totalOrdersCancelled: number;
+  totalRevenue: number;
+  averageOrdersPerShift: number;
+  averageRevenuePerShift: number;
+}
+
+export interface HostShiftStats {
+  totalShifts: number;
+  activeShifts: number;
+  completedShifts: number;
+
+  totalHoursWorked: number;
+
+  totalOrdersProcessed: number;
+  totalOrdersCompleted: number;
+  totalOrdersCancelled: number;
+
+  totalRevenue: number;
+  averageRevenuePerShift: number;
+  averageHoursPerShift: number;
+}
+
+export interface Location {
+  latitude: number;
+  longitude: number;
+}
+
+export interface StaffReference {
+  _id: string;
+  name: string;
+  staffType: 'cashier' | 'bar' | 'kitchen';
+}
+export interface StoreReference {
+  _id: string;
+  name: string;
 }
