@@ -16,6 +16,7 @@ import { format, subDays, subMonths } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { inventoryService } from '@/lib/services/inventoryService';
 import { UsageReport as UsageReportType } from '@/types';
+import { formatMoneyShort } from '@/utils/number';
 interface UsageReportProps {
   storeId: string;
 }
@@ -272,7 +273,7 @@ export default function UsageReport({ storeId }: UsageReportProps) {
                                 Chi phí
                               </Typography>
                               <Typography variant="h6" className="font-bold text-green-600">
-                                {(item.cost * item.totalUsed).toFixed(0)}K
+                                {formatMoneyShort(item.cost * item.totalUsed)}
                               </Typography>
                             </div>
                           </Grid>{' '}
