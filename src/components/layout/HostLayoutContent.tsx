@@ -11,7 +11,6 @@ import {
   TrendingUp,
   Inventory,
   AccessTime,
-  MoneyOff,
   BarChart,
   History,
 } from '@mui/icons-material';
@@ -42,7 +41,6 @@ function HostLayoutContent({ children }: { children: ReactNode }) {
   const soundEnabled = useSoundStore((s) => s.enabled);
   const socketRef = useRef<Socket | null>(null);
   const soundEnabledRef = useRef(soundEnabled);
-  console.log('pendingcount', pendingCount);
   // ✅ Theme based on role
   const theme =
     user?.role === 'staff'
@@ -95,13 +93,6 @@ function HostLayoutContent({ children }: { children: ReactNode }) {
   useEffect(() => {
     soundEnabledRef.current = soundEnabled;
   }, [soundEnabled]);
-
-  useEffect(() => {
-    console.log('🔄 HostLayoutContent render', {
-      user,
-      socket: socketRef.current,
-    });
-  });
 
   // ✅ SOCKET GLOBAL
   useEffect(() => {
@@ -185,6 +176,11 @@ function HostLayoutContent({ children }: { children: ReactNode }) {
           path: '/host/staff', // tab cũ
         },
         {
+          text: 'Thông tin ca làm',
+          icon: <AccessTime />,
+          path: '/host/shifts',
+        },
+        {
           text: 'Hiệu suất nhân viên',
           icon: <TrendingUp />,
           path: '/host/staff/performance',
@@ -216,7 +212,6 @@ function HostLayoutContent({ children }: { children: ReactNode }) {
       ],
     });
   }
-  console.log('pendingcount', pendingCount);
   return (
     <>
       <DashboardLayout
