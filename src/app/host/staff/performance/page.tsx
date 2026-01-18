@@ -1,248 +1,314 @@
 'use client';
-import { useState, useEffect } from 'react';
+
+/**
+ * Staff Performance – Redesigned from scratch
+ * Mục tiêu:
+ * - Đúng ngữ nghĩa "hiệu suất nhân viên"
+ * - Gần với tư duy quản lý thực tế (manager view)
+ * - Tách rõ: Tổng quan → Bảng xếp hạng → Chi tiết theo nhân viên
+ */
+
+import { useEffect, useMemo, useState } from 'react';
 import {
-Card,
-CardContent,
-Typography,
-Button,
-Grid,
-TextField,
-CircularProgress,
-Box,
-Chip,
+  Card,
+  CardContent,
+  Typography,
+  Grid,
+  CircularProgress,
+  Box,
+  TextField,
+  Button,
+  Chip,
+  Avatar,
+  Divider,
 } from '@mui/material';
-import {
-TrendingUp,
-Person,
-AttachMoney,
-Coffee,
-Restaurant,
-EmojiEvents,
-} from '@mui/icons-material';
+import { TrendingUp, Person, AttachMoney, Receipt, AccessTime, Star } from '@mui/icons-material';
 import { format, subDays } from 'date-fns';
 import { vi } from 'date-fns/locale';
+
 import { useAuthStore } from '@/lib/stores/authStore';
 import { staffService } from '@/lib/services/staffService';
 import { StaffPerformance } from '@/types';
+
 export default function StaffPerformancePage() {
-const { user } = useAuthStore();
-const [performance, setPerformance] = useState<StaffPerformance[]>([]);
-const [loading, setLoading] = useState(true);
-const [startDate, setStartDate] = useState(format(subDays(new Date(), 30), 'yyyy-MM-dd'));
-const [endDate, setEndDate] = useState(format(new Date(), 'yyyy-MM-dd'));
-useEffect(() => {
-if (user?.storeId) {
-fetchPerformance();
-}
-}, [user?.storeId, startDate, endDate]);
-const fetchPerformance = async () => {
-if (!user?.storeId) return;
-try {
-  setLoading(true);
-  const data = await staffService.getPerformance(user.storeId, { startDate, endDate });
-  setPerformance(data);
-} catch (error) {
-  console.error('Failed to fetch performance:', error);
-} finally {
-  setLoading(false);
-}
-};
-const getStaffTypeIcon = (type: string) => {
-switch (type) {
-case 'cashier':
-return <AttachMoney className="text-orange-600" />;
-case 'bar':
-return <Coffee className="text-blue-600" />;
-case 'kitchen':
-return <Restaurant className="text-green-600" />;
-default:
-return <Person />;
-}
-};
-const getStaffTypeLabel = (type: string) => {
-switch (type) {
-case 'cashier':
-return 'Thu ngân';
-case 'bar':
-return 'Pha chế';
-case 'kitchen':
-return 'Bếp';
-default:
-return type;
-}
-};
-const getRankMedal = (index: number) => {
-switch (index) {
-case 0:
-return <span className="text-3xl">🥇</span>;
-case 1:
-return <span className="text-3xl">🥈</span>;
-case 2:
-return <span className="text-3xl">🥉</span>;
-default:
-return <span className="text-gray-400 font-bold">#{index + 1}</span>;
-}
-};
-if (loading) {
-return (
-<Box className="flex items-center justify-center min-h-screen">
-<CircularProgress />
-</Box>
-);
-}
-// Sort by total revenue
-const sortedPerformance = [...performance].sort((a, b) => b.totalRevenue - a.totalRevenue);
-return (
-<div>
-{/* Header */}
-<div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-<div>
-<Typography variant="h4" className="font-bold text-gray-800 mb-2">
-Hiệu suất Nhân viên
-</Typography>
-<Typography variant="body2" className="text-gray-600">
-Đánh giá và so sánh hiệu quả làm việc của nhân viên
-</Typography>
-</div>
-</div>
-  {/* Date Filter */}
-  <Card className="mb-6">
-    <CardContent>
-      <Grid container spacing={2} alignItems="center">
-        <Grid size={{ xs: 12, md: 4 }}>
-          <TextField
-            label="Từ ngày"
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            fullWidth
-            InputLabelProps={{ shrink: true }}
+  const { user } = useAuthStore();
+
+  const [data, setData] = useState<StaffPerformance[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [startDate, setStartDate] = useState(format(subDays(new Date(), 30), 'yyyy-MM-dd'));
+  const [endDate, setEndDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+
+  useEffect(() => {
+    if (user?.storeId) fetchData();
+  }, [user?.storeId, startDate, endDate]);
+
+  const fetchData = async () => {
+    if (!user?.storeId) return;
+    try {
+      setLoading(true);
+      const res = await staffService.getPerformance(user.storeId, { startDate, endDate });
+      setData(res);
+    } catch (e) {
+      console.error('Fetch staff performance failed', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /** =====================
+   * Derived Metrics
+   ===================== */
+  const summary = useMemo(() => {
+    const totalRevenue = data.reduce((s, i) => s + i.totalRevenue, 0);
+    const totalOrders = data.reduce((s, i) => s + i.ordersProcessed, 0);
+    const totalHours = data.reduce((s, i) => s + (i.hoursWorked ?? 0), 0);
+
+    return {
+      staffCount: data.length,
+      totalRevenue,
+      totalOrders,
+      avgRevenuePerStaff: data.length ? totalRevenue / data.length : 0,
+      avgOrdersPerStaff: data.length ? totalOrders / data.length : 0,
+      avgOrdersPerHour: totalHours ? totalOrders / totalHours : 0,
+    };
+  }, [data]);
+
+  const ranked = useMemo(() => [...data].sort((a, b) => b.totalRevenue - a.totalRevenue), [data]);
+
+  if (loading) {
+    return (
+      <Box className="flex items-center justify-center min-h-screen">
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <Typography variant="h4" className="font-bold mb-1">
+          Hiệu suất nhân viên
+        </Typography>
+        <Typography variant="body2" className="text-gray-600">
+          Đánh giá hiệu quả làm việc của từng nhân viên trong cửa hàng
+        </Typography>
+      </div>
+
+      {/* Filter */}
+      <Card>
+        <CardContent>
+          <Grid container spacing={2} alignItems="center">
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <TextField
+                label="Từ ngày"
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <TextField
+                label="Đến ngày"
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <Button variant="contained" onClick={fetchData} fullWidth>
+                Xem báo cáo
+              </Button>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+
+      {/* Summary */}
+      <Grid container spacing={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <SummaryCard
+            title="Nhân viên"
+            value={summary.staffCount}
+            icon={<Person />}
+            color={{
+              bg: 'linear-gradient(135deg, #6366f1, #4f46e5)',
+              iconBg: 'rgba(255,255,255,0.2)',
+              iconColor: '#fff',
+            }}
           />
         </Grid>
-        <Grid size={{ xs: 12, md: 4 }}>
-          <TextField
-            label="Đến ngày"
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            fullWidth
-            InputLabelProps={{ shrink: true }}
+
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <SummaryCard
+            title="Tổng đơn"
+            value={summary.totalOrders}
+            icon={<Receipt />}
+            color={{
+              bg: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
+              iconBg: 'rgba(255,255,255,0.2)',
+              iconColor: '#fff',
+            }}
           />
         </Grid>
-        <Grid size={{ xs: 12, md: 4 }}>
-          <Button
-            variant="contained"
-            onClick={fetchPerformance}
-            fullWidth
-          >
-            Xem báo cáo
-          </Button>
+
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <SummaryCard
+            title="Tổng doanh thu"
+            value={(summary.totalRevenue / 1_000_000).toFixed(1) + 'M'}
+            icon={<AttachMoney />}
+            color={{
+              bg: 'linear-gradient(135deg, #22c55e, #16a34a)',
+              iconBg: 'rgba(255,255,255,0.2)',
+              iconColor: '#fff',
+            }}
+          />
+        </Grid>
+
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <SummaryCard
+            title="Đơn / giờ (TB)"
+            value={summary.avgOrdersPerHour.toFixed(2)}
+            icon={<TrendingUp />}
+            color={{
+              bg: 'linear-gradient(135deg, #f59e0b, #d97706)',
+              iconBg: 'rgba(255,255,255,0.2)',
+              iconColor: '#fff',
+            }}
+          />
         </Grid>
       </Grid>
-    </CardContent>
-  </Card>
 
-  {/* Performance Cards */}
-  {sortedPerformance.length === 0 ? (
-    <Card>
-      <CardContent className="text-center py-12">
-        <Person className="text-gray-300 text-6xl mb-4" />
-        <Typography variant="h6" className="text-gray-600 mb-2">
-          Chưa có dữ liệu
-        </Typography>
-        <Typography variant="body2" className="text-gray-500">
-          Chưa có nhân viên nào xử lý đơn hàng trong khoảng thời gian này
-        </Typography>
-      </CardContent>
-    </Card>
-  ) : (
-    <div className="space-y-4">
-      {sortedPerformance.map((staff, index) => (
-        <Card
-          key={staff.staffId}
-          className={`hover:shadow-lg transition-shadow ${
-            index < 3 ? 'border-2 border-yellow-400' : ''
-          }`}
-        >
-          <CardContent>
-            <Grid container spacing={3} alignItems="center">
-              {/* Rank */}
-              <Grid size={{ xs: 12, sm: 2 }} className="text-center">
-                {getRankMedal(index)}
-              </Grid>
+      {/* Ranking */}
+      <Card className="rounded-2xl border border-gray-100 shadow-sm">
+        <CardContent>
+          <Typography variant="h6" className="font-bold mb-4">
+            🏆 Bảng xếp hạng nhân viên
+          </Typography>
 
-              {/* Staff Info */}
-              <Grid size={{ xs: 12, sm: 4 }}>
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center">
-                    {getStaffTypeIcon(staff.staffType)}
-                  </div>
-                  <div>
-                    <Typography variant="h6" className="font-bold">
-                      {staff.staffName}
-                    </Typography>
-                    <Chip
-                      label={getStaffTypeLabel(staff.staffType)}
-                      size="small"
-                      className="mt-1"
-                    />
-                  </div>
-                </div>
-              </Grid>
+          {ranked.length === 0 ? (
+            <Typography className="text-gray-500">Chưa có dữ liệu</Typography>
+          ) : (
+            <div className="space-y-2">
+              {ranked.map((s, index) => {
+                const isTop = index < 3;
 
-              {/* Stats */}
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <Grid container spacing={2}>
-                  <Grid size={{ xs: 6, md: 3 }}>
-                    <div className="text-center">
-                      <Typography variant="body2" className="text-gray-600 mb-1">
-                        Đơn hàng
-                      </Typography>
-                      <Typography variant="h6" className="font-bold text-blue-600">
-                        {staff.ordersProcessed}
-                      </Typography>
-                    </div>
-                  </Grid>
-                  <Grid size={{ xs: 6, md: 3 }}>
-                    <div className="text-center">
-                      <Typography variant="body2" className="text-gray-600 mb-1">
-                        Doanh thu
-                      </Typography>
-                      <Typography variant="h6" className="font-bold text-green-600">
-                        {(staff.totalRevenue / 1000000).toFixed(1)}M
-                      </Typography>
-                    </div>
-                  </Grid>
-                  <Grid size={{ xs: 6, md: 3 }}>
-                    <div className="text-center">
-                      <Typography variant="body2" className="text-gray-600 mb-1">
-                        TB/Đơn
-                      </Typography>
-                      <Typography variant="h6" className="font-bold text-purple-600">
-                        {(staff.avgOrderValue / 1000).toFixed(0)}K
-                      </Typography>
-                    </div>
-                  </Grid>
-                  {staff.ordersPerHour && (
-                    <Grid size={{ xs: 6, md: 3 }}>
-                      <div className="text-center">
-                        <Typography variant="body2" className="text-gray-600 mb-1">
-                          Đơn/Giờ
+                return (
+                  <div
+                    key={s.staffId}
+                    className={`flex items-center justify-between rounded-xl px-3 py-3 transition
+                ${isTop ? 'bg-gradient-to-r from-green-50 to-teal-50' : 'hover:bg-gray-50'}
+              `}
+                  >
+                    {/* LEFT */}
+                    <div className="flex items-center gap-3">
+                      <Avatar
+                        sx={{
+                          width: 36,
+                          height: 36,
+                          fontSize: 14,
+                          fontWeight: 700,
+                          bgcolor:
+                            index === 0
+                              ? '#facc15' // yellow-400
+                              : index === 1
+                                ? '#9ca3af' // gray-400
+                                : index === 2
+                                  ? '#fb923c' // orange-400
+                                  : '#e5e7eb', // gray-200
+                          color: index < 3 ? '#fff' : '#374151', // gray-700
+                        }}
+                      >
+                        {index + 1}
+                      </Avatar>
+
+                      <div>
+                        <Typography className="font-semibold leading-tight">
+                          {s.staffName}
                         </Typography>
-                        <Typography variant="h6" className="font-bold text-orange-600">
-                          {staff.ordersPerHour.toFixed(1)}
+                        <Typography variant="body2" className="text-gray-500">
+                          {s.ordersProcessed} đơn • {(s.totalRevenue / 1_000_000).toFixed(1)}M
                         </Typography>
                       </div>
-                    </Grid>
-                  )}
-                </Grid>
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
-      ))}
+                    </div>
+
+                    {/* RIGHT */}
+                    <div className="flex items-center gap-2">
+                      <Chip
+                        size="small"
+                        color="primary"
+                        label={`${s.ordersPerHour?.toFixed(1) ?? 0} đơn/giờ`}
+                      />
+                      <Chip
+                        size="small"
+                        color="success"
+                        label={`TB ${(s.avgOrderValue / 1000).toFixed(0)}K / đơn`}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
-  )}
-</div>
-);
+  );
+}
+
+/** =====================
+ * Sub Components
+ ===================== */
+function SummaryCard({
+  title,
+  value,
+  icon,
+  color,
+}: {
+  title: string;
+  value: string | number;
+  icon: React.ReactNode;
+  color?: {
+    bg: string;
+    iconBg: string;
+    iconColor: string;
+  };
+}) {
+  return (
+    <Card
+      className="h-full"
+      sx={{
+        background: color?.bg ?? '#fff',
+        color: color ? '#fff' : 'inherit',
+        borderRadius: 3,
+      }}
+    >
+      <CardContent>
+        <div className="flex items-center gap-4">
+          <div
+            className="w-11 h-11 rounded-full flex items-center justify-center"
+            style={{
+              background: color?.iconBg ?? '#e5e7eb',
+              color: color?.iconColor ?? '#374151',
+            }}
+          >
+            {icon}
+          </div>
+
+          <div>
+            <Typography variant="body2" sx={{ opacity: color ? 0.85 : 1 }}>
+              {title}
+            </Typography>
+            <Typography variant="h6" fontWeight={700}>
+              {value}
+            </Typography>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
 }
