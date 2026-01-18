@@ -32,6 +32,7 @@ import { Ingredient, InventorySummary } from '@/types';
 import IngredientDialog from '@/components/host/InventoryManager/IngredientDialog';
 import StockAdjustDialog from '@/components/host/InventoryManager/StockAdjustDialog';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
+import SummaryCard from '@/components/ui/SummaryCard';
 
 export default function InventoryManagementPage() {
   const router = useRouter();
@@ -163,79 +164,59 @@ export default function InventoryManagementPage() {
         </Button>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Summary */}
       {summary && (
         <Grid container spacing={3} className="mb-8">
           <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-            <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white">
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Typography variant="body2" className="opacity-90 mb-1">
-                      Tổng nguyên liệu
-                    </Typography>
-                    <Typography variant="h3" className="font-bold">
-                      {summary.totalIngredients}
-                    </Typography>
-                  </div>
-                  <Inventory className="text-6xl opacity-20" />
-                </div>
-              </CardContent>
-            </Card>
+            <SummaryCard
+              title="Tổng nguyên liệu"
+              value={summary.totalIngredients}
+              icon={<Inventory />}
+              color={{
+                bg: 'linear-gradient(135deg, #3b82f6, #2563eb)', // blue
+                iconBg: 'rgba(255,255,255,0.2)',
+                iconColor: '#fff',
+              }}
+            />
           </Grid>
 
           <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-            <Card className="bg-gradient-to-br from-orange-500 to-orange-600 text-white">
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Typography variant="body2" className="opacity-90 mb-1">
-                      Sắp hết
-                    </Typography>
-                    <Typography variant="h3" className="font-bold">
-                      {summary.lowStockCount}
-                    </Typography>
-                  </div>
-                  <Warning className="text-6xl opacity-20" />
-                </div>
-              </CardContent>
-            </Card>
+            <SummaryCard
+              title="Sắp hết"
+              value={summary.lowStockCount}
+              icon={<Warning />}
+              color={{
+                bg: 'linear-gradient(135deg, #f97316, #ea580c)', // orange
+                iconBg: 'rgba(255,255,255,0.2)',
+                iconColor: '#fff',
+              }}
+            />
           </Grid>
 
           <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-            <Card className="bg-gradient-to-br from-red-500 to-red-600 text-white">
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Typography variant="body2" className="opacity-90 mb-1">
-                      Hết hàng
-                    </Typography>
-                    <Typography variant="h3" className="font-bold">
-                      {summary.outOfStockCount}
-                    </Typography>
-                  </div>
-                  <TrendingDown className="text-6xl opacity-20" />
-                </div>
-              </CardContent>
-            </Card>
+            <SummaryCard
+              title="Hết hàng"
+              value={summary.outOfStockCount}
+              icon={<TrendingDown />}
+              color={{
+                bg: 'linear-gradient(135deg, #ef4444, #dc2626)', // red
+                iconBg: 'rgba(255,255,255,0.2)',
+                iconColor: '#fff',
+              }}
+            />
           </Grid>
 
           <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-            <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white">
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Typography variant="body2" className="opacity-90 mb-1">
-                      Giá trị kho
-                    </Typography>
-                    <Typography variant="h3" className="font-bold">
-                      {(summary.totalInventoryValue / 1000000).toFixed(1)}M
-                    </Typography>
-                  </div>
-                  <AttachMoney className="text-6xl opacity-20" />
-                </div>
-              </CardContent>
-            </Card>
+            <SummaryCard
+              title="Giá trị kho"
+              value={(summary.totalInventoryValue / 1_000_000).toFixed(1) + 'M'}
+              icon={<AttachMoney />}
+              color={{
+                bg: 'linear-gradient(135deg, #22c55e, #16a34a)', // green
+                iconBg: 'rgba(255,255,255,0.2)',
+                iconColor: '#fff',
+              }}
+            />
           </Grid>
         </Grid>
       )}
@@ -334,23 +315,23 @@ export default function InventoryManagementPage() {
               {searchTerm
                 ? 'Không tìm thấy nguyên liệu'
                 : stockFilter === 'lowStock'
-                ? 'Không có nguyên liệu sắp hết'
-                : stockFilter === 'outOfStock'
-                ? 'Không có nguyên liệu hết hàng'
-                : stockFilter === 'inStock'
-                ? 'Không có nguyên liệu còn hàng'
-                : 'Chưa có nguyên liệu nào'}
+                  ? 'Không có nguyên liệu sắp hết'
+                  : stockFilter === 'outOfStock'
+                    ? 'Không có nguyên liệu hết hàng'
+                    : stockFilter === 'inStock'
+                      ? 'Không có nguyên liệu còn hàng'
+                      : 'Chưa có nguyên liệu nào'}
             </Typography>
             <Typography variant="body2" className="text-gray-500 mb-4">
               {searchTerm
                 ? 'Thử tìm kiếm với từ khóa khác'
                 : stockFilter === 'lowStock'
-                ? 'Tất cả nguyên liệu đều còn đủ'
-                : stockFilter === 'outOfStock'
-                ? 'Tất cả nguyên liệu đều còn trong kho'
-                : stockFilter === 'inStock'
-                ? 'Không có nguyên liệu nào trong trạng thái này'
-                : 'Bắt đầu bằng cách thêm nguyên liệu đầu tiên'}
+                  ? 'Tất cả nguyên liệu đều còn đủ'
+                  : stockFilter === 'outOfStock'
+                    ? 'Tất cả nguyên liệu đều còn trong kho'
+                    : stockFilter === 'inStock'
+                      ? 'Không có nguyên liệu nào trong trạng thái này'
+                      : 'Bắt đầu bằng cách thêm nguyên liệu đầu tiên'}
             </Typography>
             {!searchTerm && stockFilter === 'all' && (
               <Button

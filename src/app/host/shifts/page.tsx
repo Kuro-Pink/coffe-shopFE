@@ -32,6 +32,7 @@ import { staffService } from '@/lib/services/staffService';
 import { Shift, Staff, HostShiftStats } from '@/types';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ShiftReportDialog from '@/components/staff/ShiftManager/ShiftReportDialog';
+import SummaryCard from '@/components/ui/SummaryCard';
 
 export default function HostAllShiftsPage() {
   const { user } = useAuthStore();
@@ -174,55 +175,55 @@ export default function HostAllShiftsPage() {
       {currentTab === 'all' && stats && (
         <Grid container spacing={3} className="mb-6">
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white">
-              <CardContent>
-                <Typography variant="body2" className="opacity-90 mb-1">
-                  Tổng ca làm
-                </Typography>
-                <Typography variant="h3" className="font-bold">
-                  {stats.totalShifts}
-                </Typography>
-              </CardContent>
-            </Card>
+            <SummaryCard
+              title="Tổng ca làm"
+              value={stats.totalShifts}
+              icon={<Receipt />}
+              color={{
+                bg: 'linear-gradient(135deg, #3b82f6, #2563eb)', // blue
+                iconBg: 'rgba(255,255,255,0.2)',
+                iconColor: '#fff',
+              }}
+            />
           </Grid>
 
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white">
-              <CardContent>
-                <Typography variant="body2" className="opacity-90 mb-1">
-                  Tổng giờ làm
-                </Typography>
-                <Typography variant="h3" className="font-bold">
-                  {stats.totalHoursWorked.toFixed(1)}h
-                </Typography>
-              </CardContent>
-            </Card>
+            <SummaryCard
+              title="Tổng giờ làm"
+              value={`${stats.totalHoursWorked.toFixed(1)}h`}
+              icon={<AccessTime />}
+              color={{
+                bg: 'linear-gradient(135deg, #8b5cf6, #7c3aed)', // purple
+                iconBg: 'rgba(255,255,255,0.2)',
+                iconColor: '#fff',
+              }}
+            />
           </Grid>
 
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Card className="bg-gradient-to-br from-orange-500 to-orange-600 text-white">
-              <CardContent>
-                <Typography variant="body2" className="opacity-90 mb-1">
-                  Tổng đơn hàng
-                </Typography>
-                <Typography variant="h3" className="font-bold">
-                  {stats.totalOrdersProcessed}
-                </Typography>
-              </CardContent>
-            </Card>
+            <SummaryCard
+              title="Tổng đơn hàng"
+              value={stats.totalOrdersProcessed}
+              icon={<TrendingUp />}
+              color={{
+                bg: 'linear-gradient(135deg, #f97316, #ea580c)', // orange
+                iconBg: 'rgba(255,255,255,0.2)',
+                iconColor: '#fff',
+              }}
+            />
           </Grid>
 
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white">
-              <CardContent>
-                <Typography variant="body2" className="opacity-90 mb-1">
-                  Tổng doanh thu
-                </Typography>
-                <Typography variant="h4" className="font-bold">
-                  {(stats.totalRevenue / 1000000).toFixed(1)}M
-                </Typography>
-              </CardContent>
-            </Card>
+            <SummaryCard
+              title="Tổng doanh thu"
+              value={(stats.totalRevenue / 1_000_000).toFixed(1) + 'M'}
+              icon={<AttachMoney />}
+              color={{
+                bg: 'linear-gradient(135deg, #22c55e, #16a34a)', // green
+                iconBg: 'rgba(255,255,255,0.2)',
+                iconColor: '#fff',
+              }}
+            />
           </Grid>
         </Grid>
       )}

@@ -17,6 +17,8 @@ import { vi } from 'date-fns/locale';
 import { inventoryService } from '@/lib/services/inventoryService';
 import { UsageReport as UsageReportType } from '@/types';
 import { formatMoneyShort } from '@/utils/number';
+import SummaryCard from '@/components/ui/SummaryCard';
+
 interface UsageReportProps {
   storeId: string;
 }
@@ -74,76 +76,60 @@ export default function UsageReport({ storeId }: UsageReportProps) {
   return (
     <div>
       {/* Summary Cards */}
+      {/* Summary Cards */}
       <Grid container spacing={3} className="mb-6">
         <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white">
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div>
-                  <Typography variant="body2" className="opacity-90 mb-1">
-                    Tổng chi phí nguyên liệu
-                  </Typography>
-                  <Typography variant="h5" className="font-bold">
-                    {(totalUsageCost / 1000000).toFixed(1)}M
-                  </Typography>
-                </div>
-                <AttachMoney className="text-5xl opacity-20" />
-              </div>
-            </CardContent>
-          </Card>
-        </Grid>{' '}
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white">
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div>
-                  <Typography variant="body2" className="opacity-90 mb-1">
-                    Số món đã dùng
-                  </Typography>
-                  <Typography variant="h5" className="font-bold">
-                    {totalOrders}
-                  </Typography>
-                </div>
-                <ShoppingCart className="text-5xl opacity-20" />
-              </div>
-            </CardContent>
-          </Card>
-        </Grid>{' '}
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <Card className="bg-gradient-to-br from-orange-500 to-orange-600 text-white">
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div>
-                  <Typography variant="body2" className="opacity-90 mb-1">
-                    Số loại liệu dùng
-                  </Typography>
-                  <Typography variant="h5" className="font-bold">
-                    {totalItemsUsed}
-                  </Typography>
-                </div>
-                <Restaurant className="text-5xl opacity-20" />
-              </div>
-            </CardContent>
-          </Card>
-        </Grid>{' '}
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white">
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div>
-                  <Typography variant="body2" className="opacity-90 mb-1">
-                    Trung bình mỗi đơn
-                  </Typography>
-                  <Typography variant="h5" className="font-bold">
-                    {totalOrders > 0 ? (totalUsageCost / totalOrders / 1000).toFixed(0) : 0}K
-                  </Typography>
-                </div>
-                <TrendingUp className="text-5xl opacity-20" />
-              </div>
-            </CardContent>
-          </Card>
+          <SummaryCard
+            title="Tổng chi phí nguyên liệu"
+            value={(totalUsageCost / 1_000_000).toFixed(1) + 'M'}
+            icon={<AttachMoney />}
+            color={{
+              bg: 'linear-gradient(135deg, #3b82f6, #2563eb)', // blue
+              iconBg: 'rgba(255,255,255,0.2)',
+              iconColor: '#fff',
+            }}
+          />
         </Grid>
-      </Grid>{' '}
+
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+          <SummaryCard
+            title="Số món đã dùng"
+            value={totalOrders}
+            icon={<ShoppingCart />}
+            color={{
+              bg: 'linear-gradient(135deg, #22c55e, #16a34a)', // green
+              iconBg: 'rgba(255,255,255,0.2)',
+              iconColor: '#fff',
+            }}
+          />
+        </Grid>
+
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+          <SummaryCard
+            title="Số loại liệu dùng"
+            value={totalItemsUsed}
+            icon={<Restaurant />}
+            color={{
+              bg: 'linear-gradient(135deg, #f97316, #ea580c)', // orange
+              iconBg: 'rgba(255,255,255,0.2)',
+              iconColor: '#fff',
+            }}
+          />
+        </Grid>
+
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+          <SummaryCard
+            title="Trung bình mỗi đơn"
+            value={totalOrders > 0 ? (totalUsageCost / totalOrders / 1000).toFixed(0) + 'K' : '0K'}
+            icon={<TrendingUp />}
+            color={{
+              bg: 'linear-gradient(135deg, #a855f7, #7e22ce)', // purple
+              iconBg: 'rgba(255,255,255,0.2)',
+              iconColor: '#fff',
+            }}
+          />
+        </Grid>
+      </Grid>
       {/* Date Filter */}
       <Card className="mb-6">
         <CardContent>

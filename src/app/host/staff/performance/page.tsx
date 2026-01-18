@@ -1,13 +1,4 @@
 'use client';
-
-/**
- * Staff Performance – Redesigned from scratch
- * Mục tiêu:
- * - Đúng ngữ nghĩa "hiệu suất nhân viên"
- * - Gần với tư duy quản lý thực tế (manager view)
- * - Tách rõ: Tổng quan → Bảng xếp hạng → Chi tiết theo nhân viên
- */
-
 import { useEffect, useMemo, useState } from 'react';
 import {
   Card,
@@ -24,6 +15,8 @@ import {
 } from '@mui/material';
 import { TrendingUp, Person, AttachMoney, Receipt, AccessTime, Star } from '@mui/icons-material';
 import { format, subDays } from 'date-fns';
+import SummaryCard from '@/components/ui/SummaryCard';
+
 import { vi } from 'date-fns/locale';
 
 import { useAuthStore } from '@/lib/stores/authStore';
@@ -257,58 +250,5 @@ export default function StaffPerformancePage() {
         </CardContent>
       </Card>
     </div>
-  );
-}
-
-/** =====================
- * Sub Components
- ===================== */
-function SummaryCard({
-  title,
-  value,
-  icon,
-  color,
-}: {
-  title: string;
-  value: string | number;
-  icon: React.ReactNode;
-  color?: {
-    bg: string;
-    iconBg: string;
-    iconColor: string;
-  };
-}) {
-  return (
-    <Card
-      className="h-full"
-      sx={{
-        background: color?.bg ?? '#fff',
-        color: color ? '#fff' : 'inherit',
-        borderRadius: 3,
-      }}
-    >
-      <CardContent>
-        <div className="flex items-center gap-4">
-          <div
-            className="w-11 h-11 rounded-full flex items-center justify-center"
-            style={{
-              background: color?.iconBg ?? '#e5e7eb',
-              color: color?.iconColor ?? '#374151',
-            }}
-          >
-            {icon}
-          </div>
-
-          <div>
-            <Typography variant="body2" sx={{ opacity: color ? 0.85 : 1 }}>
-              {title}
-            </Typography>
-            <Typography variant="h6" fontWeight={700}>
-              {value}
-            </Typography>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
   );
 }

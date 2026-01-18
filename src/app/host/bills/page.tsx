@@ -34,22 +34,30 @@ import {
   Search,
   Download,
   Print,
-  CheckCircle,
   Close,
   Visibility,
   CalendarToday,
-  Person,
-  Phone,
   TableBar,
   Payment,
-  FilterList,
+  AttachMoney,
 } from '@mui/icons-material';
 import { useAuthStore } from '@/lib/stores/authStore';
 import { storeService } from '@/lib/services/storeService';
 import { Bill } from '@/types';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
-import { format, isValid, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays } from 'date-fns';
+import {
+  format,
+  isValid,
+  startOfDay,
+  endOfDay,
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+  subDays,
+} from 'date-fns';
 import { vi } from 'date-fns/locale';
+import SummaryCard from '@/components/ui/SummaryCard';
 import * as XLSX from 'xlsx';
 
 type DateFilter = 'today' | 'yesterday' | 'week' | 'month' | 'custom';
@@ -62,12 +70,14 @@ export default function BillsManagementPage() {
   const [filteredBills, setFilteredBills] = useState<Bill[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   // Filters
   const [dateFilter, setDateFilter] = useState<DateFilter>('today');
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
-  const [paymentMethodFilter, setPaymentMethodFilter] = useState<'all' | 'cash' | 'transfer'>('all');
+  const [paymentMethodFilter, setPaymentMethodFilter] = useState<'all' | 'cash' | 'transfer'>(
+    'all',
+  );
 
   // Pagination
   const [page, setPage] = useState(1);
@@ -85,15 +95,7 @@ export default function BillsManagementPage() {
 
   useEffect(() => {
     applyFilters();
-  }, [
-    bills,
-    searchQuery,
-    dateFilter,
-    customStartDate,
-    customEndDate,
-    paymentMethodFilter,
-  ]);
-
+  }, [bills, searchQuery, dateFilter, customStartDate, customEndDate, paymentMethodFilter]);
 
   const fetchBills = async () => {
     try {
@@ -109,7 +111,7 @@ export default function BillsManagementPage() {
 
   const getDateRange = (): { start: Date; end: Date } => {
     const now = new Date();
-    
+
     switch (dateFilter) {
       case 'today':
         return { start: startOfDay(now), end: endOfDay(now) };
@@ -117,7 +119,10 @@ export default function BillsManagementPage() {
         const yesterday = subDays(now, 1);
         return { start: startOfDay(yesterday), end: endOfDay(yesterday) };
       case 'week':
-        return { start: startOfWeek(now, { weekStartsOn: 1 }), end: endOfWeek(now, { weekStartsOn: 1 }) };
+        return {
+          start: startOfWeek(now, { weekStartsOn: 1 }),
+          end: endOfWeek(now, { weekStartsOn: 1 }),
+        };
       case 'month':
         return { start: startOfMonth(now), end: endOfMonth(now) };
       case 'custom':
@@ -135,7 +140,7 @@ export default function BillsManagementPage() {
 
     // Date filter
     const { start, end } = getDateRange();
-    filtered = filtered.filter(bill => {
+    filtered = filtered.filter((bill) => {
       const billDate = new Date(bill.createdAt);
       return billDate >= start && billDate <= end;
     });
@@ -143,17 +148,18 @@ export default function BillsManagementPage() {
     // Search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(bill =>
-        bill.billNumber.toLowerCase().includes(query) ||
-        bill.customerName?.toLowerCase().includes(query) ||
-        bill.customerPhone.includes(query) ||
-        bill.tableName.toLowerCase().includes(query)
+      filtered = filtered.filter(
+        (bill) =>
+          bill.billNumber.toLowerCase().includes(query) ||
+          bill.customerName?.toLowerCase().includes(query) ||
+          bill.customerPhone.includes(query) ||
+          bill.tableName.toLowerCase().includes(query),
       );
     }
 
     // Payment method filter
     if (paymentMethodFilter !== 'all') {
-      filtered = filtered.filter(bill => bill.paymentMethod === paymentMethodFilter);
+      filtered = filtered.filter((bill) => bill.paymentMethod === paymentMethodFilter);
     }
 
     // Sort by date (newest first)
@@ -212,7 +218,10 @@ export default function BillsManagementPage() {
               </tr>
             </thead>
             <tbody>
-              ${bill.items?.map(item => `
+              ${
+                bill.items
+                  ?.map(
+                    (item) => `
                 <tr>
                   <td>${item.name}</td>
                   <td style="text-align:center;">${item.quantity}</td>
@@ -223,22 +232,30 @@ export default function BillsManagementPage() {
                     ${(item.price * item.quantity).toLocaleString('vi-VN')} ₫
                   </td>
                 </tr>
-              `).join('') || `
+              `,
+                  )
+                  .join('') ||
+                `
                 <tr>
                   <td colspan="4" style="text-align:center;">
                     Không có thông tin món
                   </td>
                 </tr>
-              `}
+              `
+              }
             </tbody>
           </table>
           
           <div class="info">
-            <div class="info-row"><strong>Phương thức:</strong> ${bill.paymentMethod === 'cash' ? '💵 Tiền mặt' : '🏦 Chuyển khoản'}</div>
-            ${bill.paymentMethod === 'cash' && bill.amountReceived ? `
+            <div class="info-row"><strong>Phương thức:</strong> ${bill.paymentMethod === 'cash' ? 'Tiền mặt' : 'Chuyển khoản'}</div>
+            ${
+              bill.paymentMethod === 'cash' && bill.amountReceived
+                ? `
               <div class="info-row"><strong>Tiền nhận:</strong> ${bill.amountReceived.toLocaleString('vi-VN')} ₫</div>
               <div class="info-row"><strong>Tiền thừa:</strong> ${(bill.changeAmount || 0).toLocaleString('vi-VN')} ₫</div>
-            ` : ''}
+            `
+                : ''
+            }
           </div>
 
           <div class="total">
@@ -259,12 +276,12 @@ export default function BillsManagementPage() {
 
   const handleExportExcel = () => {
     // Prepare data for Excel
-    const exportData = filteredBills.map(bill => ({
+    const exportData = filteredBills.map((bill) => ({
       'Mã HĐ': bill.billNumber,
       'Thời gian': format(new Date(bill.createdAt), 'dd/MM/yyyy HH:mm', { locale: vi }),
-      'Bàn': bill.tableName,
+      Bàn: bill.tableName,
       'Khách hàng': bill.customerName,
-      'SĐT': bill.customerPhone,
+      SĐT: bill.customerPhone,
       'Tổng tiền': bill.totalAmount,
       'Phương thức': bill.paymentMethod === 'cash' ? 'Tiền mặt' : 'Chuyển khoản',
     }));
@@ -276,10 +293,9 @@ export default function BillsManagementPage() {
 
     // Add summary row
     const totalAmount = filteredBills.reduce((sum, bill) => sum + bill.totalAmount, 0);
-    XLSX.utils.sheet_add_aoa(ws, [
-      [],
-      ['TỔNG CỘNG', '', '', '', '', totalAmount, '', ''],
-    ], { origin: -1 });
+    XLSX.utils.sheet_add_aoa(ws, [[], ['TỔNG CỘNG', '', '', '', '', totalAmount, '', '']], {
+      origin: -1,
+    });
 
     // Export
     const dateStr = format(new Date(), 'ddMMyyyy', { locale: vi });
@@ -291,19 +307,16 @@ export default function BillsManagementPage() {
   };
 
   const getCashCount = () => {
-    return bills.filter(b => b.paymentMethod === 'cash').length;
+    return bills.filter((b) => b.paymentMethod === 'cash').length;
   };
 
   const getTransferCount = () => {
-    return bills.filter(b => b.paymentMethod === 'transfer').length;
+    return bills.filter((b) => b.paymentMethod === 'transfer').length;
   };
 
   // Pagination
   const totalPages = Math.ceil(filteredBills.length / itemsPerPage);
-  const paginatedBills = filteredBills.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage
-  );
+  const paginatedBills = filteredBills.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
   if (loading) return <LoadingSpinner />;
 
@@ -333,38 +346,38 @@ export default function BillsManagementPage() {
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <Card className="bg-gradient-to-br from-blue-500 to-blue-600">
-          <CardContent className="text-gray-700">
-            <Typography variant="body2" className="opacity-90 mb-1">
-              Tổng doanh thu
-            </Typography>
-            <Typography variant="h4" className="font-bold">
-              {getTotalRevenue().toLocaleString('vi-VN')} ₫
-            </Typography>
-          </CardContent>
-        </Card>
+        <SummaryCard
+          title="Tổng doanh thu"
+          value={getTotalRevenue().toLocaleString('vi-VN') + ' ₫'}
+          icon={<AttachMoney />}
+          color={{
+            bg: 'linear-gradient(135deg, #3b82f6, #2563eb)', // blue
+            iconBg: 'rgba(255,255,255,0.2)',
+            iconColor: '#fff',
+          }}
+        />
 
-        <Card className="bg-gradient-to-br from-green-500 to-green-600">
-          <CardContent className="text-gray-700">
-            <Typography variant="body2" className="opacity-90 mb-1">
-              💵 Tiền mặt
-            </Typography>
-            <Typography variant="h4" className="font-bold">
-              {getCashCount()} hóa đơn
-            </Typography>
-          </CardContent>
-        </Card>
+        <SummaryCard
+          title="Tiền mặt"
+          value={`${getCashCount()} hóa đơn`}
+          icon={<Payment />}
+          color={{
+            bg: 'linear-gradient(135deg, #22c55e, #16a34a)', // green
+            iconBg: 'rgba(255,255,255,0.2)',
+            iconColor: '#fff',
+          }}
+        />
 
-        <Card className="bg-gradient-to-br from-purple-500 to-purple-600">
-          <CardContent className="text-gray-700">
-            <Typography variant="body2" className="opacity-90 mb-1">
-              🏦 Chuyển khoản
-            </Typography>
-            <Typography variant="h4" className="font-bold">
-              {getTransferCount()} hóa đơn
-            </Typography>
-          </CardContent>
-        </Card>
+        <SummaryCard
+          title="Chuyển khoản"
+          value={`${getTransferCount()} hóa đơn`}
+          icon={<Receipt />}
+          color={{
+            bg: 'linear-gradient(135deg, #a855f7, #7e22ce)', // purple
+            iconBg: 'rgba(255,255,255,0.2)',
+            iconColor: '#fff',
+          }}
+        />
       </div>
 
       {/* Filters */}
@@ -463,15 +476,14 @@ export default function BillsManagementPage() {
                   <TableCell className="font-bold">Khách hàng</TableCell>
                   <TableCell className="font-bold">Tổng tiền</TableCell>
                   <TableCell className="font-bold">PT Thanh toán</TableCell>
-                  <TableCell className="font-bold" align="center">Thao tác</TableCell>
+                  <TableCell className="font-bold" align="center">
+                    Thao tác
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {paginatedBills.map((bill) => (
-                  <TableRow
-                    key={bill._id}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
+                  <TableRow key={bill._id} className="hover:bg-gray-50 transition-colors">
                     <TableCell>
                       <Chip
                         label={bill.billNumber}
@@ -547,12 +559,7 @@ export default function BillsManagementPage() {
       )}
 
       {/* Detail Dialog */}
-      <Dialog
-        open={detailOpen}
-        onClose={() => setDetailOpen(false)}
-        maxWidth="md"
-        fullWidth
-      >
+      <Dialog open={detailOpen} onClose={() => setDetailOpen(false)} maxWidth="md" fullWidth>
         {selectedBill && (
           <>
             <DialogTitle>
@@ -580,7 +587,9 @@ export default function BillsManagementPage() {
                       Thời gian
                     </Typography>
                     <Typography variant="body2" className="font-semibold">
-                      {format(new Date(selectedBill.createdAt), 'HH:mm - dd/MM/yyyy', { locale: vi })}
+                      {format(new Date(selectedBill.createdAt), 'HH:mm - dd/MM/yyyy', {
+                        locale: vi,
+                      })}
                     </Typography>
                   </div>
                   <div>
@@ -612,7 +621,9 @@ export default function BillsManagementPage() {
                       Phương thức thanh toán
                     </Typography>
                     <Chip
-                      label={selectedBill.paymentMethod === 'cash' ? '💵 Tiền mặt' : '🏦 Chuyển khoản'}
+                      label={
+                        selectedBill.paymentMethod === 'cash' ? '💵 Tiền mặt' : '🏦 Chuyển khoản'
+                      }
                       size="small"
                       color={selectedBill.paymentMethod === 'cash' ? 'success' : 'info'}
                       className="pr-2"
@@ -625,9 +636,9 @@ export default function BillsManagementPage() {
 
               {/* Items */}
               <Typography variant="subtitle2" className="font-bold mb-3">
-                Chi tiết món ({selectedBill.items?.length || 0} món) 
+                Chi tiết món ({selectedBill.items?.length || 0} món)
               </Typography>
-              
+
               <TableContainer component={Paper} variant="outlined">
                 <Table size="small">
                   <TableHead>
@@ -643,16 +654,13 @@ export default function BillsManagementPage() {
                       <TableRow key={item._id || idx}>
                         <TableCell>{item.name}</TableCell>
                         <TableCell align="center">{item.quantity}</TableCell>
-                        <TableCell align="right">
-                          {item.price.toLocaleString('vi-VN')} ₫
-                        </TableCell>
+                        <TableCell align="right">{item.price.toLocaleString('vi-VN')} ₫</TableCell>
                         <TableCell align="right" className="font-semibold">
                           {(item.price * item.quantity).toLocaleString('vi-VN')} ₫
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
-
                 </Table>
               </TableContainer>
 
@@ -694,9 +702,7 @@ export default function BillsManagementPage() {
               >
                 In hóa đơn
               </Button>
-              <Button onClick={() => setDetailOpen(false)}>
-                Đóng
-              </Button>
+              <Button onClick={() => setDetailOpen(false)}>Đóng</Button>
             </DialogActions>
           </>
         )}
