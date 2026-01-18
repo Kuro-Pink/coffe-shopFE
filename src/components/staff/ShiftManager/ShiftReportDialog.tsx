@@ -37,17 +37,35 @@ export default function ShiftReportDialog({ open, shift, onClose }: ShiftReportD
   const handlePrint = () => {
     window.print();
   };
+  const safeDate = (value?: string | Date) => {
+    if (!value) return null;
+    const d = new Date(value);
+    return isNaN(d.getTime()) ? null : d;
+  };
 
-  const shiftDuration = shift.checkOutTime
-    ? differenceInMinutes(new Date(shift.checkOutTime), new Date(shift.checkInTime))
-    : 0;
+  const safeFormat = (value?: string | Date) => {
+    const d = safeDate(value);
+    return d ? format(d, 'HH:mm dd/MM/yyyy', { locale: vi }) : '--';
+  };
+
+  const checkIn = safeDate(shift.checkInTime);
+  const checkOut = safeDate(shift.checkOutTime);
+
+  const shiftDuration = checkIn && checkOut ? differenceInMinutes(checkOut, checkIn) : 0;
+
   const hours = Math.floor(shiftDuration / 60);
   const minutes = shiftDuration % 60;
 
-  const avgOrderValue = shift.ordersCompleted > 0 ? shift.totalRevenue / shift.ordersCompleted : 0;
+  const ordersCompleted = shift.ordersCompleted ?? 0;
+  const totalRevenue = shift.totalRevenue ?? 0;
+  const discrepancy = shift.discrepancy ?? 0;
+  const unpaidOrders = shift.unpaidOrders ?? 0;
 
-  const hasDiscrepancy = shift.discrepancy !== 0;
-  const isLargeDiscrepancy = Math.abs(shift.discrepancy) > 50000;
+  const avgOrderValue = ordersCompleted > 0 ? totalRevenue / ordersCompleted : 0;
+
+  const hasDiscrepancy = discrepancy !== 0;
+  const isLargeDiscrepancy = Math.abs(discrepancy) > 50000;
+
   const money = (value?: number) => (value ?? 0).toLocaleString();
 
   return (
@@ -91,19 +109,14 @@ export default function ShiftReportDialog({ open, shift, onClose }: ShiftReportD
               <Typography variant="caption" className="text-gray-600 block mb-1">
                 Bắt đầu
               </Typography>
-              <Typography variant="body1">
-                {format(new Date(shift.checkInTime), 'HH:mm dd/MM/yyyy', { locale: vi })}
-              </Typography>
+              <Typography variant="body1">{safeFormat(shift.checkInTime)}</Typography>
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6 }}>
               <Typography variant="caption" className="text-gray-600 block mb-1">
                 Kết thúc
               </Typography>
-              <Typography variant="body1">
-                {shift.checkOutTime &&
-                  format(new Date(shift.checkOutTime), 'HH:mm dd/MM/yyyy', { locale: vi })}
-              </Typography>
+              <Typography variant="body1">{safeFormat(shift.checkOutTime)}</Typography>
             </Grid>
           </Grid>
         </div>
@@ -263,8 +276,8 @@ export default function ShiftReportDialog({ open, shift, onClose }: ShiftReportD
                 {hasDiscrepancy && (
                   <Chip
                     size="small"
-                    label={shift.discrepancy > 0 ? 'Thừa' : 'Thiếu'}
-                    color={shift.discrepancy > 0 ? 'warning' : 'error'}
+                    label={discrepancy > 0 ? 'Thừa' : 'Thiếu'}
+                    color={discrepancy > 0 ? 'warning' : 'error'}
                   />
                 )}
                 <Typography
@@ -272,13 +285,13 @@ export default function ShiftReportDialog({ open, shift, onClose }: ShiftReportD
                   className={`font-bold ${
                     shift.discrepancy === 0
                       ? 'text-green-600'
-                      : shift.discrepancy > 0
-                      ? 'text-orange-600'
-                      : 'text-red-600'
+                      : discrepancy > 0
+                        ? 'text-orange-600'
+                        : 'text-red-600'
                   }`}
                 >
-                  {shift.discrepancy > 0 && '+'}
-                  {money(shift.discrepancy)} ₫
+                  {discrepancy > 0 && '+'}
+                  {money(discrepancy)} ₫
                 </Typography>
               </div>
             </div>
@@ -293,9 +306,9 @@ export default function ShiftReportDialog({ open, shift, onClose }: ShiftReportD
             icon={<Warning />}
           >
             <strong>
-              {shift.discrepancy > 0
-                ? `Thừa ${shift.discrepancy.toLocaleString()} ₫`
-                : `Thiếu ${Math.abs(shift.discrepancy ?? 0).toLocaleString()} ₫`}
+              {discrepancy > 0
+                ? `Thừa ${discrepancy.toLocaleString()} ₫`
+                : `Thiếu ${Math.abs(discrepancy ?? 0).toLocaleString()} ₫`}
             </strong>
             <br />
             {isLargeDiscrepancy
@@ -311,7 +324,7 @@ export default function ShiftReportDialog({ open, shift, onClose }: ShiftReportD
         )}
 
         {/* Unpaid Orders */}
-        {shift.unpaidOrders > 0 && (
+        {unpaidOrders > 0 && (
           <Alert severity="warning" className="mb-4" icon={<MoneyOff />}>
             <strong>Công nợ:</strong> Có {shift.unpaidOrders} đơn chưa thanh toán hết (tổng nợ:{' '}
             {money(shift.unpaidAmount)} ₫)

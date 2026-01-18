@@ -19,7 +19,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { shiftService } from '@/lib/services/shiftService';
-import { Shift } from '@/types';
+import { Shift, ShiftCheckOutPayload } from '@/types';
 import { AxiosError } from 'axios';
 
 interface ErrorResponse {
@@ -76,6 +76,12 @@ export default function CheckOutDialog({ open, shift, onClose, onSuccess }: Chec
     }
   }, [open, setValue]);
 
+  const safeFormat = (value?: string | Date) => {
+    if (!value) return '--';
+    const date = new Date(value);
+    return isNaN(date.getTime()) ? '--' : format(date, 'HH:mm dd/MM/yyyy', { locale: vi });
+  };
+
   const onSubmit = async (data: CheckOutFormData) => {
     if (loading) return;
 
@@ -83,7 +89,7 @@ export default function CheckOutDialog({ open, shift, onClose, onSuccess }: Chec
       setLoading(true);
       setError('');
 
-      const checkOutData: any = {
+      const checkOutData: ShiftCheckOutPayload = {
         notes: data.notes,
       };
 
@@ -143,9 +149,7 @@ export default function CheckOutDialog({ open, shift, onClose, onSuccess }: Chec
             <div className="space-y-1 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Bắt đầu:</span>
-                <span className="font-semibold">
-                  {format(new Date(shift.checkInTime), 'HH:mm dd/MM/yyyy', { locale: vi })}
-                </span>
+                <span className="font-semibold">{safeFormat(shift.checkInTime)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Đơn xử lý:</span>

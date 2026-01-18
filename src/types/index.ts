@@ -382,38 +382,26 @@ export interface UnpaidBill {
   staffName: string;
 }
 
-export interface ShiftReport {
-  // Identity
-  shiftId: string;
-  staffId: string;
-  staffName: string;
+export type ShiftReport =
+  // dữ liệu ca làm cơ bản
+  Shift &
+    // + dữ liệu báo cáo (có thể có / không)
+    {
+      shiftId?: string;
+      staffName?: string;
 
-  // Time
-  checkInTime: string;
-  checkOutTime?: string;
-  hoursWorked: number;
+      // Money
+      initialCash?: number;
+      cashCollected?: number;
+      transferCollected?: number;
 
-  // Orders
-  ordersProcessed: number;
-  ordersCompleted: number;
-  ordersCancelled: number;
+      systemRevenue?: number;
+      discrepancy?: number;
 
-  // Money
-  initialCash: number;
-  cashCollected: number;
-  transferCollected: number;
-
-  systemRevenue: number;
-  totalRevenue: number;
-  discrepancy: number;
-
-  // Debt
-  unpaidOrders: number;
-  unpaidAmount: number;
-
-  // Notes
-  notes?: string;
-}
+      // Debt
+      unpaidOrders?: number;
+      unpaidAmount?: number;
+    };
 
 export interface StaffShiftStats {
   totalShifts: number;
@@ -440,6 +428,22 @@ export interface HostShiftStats {
   totalRevenue: number;
   averageRevenuePerShift: number;
   averageHoursPerShift: number;
+  staffPerformance?: {
+    staffId: string;
+    staffName: string;
+    totalShifts: number;
+    totalHours: number;
+    totalOrders: number;
+    totalRevenue: number;
+  }[];
+}
+
+export interface ShiftCheckOutPayload {
+  notes?: string;
+  location?: {
+    latitude: number;
+    longitude: number;
+  };
 }
 
 export interface Location {
