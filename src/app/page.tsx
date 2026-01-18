@@ -13,10 +13,8 @@ export default function HomePage() {
       router.push('/login');
     } else if (user?.role === 'admin') {
       router.push('/admin');
-    } else if (user?.role === 'host') {
+    } else if (user?.role === 'host' || user?.role === 'staff') {
       router.push('/host');
-    }else if (user?.role === 'staff') {
-      router.push('/staff');
     }
   }, [isAuthenticated, user, router]);
 

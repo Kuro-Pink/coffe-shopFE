@@ -71,7 +71,7 @@ export default function Sidebar({
   const drawerContent = (
     <div className={`h-full bg-gradient-to-b ${theme.bgGradient}`}>
       {/* Logo Section */}
-      <div className={`p-6 bg-gradient-to-r ${theme.gradient}`}>
+      <div className={`px-6 py-4 bg-gradient-to-r ${theme.gradient}`}>
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
             {logo.icon}
@@ -147,7 +147,7 @@ export default function Sidebar({
                           <ListItemIcon sx={{ color: 'inherit', minWidth: 36 }}>
                             {child.icon}
                           </ListItemIcon>
-                          <ListItemText primary={item.text} />
+                          <ListItemText primary={child.text} />
                           {item.text === 'Đơn hàng' && pendingCount > 0 && (
                             <Badge badgeContent={pendingCount} color="error" />
                           )}
