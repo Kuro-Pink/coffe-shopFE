@@ -107,38 +107,4 @@ export const shiftService = {
     const response = await api.get(API_ENDPOINTS.HOST.SHIFTS.STAFF_HISTORY(staffId), { params });
     return response.data.data;
   },
-
-  // ===== UNPAID BILLS =====
-
-  // Get today's unpaid bills (Host only)
-  getTodayUnpaidBills: async (storeId: string): Promise<UnpaidBill[]> => {
-    const response = await api.get(API_ENDPOINTS.HOST.UNPAID_BILLS.TODAY(storeId));
-    return response.data.data;
-  },
-
-  // Get unpaid bills by staff (Staff - auto from token, Host can specify)
-  getUnpaidBillsByStaff: async (staffId?: string): Promise<UnpaidBill[]> => {
-    if (staffId) {
-      // Host viewing specific staff's unpaid bills
-      const response = await api.get(API_ENDPOINTS.HOST.UNPAID_BILLS.BY_STAFF(staffId));
-      return response.data.data;
-    } else {
-      // Staff viewing their own unpaid bills (from token)
-      // Backend should have a /staff/my-unpaid-bills endpoint or use token to filter
-      // For now, using HOST endpoint which should detect staff from token
-      const response = await api.get(API_ENDPOINTS.HOST.UNPAID_BILLS.BY_STAFF('me'));
-      return response.data.data;
-    }
-  },
-
-  // Get unpaid bill detail
-  getUnpaidBillDetail: async (id: string): Promise<UnpaidBill> => {
-    const response = await api.get(API_ENDPOINTS.HOST.UNPAID_BILLS.DETAIL(id));
-    return response.data.data;
-  },
-
-  // Collect remaining payment
-  collectPayment: async (id: string, amount: number): Promise<void> => {
-    await api.post(API_ENDPOINTS.HOST.UNPAID_BILLS.COLLECT(id), { amount });
-  },
 };
