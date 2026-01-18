@@ -79,12 +79,6 @@ export const API_ENDPOINTS = {
       REPORT: (shiftId: string) => `/host/shifts/${shiftId}/report`,
       STAFF_HISTORY: (staffId: string) => `/host/staff/${staffId}/shifts`,
     },
-    UNPAID_BILLS: {
-      TODAY: (storeId: string) => `/host/stores/${storeId}/unpaid-bills/today`,
-      BY_STAFF: (staffId: string) => `/host/staff/${staffId}/unpaid-bills`,
-      DETAIL: (id: string) => `/host/unpaid-bills/${id}`,
-      COLLECT: (id: string) => `/host/unpaid-bills/${id}/collect`,
-    },
     INVENTORY: {
       // Ingredients
       INGREDIENTS: {
