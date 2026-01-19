@@ -9,7 +9,7 @@ import { Category, Product } from '@/types';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import MenuFilter from '@/components/host/MenuManager/MenuFilter';
-import CategoryCard from '@/components/host/MenuManager/CategoryCard';
+import CategoryCard from '@/components/host/MenuManager/CategorySection';
 import { AxiosError } from 'axios';
 import CategoryDialog from '@/components/host/MenuManager/CategoryDialog';
 import ProductDialog from '@/components/host/MenuManager/ProductDialog';
@@ -69,7 +69,7 @@ export default function MenuManagementPage() {
         storeService.getCategories(user.storeId),
         storeService.getProducts(user.storeId),
       ]);
-      
+
       const sortedCats = cats.sort((a, b) => a.order - b.order);
       setCategories(sortedCats);
       setProducts(prods);
@@ -99,8 +99,8 @@ export default function MenuManagementPage() {
         statusFilter === 'all'
           ? true
           : statusFilter === 'available'
-          ? p.isAvailable
-          : !p.isAvailable;
+            ? p.isAvailable
+            : !p.isAvailable;
       return byQuery && byStatus;
     });
   }, [products, searchQuery, statusFilter]);
@@ -118,9 +118,8 @@ export default function MenuManagementPage() {
     return displayedCategories.reduce<Record<string, Product[]>>((acc, cat) => {
       acc[cat._id] = filteredProducts.filter((p) => {
         // Handle both string and populated object categoryId
-        const productCategoryId = typeof p.categoryId === 'object' 
-          ? (p.categoryId as { _id: string })._id 
-          : p.categoryId;
+        const productCategoryId =
+          typeof p.categoryId === 'object' ? (p.categoryId as { _id: string })._id : p.categoryId;
         return productCategoryId === cat._id;
       });
       return acc;
@@ -246,6 +245,21 @@ export default function MenuManagementPage() {
             label={`${products.length} sản phẩm`}
             className="bg-green-50 text-green-600"
           />
+
+          {/* NÚT THÊM DANH MỤC */}
+          <Button
+            variant="contained"
+            startIcon={<Add />}
+            onClick={() => setCategoryDialog({ open: true, category: null })}
+            sx={{
+              ml: 1,
+              textTransform: 'none',
+              borderRadius: 2,
+              fontWeight: 600,
+            }}
+          >
+            Thêm danh mục
+          </Button>
         </div>
       </div>
 
@@ -263,18 +277,6 @@ export default function MenuManagementPage() {
           onCategoryChange={handleCategoryChange}
         />
       </Card>
-
-      {/* Action Buttons */}
-      <div className="flex gap-2 mb-4">
-        <Button
-          variant="contained"
-          startIcon={<Add />}
-          onClick={() => setCategoryDialog({ open: true, category: null })}
-          className="bg-gradient-to-r from-blue-600 to-purple-600"
-        >
-          Thêm danh mục
-        </Button>
-      </div>
 
       {/* Categories Accordion List */}
       {categories.length === 0 ? (
@@ -317,14 +319,14 @@ export default function MenuManagementPage() {
               isOpen={!!openMap[cat._id]}
               onToggle={() => setOpenMap((m) => ({ ...m, [cat._id]: !m[cat._id] }))}
               onEditCategory={(category) => setCategoryDialog({ open: true, category })}
-              onDeleteCategory={(categoryId, categoryName) => 
+              onDeleteCategory={(categoryId, categoryName) =>
                 handleOpenDeleteConfirm('category', categoryId, categoryName)
               }
               onAddProduct={(categoryId) =>
                 setProductDialog({ open: true, product: null, categoryId })
               }
               onEditProduct={(product) => setProductDialog({ open: true, product })}
-              onDeleteProduct={(productId, productName) => 
+              onDeleteProduct={(productId, productName) =>
                 handleOpenDeleteConfirm('product', productId, productName)
               }
               onToggleProductAvailability={handleToggleAvailability}
@@ -373,11 +375,7 @@ export default function MenuManagementPage() {
         confirmText="Xóa"
         cancelText="Hủy"
         loading={deleteLoading}
-        onConfirm={
-          confirmDialog.type === 'category' 
-            ? handleDeleteCategory 
-            : handleDeleteProduct
-        }
+        onConfirm={confirmDialog.type === 'category' ? handleDeleteCategory : handleDeleteProduct}
         onCancel={() => setConfirmDialog({ open: false, type: 'category', id: '', name: '' })}
       />
     </Box>

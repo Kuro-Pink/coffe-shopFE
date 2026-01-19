@@ -3,6 +3,7 @@
 import { TextField, MenuItem, Button, InputAdornment, Box, Tabs, Tab } from '@mui/material';
 import { Search, ExpandMore, ExpandLess } from '@mui/icons-material';
 import { Category } from '@/types';
+import { StatTab } from '@/components/ui';
 
 interface MenuFilterProps {
   searchQuery: string;
@@ -76,25 +77,24 @@ export default function MenuFilter({
       {/* Category Tabs */}
       {categories.length > 0 && (
         <Box className="border-t border-gray-200 -mx-4 px-4 pt-4">
-          <Tabs
-            value={selectedCategory}
-            onChange={(_, value) => onCategoryChange(value)}
-            variant="scrollable"
-            scrollButtons="auto"
-            className="min-h-[40px]"
-          >
-            <Tab label="Tất cả" value="all" className="min-h-[40px]" />
+          <div className="flex gap-2 overflow-x-auto">
+            <StatTab
+              active={selectedCategory === 'all'}
+              label="Tất cả"
+              onClick={() => onCategoryChange('all')}
+            />
+
             {categories
               .sort((a, b) => a.order - b.order)
               .map((category) => (
-                <Tab
+                <StatTab
                   key={category._id}
+                  active={selectedCategory === category._id}
                   label={category.name}
-                  value={category._id}
-                  className="min-h-[40px]"
+                  onClick={() => onCategoryChange(category._id)}
                 />
               ))}
-          </Tabs>
+          </div>
         </Box>
       )}
     </div>
