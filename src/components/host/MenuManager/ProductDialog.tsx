@@ -12,19 +12,18 @@ import {
   Box,
   Tabs,
   Tab,
-  MenuItem,
   FormControlLabel,
   Switch,
   InputAdornment,
+  MenuItem,
 } from '@mui/material';
 import { CloudUpload } from '@mui/icons-material';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Category, Product } from '@/types';
 import { storeService } from '@/lib/services/storeService';
 import { AxiosError } from 'axios';
-import { Controller } from 'react-hook-form';
 import RecipeManager from './RecipeManager';
 
 interface ProductDialogProps {
@@ -42,6 +41,9 @@ interface ErrorResponse {
   error?: string;
 }
 
+/* =======================
+   VALIDATION
+======================= */
 const productSchema = z.object({
   name: z.string().min(2, 'Tên sản phẩm phải có ít nhất 2 ký tự.'),
   description: z.string().min(5, 'Mô tả phải có ít nhất 5 ký tự.'),
@@ -62,15 +64,18 @@ export default function ProductDialog({
   onSuccess,
 }: ProductDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [imagePreview, setImagePreview] = useState<string>('');
+  const [imagePreview, setImagePreview] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [currentTab, setCurrentTab] = useState(0);
   const [recipeChanged, setRecipeChanged] = useState(false);
+  const [createdProduct, setCreatedProduct] = useState<Product | null>(null);
+  const [isEditingFlow, setIsEditingFlow] = useState(false);
+
+  const activeProductId = product?._id ?? createdProduct?._id;
 
   const {
     register,
     handleSubmit,
-    setValue,
     control,
     reset,
     formState: { errors },
@@ -85,18 +90,26 @@ export default function ProductDialog({
     },
   });
 
+  /* =======================
+     EFFECTS
+  ======================= */
   useEffect(() => {
     setCurrentTab(0);
+    setRecipeChanged(false);
+    setCreatedProduct(null);
+    setIsEditingFlow(false);
   }, [open, product]);
 
-  // Load dữ liệu vào form nếu đang edit
   useEffect(() => {
     if (product) {
       reset({
         name: product.name ?? '',
         description: product.description ?? '',
         price: product.price ?? 0,
-        categoryId: product.categoryId, // 🔥 BẮT BUỘC
+        categoryId:
+          typeof product.categoryId === 'string'
+            ? product.categoryId
+            : ((product.categoryId as any)?._id ?? ''),
         isAvailable: product.isAvailable ?? true,
       });
       setImagePreview(product.image || '');
@@ -105,21 +118,22 @@ export default function ProductDialog({
         name: '',
         description: '',
         price: 0,
-        categoryId: defaultCategoryId!, // 🔥 BẮT BUỘC
+        categoryId: defaultCategoryId || '',
         isAvailable: true,
       });
       setImagePreview('');
     }
-
     setImageFile(null);
   }, [product, open, reset, defaultCategoryId]);
 
+  /* =======================
+     HANDLERS
+  ======================= */
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setImageFile(file);
-
     const reader = new FileReader();
     reader.onloadend = () => setImagePreview(reader.result as string);
     reader.readAsDataURL(file);
@@ -135,22 +149,22 @@ export default function ProductDialog({
       formData.append('description', data.description);
       formData.append('price', data.price.toString());
       formData.append('categoryId', data.categoryId);
-      formData.append('isAvailable', (data.isAvailable ?? true).toString());
-
+      formData.append('isAvailable', String(data.isAvailable ?? true));
       if (imageFile) {
         formData.append('image', imageFile);
+      } else if (product?.image) {
+        formData.append('imageUrl', product.image);
       }
 
       if (product) {
-        // Update
         await storeService.updateProduct(product._id, formData);
+        setIsEditingFlow(true);
+        setCurrentTab(1);
       } else {
-        // Create
-        await storeService.createProduct(storeId, formData);
+        const newProduct = await storeService.createProduct(storeId, formData);
+        setCreatedProduct(newProduct);
+        setCurrentTab(1);
       }
-
-      onSuccess();
-      onClose();
     } catch (err) {
       let errorMessage = 'Thao tác thất bại';
       if (err instanceof AxiosError) {
@@ -165,51 +179,57 @@ export default function ProductDialog({
 
   const handleRecipeSaved = () => {
     setRecipeChanged(true);
-  };
-
-  const handleClose = () => {
-    if (recipeChanged) {
-      onSuccess();
-    }
-    setRecipeChanged(false);
+    setIsEditingFlow(false);
+    onSuccess();
     onClose();
   };
 
+  const handleClose = () => {
+    if (!product && !recipeChanged) {
+      alert('Vui lòng lưu công thức trước khi thoát');
+      return;
+    }
+
+    if (product && isEditingFlow && !recipeChanged) {
+      alert('Bạn chưa lưu công thức');
+      return;
+    }
+
+    onClose();
+  };
+
+  /* =======================
+     RENDER
+  ======================= */
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
       <DialogTitle>{product ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới'}</DialogTitle>
 
       <form onSubmit={handleSubmit(onSubmit)}>
         <DialogContent className="space-y-4">
-          {/* Tabs */}
           <Tabs value={currentTab} onChange={(_, v) => setCurrentTab(v)} sx={{ mb: 2 }}>
             <Tab label="Thông tin" />
-            <Tab label="Công thức" disabled={!product} />
+            <Tab label="Công thức" />
           </Tabs>
 
-          {/* TAB 1: THÔNG TIN */}
           {currentTab === 0 && (
             <>
-              {/* Image */}
               <Box className="text-center">
                 <Avatar src={imagePreview} variant="rounded" className="w-32 h-32 mx-auto mb-3">
-                  <CloudUpload className="text-4xl" />
+                  <CloudUpload />
                 </Avatar>
-
                 <Button variant="outlined" component="label" startIcon={<CloudUpload />}>
                   {imagePreview ? 'Thay đổi ảnh' : 'Tải ảnh lên'}
                   <input hidden type="file" accept="image/*" onChange={handleImageUpload} />
                 </Button>
               </Box>
 
-              {/* Fields */}
               <TextField
                 {...register('name')}
                 label="Tên sản phẩm"
                 fullWidth
                 error={!!errors.name}
                 helperText={errors.name?.message}
-                disabled={isLoading}
               />
 
               <TextField
@@ -220,7 +240,6 @@ export default function ProductDialog({
                 rows={3}
                 error={!!errors.description}
                 helperText={errors.description?.message}
-                disabled={isLoading}
               />
 
               <TextField
@@ -230,16 +249,36 @@ export default function ProductDialog({
                 fullWidth
                 error={!!errors.price}
                 helperText={errors.price?.message}
-                disabled={isLoading}
                 InputProps={{
                   endAdornment: <InputAdornment position="end">₫</InputAdornment>,
                 }}
               />
 
               <Controller
+                name="categoryId"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    select
+                    label="Danh mục"
+                    fullWidth
+                    value={field.value || ''}
+                    onChange={field.onChange}
+                    error={!!errors.categoryId}
+                    helperText={errors.categoryId?.message}
+                  >
+                    {categories.map((cat) => (
+                      <MenuItem key={cat._id} value={cat._id}>
+                        {cat.name}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                )}
+              />
+
+              <Controller
                 name="isAvailable"
                 control={control}
-                defaultValue={true}
                 render={({ field }) => (
                   <FormControlLabel
                     label="Còn hàng"
@@ -247,7 +286,6 @@ export default function ProductDialog({
                       <Switch
                         checked={!!field.value}
                         onChange={(e) => field.onChange(e.target.checked)}
-                        disabled={isLoading}
                       />
                     }
                   />
@@ -256,10 +294,9 @@ export default function ProductDialog({
             </>
           )}
 
-          {/* TAB 2: CÔNG THỨC */}
-          {currentTab === 1 && product && (
+          {currentTab === 1 && activeProductId && (
             <RecipeManager
-              productId={product._id}
+              productId={activeProductId}
               storeId={storeId}
               onRecipeSaved={handleRecipeSaved}
             />
@@ -267,13 +304,11 @@ export default function ProductDialog({
         </DialogContent>
 
         <DialogActions>
-          <Button onClick={handleClose} disabled={isLoading}>
-            Hủy
-          </Button>
+          <Button onClick={handleClose}>Hủy</Button>
 
           {currentTab === 0 && (
-            <Button type="submit" variant="contained" disabled={isLoading} className="bg-green-600">
-              {isLoading ? 'Đang lưu...' : product ? 'Cập nhật' : 'Thêm'}
+            <Button type="submit" variant="contained" className="bg-green-600">
+              {product ? 'Lưu & tiếp' : 'Thêm & tiếp'}
             </Button>
           )}
 
