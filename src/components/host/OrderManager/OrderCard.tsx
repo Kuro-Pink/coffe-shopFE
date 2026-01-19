@@ -74,7 +74,7 @@ export default function OrderCard({ order, onUpdateStatus }: Props) {
         </div>
 
         {/* ===== INFO ===== */}
-        <div className="text-sm text-gray-600 space-y-1">
+        <div className="text-xs text-gray-600">
           <InfoRow label="Bàn" value={order.tableName} />
           <InfoRow
             label="Thời gian"
@@ -101,10 +101,10 @@ export default function OrderCard({ order, onUpdateStatus }: Props) {
           <div className="space-y-2 max-h-[110px] h-[110px] overflow-auto pr-1">
             {order.items.map((item, index) => (
               <div key={index}>
-                <Typography className="text-xm font-medium">
+                <Typography className="text-xs font-medium">
                   - {item.name} × {item.quantity}
                 </Typography>
-                <Typography className="text-xm font-bold text-orange-700">
+                <Typography className="text-xs font-bold text-orange-700">
                   {(item.price * item.quantity).toLocaleString('vi-VN')} ₫
                 </Typography>
               </div>
@@ -116,15 +116,14 @@ export default function OrderCard({ order, onUpdateStatus }: Props) {
 
         {/* ===== TOTAL ===== */}
         <div className="flex justify-between items-center">
-          <Typography className="font-semibold">Tổng</Typography>
+          <Typography className="text-sm font-semibold">Tổng</Typography>
           <Typography className="font-bold text-green-600">
             {order.totalAmount.toLocaleString('vi-VN')} ₫
           </Typography>
         </div>
 
         {/* ===== ACTIONS (FIXED) ===== */}
-        {order.status === 'pending' && (
-          <div className="absolute bottom-4 left-4 right-4">
+         {order.status === 'pending' && (
             <div className="flex gap-2">
               <Button
                 fullWidth
@@ -135,7 +134,6 @@ export default function OrderCard({ order, onUpdateStatus }: Props) {
               >
                 Hoàn thành
               </Button>
-
               <Button
                 fullWidth
                 variant="outlined"
@@ -146,8 +144,16 @@ export default function OrderCard({ order, onUpdateStatus }: Props) {
                 Hủy đơn
               </Button>
             </div>
-          </div>
-        )}
+          )}
+
+          {order.status === 'completed' && order.completedAt && (
+            <div className="text-center p-3 bg-green-50 rounded-lg">
+              <Typography variant="body2" className="text-green-700">
+                ✅ Hoàn thành lúc{' '}
+                {new Date(order.completedAt).toLocaleString('vi-VN')}
+              </Typography>
+            </div>
+          )}
       </CardContent>
     </Card>
   );
