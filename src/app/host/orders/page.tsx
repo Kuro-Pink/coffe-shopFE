@@ -1,22 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import {
-  Card,
-  CardContent,
-  Typography,
-  Chip,
-  Tabs,
-  Tab,
-  Box,
-  Badge,
-} from '@mui/material';
-import {
-  Schedule,
-  CheckCircle,
-  Cancel,
-  Notifications,
-} from '@mui/icons-material';
+import { Card, CardContent, Typography, Chip, Tabs, Tab, Box, Badge } from '@mui/material';
+import { Schedule, CheckCircle, Cancel, Notifications } from '@mui/icons-material';
 import { AxiosError } from 'axios';
 
 import { Order } from '@/types';
@@ -29,6 +15,7 @@ import ErrorMessage from '@/components/common/ErrorMessage';
 import OrderCard from '@/components/host/OrderManager/OrderCard';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import { showToast } from '@/components/common/Toast';
+import { StatTab } from '@/components/ui/';
 
 interface ErrorResponse {
   message?: string;
@@ -59,17 +46,14 @@ export default function OrdersManagementPage() {
   }>({ open: false, orderId: '', status: 'completed' });
 
   const [updateLoading, setUpdateLoading] = useState(false);
-  
+
   /* ===== ACTIONS ===== */
-  const handleUpdateStatus = async (
-    orderId: string,
-    status: 'completed' | 'cancelled'
-  ) => {
+  const handleUpdateStatus = async (orderId: string, status: 'completed' | 'cancelled') => {
     setUpdateLoading(true);
     try {
       await storeService.updateOrderStatus(orderId, status);
 
-      const currentOrder = orders.find(o => o._id === orderId);
+      const currentOrder = orders.find((o) => o._id === orderId);
       if (!currentOrder) return;
 
       updateOrder({
@@ -78,12 +62,8 @@ export default function OrdersManagementPage() {
         completedAt: new Date().toISOString(),
       });
 
-
       showToast.success({
-        message:
-          status === 'completed'
-            ? 'Đã hoàn thành đơn hàng!'
-            : 'Đã hủy đơn hàng!',
+        message: status === 'completed' ? 'Đã hoàn thành đơn hàng!' : 'Đã hủy đơn hàng!',
       });
 
       setConfirmDialog({ open: false, orderId: '', status: 'completed' });
@@ -101,7 +81,7 @@ export default function OrdersManagementPage() {
 
   /* ===== DERIVED DATA ===== */
   const filteredOrders = orders.filter((order) =>
-    selectedTab === 'all' ? true : order.status === selectedTab
+    selectedTab === 'all' ? true : order.status === selectedTab,
   );
 
   const getOrderCount = (status: OrderStatus) => {
@@ -130,7 +110,7 @@ export default function OrdersManagementPage() {
       {/* ===== HEADER ===== */}
       <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
         <div>
-          <Typography variant="h4" className="font-bold mb-2">
+          <Typography variant="h4" className="font-bold mb-2 text-gray-600">
             Quản lý Đơn hàng
           </Typography>
           <Typography variant="body2" className="text-gray-600">
@@ -148,51 +128,39 @@ export default function OrdersManagementPage() {
       {error && <ErrorMessage message={error} />}
 
       {/* ===== TABS ===== */}
-      <Card className="shadow-md mb-6">
-        <Tabs
-          value={selectedTab}
-          onChange={(_, value) => setSelectedTab(value)}
-        >
-          <Tab
-            value="all"
-            label={
-              <Badge badgeContent={getOrderCount('all')} color="primary">
-                Tất cả
-              </Badge>
-            }
-          />
-          <Tab
-            value="pending"
-            icon={<Schedule />}
-            iconPosition="start"
-            label={
-              <Badge badgeContent={getOrderCount('pending')} color="warning">
-                Đang chờ
-              </Badge>
-            }
-          />
-          <Tab
-            value="completed"
-            icon={<CheckCircle />}
-            iconPosition="start"
-            label={
-              <Badge badgeContent={getOrderCount('completed')} color="success">
-                Hoàn thành
-              </Badge>
-            }
-          />
-          <Tab
-            value="cancelled"
-            icon={<Cancel />}
-            iconPosition="start"
-            label={
-              <Badge badgeContent={getOrderCount('cancelled')} color="error">
-                Đã hủy
-              </Badge>
-            }
-          />
-        </Tabs>
-      </Card>
+      <div className="flex flex-wrap gap-3 mb-6">
+        <StatTab
+          label="Tất cả"
+          count={getOrderCount('all')}
+          active={selectedTab === 'all'}
+          color="primary"
+          onClick={() => setSelectedTab('all')}
+        />
+
+        <StatTab
+          label="Đang chờ"
+          count={getOrderCount('pending')}
+          active={selectedTab === 'pending'}
+          color="warning"
+          onClick={() => setSelectedTab('pending')}
+        />
+
+        <StatTab
+          label="Hoàn thành"
+          count={getOrderCount('completed')}
+          active={selectedTab === 'completed'}
+          color="success"
+          onClick={() => setSelectedTab('completed')}
+        />
+
+        <StatTab
+          label="Đã huỷ"
+          count={getOrderCount('cancelled')}
+          active={selectedTab === 'cancelled'}
+          color="error"
+          onClick={() => setSelectedTab('cancelled')}
+        />
+      </div>
 
       {/* ===== LIST ===== */}
       {filteredOrders.length === 0 ? (
@@ -202,14 +170,12 @@ export default function OrdersManagementPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
           {filteredOrders.map((order) => (
             <OrderCard
               key={order._id}
               order={order}
-              onUpdateStatus={(id, status) =>
-                setConfirmDialog({ open: true, orderId: id, status })
-              }
+              onUpdateStatus={(id, status) => setConfirmDialog({ open: true, orderId: id, status })}
             />
           ))}
         </div>
@@ -218,28 +184,18 @@ export default function OrdersManagementPage() {
       {/* ===== CONFIRM DIALOG ===== */}
       <ConfirmDialog
         open={confirmDialog.open}
-        title={
-          confirmDialog.status === 'completed'
-            ? 'Xác nhận hoàn thành'
-            : 'Xác nhận hủy đơn'
-        }
+        title={confirmDialog.status === 'completed' ? 'Xác nhận hoàn thành' : 'Xác nhận hủy đơn'}
         message={
           confirmDialog.status === 'completed'
             ? 'Bạn có chắc muốn đánh dấu đơn hàng này là đã hoàn thành?'
             : 'Bạn có chắc muốn hủy đơn hàng này?'
         }
         variant={confirmDialog.status === 'completed' ? 'success' : 'danger'}
-        confirmText={
-          confirmDialog.status === 'completed' ? 'Hoàn thành' : 'Hủy đơn'
-        }
+        confirmText={confirmDialog.status === 'completed' ? 'Hoàn thành' : 'Hủy đơn'}
         cancelText="Quay lại"
         loading={updateLoading}
-        onConfirm={() =>
-          handleUpdateStatus(confirmDialog.orderId, confirmDialog.status)
-        }
-        onCancel={() =>
-          setConfirmDialog({ open: false, orderId: '', status: 'completed' })
-        }
+        onConfirm={() => handleUpdateStatus(confirmDialog.orderId, confirmDialog.status)}
+        onCancel={() => setConfirmDialog({ open: false, orderId: '', status: 'completed' })}
       />
     </Box>
   );

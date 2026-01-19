@@ -5,47 +5,26 @@ import {
   Card,
   CardContent,
   Typography,
-  Button,
   Chip,
-  Divider,
-  Collapse,
   IconButton,
+  Collapse,
+  Divider,
+  Button,
 } from '@mui/material';
-import {
-  ExpandMore,
-  ExpandLess,
-  CheckCircle,
-  Cancel,
-  Phone,
-  Schedule,
-  Restaurant,
-  TableBar,
-} from '@mui/icons-material';
-import { Order } from '@/types';
+import { ExpandMore, ExpandLess, CheckCircle, Cancel, Schedule } from '@mui/icons-material';
 import { formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
 
-interface OrderCardProps {
+import { Order } from '@/types';
+import { InfoRow } from '@/components/ui';
+
+interface Props {
   order: Order;
   onUpdateStatus: (orderId: string, status: 'completed' | 'cancelled') => void;
 }
 
-export default function OrderCard({ order, onUpdateStatus }: OrderCardProps) {
-  const [expanded, setExpanded] = useState(order.status === 'pending');
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return 'warning';
-      case 'completed':
-        return 'success';
-      case 'cancelled':
-        return 'error';
-      default:
-        return 'default';
-    }
-  };
-
+export default function OrderCard({ order, onUpdateStatus }: Props) {
+  const [expanded, setExpanded] = useState(false);
   const getStatusText = (status: string) => {
     switch (status) {
       case 'pending':
@@ -58,134 +37,94 @@ export default function OrderCard({ order, onUpdateStatus }: OrderCardProps) {
         return status;
     }
   };
-
   const timeAgo = formatDistanceToNow(new Date(order.createdAt), {
     addSuffix: true,
     locale: vi,
   });
 
+  const statusColor =
+    order.status === 'pending' ? 'warning' : order.status === 'completed' ? 'success' : 'error';
+
   return (
     <Card
-      id={`order-${order._id}`}
-      className={`shadow-lg border-2 transition-all ${
-        order.status === 'pending'
-          ? 'border-orange-300 bg-orange-50'
-          : 'border-gray-200 bg-white'
-      }`}
+      className={`shadow-lg border-2flex flex-colmin-h-[340px]
+    ${order.status === 'pending' ? 'border-orange-300 bg-orange-50' : 'border-gray-200 bg-white'}
+    `}
     >
-      <CardContent className="p-4">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-4 mb-4">
-          <div className="flex items-start gap-3 flex-1">
-            <div
-              className={`w-16 h-16 rounded-xl flex items-center justify-center text-white font-bold text-xl ${
-                order.status === 'pending'
-                  ? 'bg-gradient-to-br from-orange-500 to-red-600'
-                  : order.status === 'completed'
+      <CardContent className="p-4 flex-1 flex flex-col gap-4 overflow-hidden">
+        {/* ===== HEADER ===== */}
+        <div className="flex items-start justify-between gap-2">
+          <Typography
+            className={`w-16 h-8 rounded-xl flex items-center justify-center text-white font-bold text-xl ${
+              order.status === 'pending'
+                ? 'bg-gradient-to-br from-orange-500 to-red-600'
+                : order.status === 'completed'
                   ? 'bg-gradient-to-br from-green-500 to-teal-600'
                   : 'bg-gradient-to-br from-gray-400 to-gray-600'
-              }`}
-            >
-              #{order.orderNumber.slice(-3)}
-            </div>
-
-            <div className="flex-1">
-              <div className="flex items-center gap-2 flex-wrap mb-2">
-                <Typography variant="h6" className="font-bold">
-                  {order.orderNumber}
-                </Typography>
-                <Chip
-                  label={getStatusText(order.status)}
-                  color={getStatusColor(order.status)}
-                  size="small"
-                />
-                <Chip
-                  icon={<Schedule fontSize="small" />}
-                  label={timeAgo}
-                  size="small"
-                  variant="outlined"
-                />
-              </div>
-
-              <div className="flex items-center gap-4 flex-wrap text-gray-600">
-                <div className="flex items-center gap-1">
-                  <TableBar fontSize="small" />
-                  <Typography variant="body2">{order.tableName}</Typography>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Phone fontSize="small" />
-                  <Typography variant="body2">{order.customerPhone}</Typography>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Expand Button */}
-          <IconButton onClick={() => setExpanded(!expanded)}>
-            {expanded ? <ExpandLess /> : <ExpandMore />}
-          </IconButton>
+            }`}
+          >
+            #{order.orderNumber.slice(-4)}
+          </Typography>
+          <Chip
+            size="small"
+            color={statusColor}
+            label={getStatusText(order.status)}
+            className="mt-1"
+          />
         </div>
 
-        {/* Expandable Content */}
-        <Collapse in={expanded} timeout="auto" unmountOnExit>
-          <Divider className="mb-4" />
+        {/* ===== INFO ===== */}
+        <div className="text-sm text-gray-600 space-y-1">
+          <InfoRow label="Bàn" value={order.tableName} />
+          <InfoRow
+            label="Thời gian"
+            value={
+              <span className="flex items-center gap-1">
+                <Schedule fontSize="inherit" />
+                {timeAgo}
+              </span>
+            }
+          />
+        </div>
 
-          {/* Items */}
-          <div className="mb-4">
-            <Typography variant="subtitle2" className="font-semibold mb-3">
-              Chi tiết đơn hàng:
-            </Typography>
-            <div className="space-y-2">
-              {order.items.map((item, index) => (
-                <div
-                  key={index}
-                  className="flex justify-between items-center p-3 bg-white rounded-lg border border-gray-200"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                      <Restaurant className="text-green-600" />
-                    </div>
-                    <div>
-                      <Typography variant="body2" className="font-semibold">
-                        {item.name}
-                      </Typography>
-                      <Typography variant="caption" className="text-gray-500">
-                        {item.price.toLocaleString('vi-VN')} ₫ x {item.quantity}
-                      </Typography>
-                    </div>
-                  </div>
-                  <Typography variant="body2" className="font-bold">
-                    {(item.price * item.quantity).toLocaleString('vi-VN')} ₫
-                  </Typography>
-                </div>
-              ))}
-            </div>
+        {/* ===== ITEMS PREVIEW ===== */}
+        <div className="rounded-xl border border-orange-200 bg-orange-50 p-3">
+          <div className="flex items-center justify-between mb-2">
+            <Typography className="font-semibold text-orange-800">🍽️ Món đã gọi</Typography>
+            <Chip
+              size="small"
+              label={`${order.items.length} món`}
+              className="bg-orange-100 text-orange-700"
+            />
           </div>
 
-          {/* Customer Note */}
-          {order.customerNote && (
-            <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-              <Typography variant="caption" className="font-semibold text-blue-800">
-                📝 Ghi chú:
-              </Typography>
-              <Typography variant="body2" className="text-blue-700 mt-1">
-                {order.customerNote}
-              </Typography>
-            </div>
-          )}
-
-          {/* Total */}
-          <div className="flex justify-between items-center p-4 bg-green-50 rounded-lg border border-green-200 mb-4">
-            <Typography variant="h6" className="font-bold text-green-800">
-              Tổng cộng:
-            </Typography>
-            <Typography variant="h5" className="font-bold text-green-600">
-              {order.totalAmount.toLocaleString('vi-VN')} ₫
-            </Typography>
+          <div className="space-y-2 max-h-[110px] h-[110px] overflow-auto pr-1">
+            {order.items.map((item, index) => (
+              <div key={index}>
+                <Typography className="text-xm font-medium">
+                  - {item.name} × {item.quantity}
+                </Typography>
+                <Typography className="text-xm font-bold text-orange-700">
+                  {(item.price * item.quantity).toLocaleString('vi-VN')} ₫
+                </Typography>
+              </div>
+            ))}
           </div>
+        </div>
 
-          {/* Actions */}
-          {order.status === 'pending' && (
+        <Divider />
+
+        {/* ===== TOTAL ===== */}
+        <div className="flex justify-between items-center">
+          <Typography className="font-semibold">Tổng</Typography>
+          <Typography className="font-bold text-green-600">
+            {order.totalAmount.toLocaleString('vi-VN')} ₫
+          </Typography>
+        </div>
+
+        {/* ===== ACTIONS (FIXED) ===== */}
+        {order.status === 'pending' && (
+          <div className="absolute bottom-4 left-4 right-4">
             <div className="flex gap-2">
               <Button
                 fullWidth
@@ -196,6 +135,7 @@ export default function OrderCard({ order, onUpdateStatus }: OrderCardProps) {
               >
                 Hoàn thành
               </Button>
+
               <Button
                 fullWidth
                 variant="outlined"
@@ -206,17 +146,8 @@ export default function OrderCard({ order, onUpdateStatus }: OrderCardProps) {
                 Hủy đơn
               </Button>
             </div>
-          )}
-
-          {order.status === 'completed' && order.completedAt && (
-            <div className="text-center p-3 bg-green-50 rounded-lg">
-              <Typography variant="body2" className="text-green-700">
-                ✅ Hoàn thành lúc{' '}
-                {new Date(order.completedAt).toLocaleString('vi-VN')}
-              </Typography>
-            </div>
-          )}
-        </Collapse>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
