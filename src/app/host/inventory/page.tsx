@@ -33,6 +33,7 @@ import IngredientDialog from '@/components/host/InventoryManager/IngredientDialo
 import StockAdjustDialog from '@/components/host/InventoryManager/StockAdjustDialog';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import SummaryCard from '@/components/ui/SummaryCard';
+import { StatTab } from '@/components/ui';
 
 export default function InventoryManagementPage() {
   const router = useRouter();
@@ -222,59 +223,39 @@ export default function InventoryManagementPage() {
       )}
 
       {/* Stock Filter Tabs */}
-      <Card className="mb-6">
-        <Tabs
-          value={stockFilter}
-          onChange={(_, value) => setStockFilter(value)}
-          variant="fullWidth"
-        >
-          <Tab
-            label={
-              <div className="flex items-center gap-2">
-                <span>Tất cả</span>
-                <Chip label={ingredients.length} size="small" className="h-6" />
-              </div>
-            }
-            value="all"
-          />
-          <Tab
-            label={
-              <div className="flex items-center gap-2">
-                <span>Còn hàng</span>
-                <Chip label={inStockCount} size="small" color="success" className="h-6" />
-              </div>
-            }
-            value="inStock"
-          />
-          <Tab
-            label={
-              <div className="flex items-center gap-2">
-                <span>Sắp hết</span>
-                {lowStockCountActual > 0 && (
-                  <Chip label={lowStockCountActual} size="small" color="warning" className="h-6" />
-                )}
-              </div>
-            }
-            value="lowStock"
-          />
-          <Tab
-            label={
-              <div className="flex items-center gap-2">
-                <span>Hết hàng</span>
-                {summary && summary.outOfStockCount > 0 && (
-                  <Chip
-                    label={summary.outOfStockCount}
-                    size="small"
-                    color="error"
-                    className="h-6"
-                  />
-                )}
-              </div>
-            }
-            value="outOfStock"
-          />
-        </Tabs>
-      </Card>
+      <div className="flex gap-2 mb-4">
+        <StatTab
+          active={stockFilter === 'all'}
+          label={`Tất cả`}
+          count={ingredients.length}
+          color="primary"
+          onClick={() => setStockFilter('all')}
+        />
+
+        <StatTab
+          active={stockFilter === 'inStock'}
+          label={`Còn hàng`}
+          count={inStockCount}
+          color="success"
+          onClick={() => setStockFilter('inStock')}
+        />
+
+        <StatTab
+          active={stockFilter === 'lowStock'}
+          label={'Sắp hết'}
+          count={lowStockCountActual}
+          color="warning"
+          onClick={() => setStockFilter('lowStock')}
+        />
+
+        <StatTab
+          active={stockFilter === 'outOfStock'}
+          label={'Hết hàng'}
+          count={summary ? summary.outOfStockCount : 0}
+          color="error"
+          onClick={() => setStockFilter('outOfStock')}
+        />
+      </div>
 
       {/* Search */}
       <Card className="mb-6">

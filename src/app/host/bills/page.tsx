@@ -328,9 +328,12 @@ export default function BillsManagementPage() {
           <Typography variant="h4" className="font-bold text-gray-800 mb-2">
             Quản lý Hóa đơn
           </Typography>
-          <Typography variant="body2" className="text-gray-600">
-            Tổng: {bills.length} hóa đơn
-          </Typography>
+          <Chip
+            icon={<Receipt />}
+            label={`Tổng: ${bills.length} hóa đơn`}
+            size="small"
+            color="info"
+          />
         </div>
 
         <Button

@@ -24,6 +24,7 @@ import { format, subDays, isAfter, isBefore, endOfDay } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { inventoryService } from '@/lib/services/inventoryService';
 import { InventoryTransaction } from '@/types';
+import { StatTab } from '@/components/ui';
 
 interface TransactionHistoryProps {
   storeId: string;
@@ -125,10 +126,12 @@ export default function TransactionHistory({ storeId, ingredientId }: Transactio
   return (
     <div className="space-y-4">
       {/* Tabs */}
-      <Tabs value={tab} onChange={(_, v) => setTab(v)}>
-        <Tab label="Xuất nhập kho" value="manual" />
-        <Tab label="Khấu trừ đơn" value="order" />
-      </Tabs>
+
+      <div className="flex gap-2 mb-4">
+        <StatTab active={tab === 'manual'} label="Xuất nhập kho" onClick={() => setTab('manual')} />
+
+        <StatTab active={tab === 'order'} label="Khấu trừ đơn" onClick={() => setTab('order')} />
+      </div>
 
       {/* Filters */}
       <Card>

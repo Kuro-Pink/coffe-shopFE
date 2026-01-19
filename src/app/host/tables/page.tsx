@@ -47,6 +47,7 @@ import { showToast } from '@/components/common/Toast';
 import { formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { canManage } from '@/utils/permissions';
+import { StatTab } from '@/components/ui';
 
 const tableSchema = z.object({
   tableNumber: z.string().min(1, 'Số bàn không được để trống'),
@@ -335,7 +336,7 @@ export default function TablesManagementPage() {
           </Typography>
 
           {/* ✅ Status Summary */}
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 flex-wrap mt-2">
             <Chip icon={<TableBar />} label={`Tổng: ${stats.total}`} size="small" color="primary" />
             <Chip
               icon={<CheckCircle />}
@@ -372,12 +373,26 @@ export default function TablesManagementPage() {
       {/* // After header, before table list: */}
       {canManage(user, 'tables') && (
         <Card className="mb-6">
-          <Tabs value={currentTab} onChange={(_, v) => setCurrentTab(v)}>
-            <Tab label="Vận hành" value="view" />
-            <Tab label="Quản lý" value="manage" />
-          </Tabs>
+          <CardContent>
+            <div className="flex gap-2 flex-wrap">
+              <StatTab
+                label="Vận hành"
+                active={currentTab === 'view'}
+                color="primary"
+                onClick={() => setCurrentTab('view')}
+              />
+
+              <StatTab
+                label="Quản lý"
+                active={currentTab === 'manage'}
+                color="warning"
+                onClick={() => setCurrentTab('manage')}
+              />
+            </div>
+          </CardContent>
         </Card>
       )}
+
       {/* Search Bar */}
       <Card className="mb-6 shadow-md">
         <CardContent>

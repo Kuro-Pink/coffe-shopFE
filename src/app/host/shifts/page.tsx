@@ -1,5 +1,3 @@
-// Create: src/app/host/shifts/page.tsx
-
 'use client';
 import { useState, useEffect } from 'react';
 import {
@@ -9,10 +7,7 @@ import {
   TextField,
   Button,
   Chip,
-  CircularProgress,
   Box,
-  Tabs,
-  Tab,
   MenuItem,
   Grid,
 } from '@mui/material';
@@ -33,6 +28,7 @@ import { Shift, Staff, HostShiftStats } from '@/types';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ShiftReportDialog from '@/components/staff/ShiftManager/ShiftReportDialog';
 import SummaryCard from '@/components/ui/SummaryCard';
+import StatTab from '@/components/ui/StatTab';
 
 export default function HostAllShiftsPage() {
   const { user } = useAuthStore();
@@ -145,30 +141,26 @@ export default function HostAllShiftsPage() {
 
       {/* Tabs */}
       <Card className="mb-6">
-        <Tabs value={currentTab} onChange={(_, value) => setCurrentTab(value)}>
-          <Tab
-            label={
-              <div className="flex items-center gap-2">
-                <Receipt />
-                <span>Tất cả ca</span>
-                {stats && <Chip label={stats.totalShifts} size="small" className="ml-2" />}
-              </div>
-            }
-            value="all"
-          />
-          <Tab
-            label={
-              <div className="flex items-center gap-2">
-                <CheckCircle />
-                <span>Đang làm việc</span>
-                {activeShifts.length > 0 && (
-                  <Chip label={activeShifts.length} size="small" color="success" className="ml-2" />
-                )}
-              </div>
-            }
-            value="active"
-          />
-        </Tabs>
+        <CardContent>
+          <div className="flex gap-2 flex-wrap">
+            <StatTab
+              label="Tất cả ca"
+              icon={<Receipt />}
+              active={currentTab === 'all'}
+              color="primary"
+              onClick={() => setCurrentTab('all')}
+            />
+
+            <StatTab
+              label="Đang làm việc"
+              icon={<CheckCircle />}
+              count={activeShifts.length}
+              active={currentTab === 'active'}
+              color="success"
+              onClick={() => setCurrentTab('active')}
+            />
+          </div>
+        </CardContent>
       </Card>
 
       {/* Stats Summary (All Shifts Tab) */}

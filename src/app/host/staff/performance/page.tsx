@@ -80,7 +80,7 @@ export default function StaffPerformancePage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <Typography variant="h4" className="font-bold mb-1">
+        <Typography variant="h4" className="font-bold mb-1 text-gray-800">
           Hiệu suất nhân viên
         </Typography>
         <Typography variant="body2" className="text-gray-600">
