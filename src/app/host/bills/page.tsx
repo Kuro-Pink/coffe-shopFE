@@ -58,7 +58,7 @@ import {
 } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import SummaryCard from '@/components/ui/SummaryCard';
-import * as XLSX from 'xlsx';
+// import * as XLSX from 'xlsx';
 
 type DateFilter = 'today' | 'yesterday' | 'week' | 'month' | 'custom';
 
@@ -274,33 +274,33 @@ export default function BillsManagementPage() {
     printWindow.print();
   };
 
-  const handleExportExcel = () => {
-    // Prepare data for Excel
-    const exportData = filteredBills.map((bill) => ({
-      'Mã HĐ': bill.billNumber,
-      'Thời gian': format(new Date(bill.createdAt), 'dd/MM/yyyy HH:mm', { locale: vi }),
-      Bàn: bill.tableName,
-      'Khách hàng': bill.customerName,
-      SĐT: bill.customerPhone,
-      'Tổng tiền': bill.totalAmount,
-      'Phương thức': bill.paymentMethod === 'cash' ? 'Tiền mặt' : 'Chuyển khoản',
-    }));
+  // const handleExportExcel = () => {
+  //   // Prepare data for Excel
+  //   const exportData = filteredBills.map((bill) => ({
+  //     'Mã HĐ': bill.billNumber,
+  //     'Thời gian': format(new Date(bill.createdAt), 'dd/MM/yyyy HH:mm', { locale: vi }),
+  //     Bàn: bill.tableName,
+  //     'Khách hàng': bill.customerName,
+  //     SĐT: bill.customerPhone,
+  //     'Tổng tiền': bill.totalAmount,
+  //     'Phương thức': bill.paymentMethod === 'cash' ? 'Tiền mặt' : 'Chuyển khoản',
+  //   }));
 
-    // Create workbook
-    const ws = XLSX.utils.json_to_sheet(exportData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Hóa đơn');
+  //   // Create workbook
+  //   const ws = XLSX.utils.json_to_sheet(exportData);
+  //   const wb = XLSX.utils.book_new();
+  //   XLSX.utils.book_append_sheet(wb, ws, 'Hóa đơn');
 
-    // Add summary row
-    const totalAmount = filteredBills.reduce((sum, bill) => sum + bill.totalAmount, 0);
-    XLSX.utils.sheet_add_aoa(ws, [[], ['TỔNG CỘNG', '', '', '', '', totalAmount, '', '']], {
-      origin: -1,
-    });
+  //   // Add summary row
+  //   const totalAmount = filteredBills.reduce((sum, bill) => sum + bill.totalAmount, 0);
+  //   XLSX.utils.sheet_add_aoa(ws, [[], ['TỔNG CỘNG', '', '', '', '', totalAmount, '', '']], {
+  //     origin: -1,
+  //   });
 
-    // Export
-    const dateStr = format(new Date(), 'ddMMyyyy', { locale: vi });
-    XLSX.writeFile(wb, `BaoCao_HoaDon_${dateStr}.xlsx`);
-  };
+  //   // Export
+  //   const dateStr = format(new Date(), 'ddMMyyyy', { locale: vi });
+  //   XLSX.writeFile(wb, `BaoCao_HoaDon_${dateStr}.xlsx`);
+  // };
 
   const getTotalRevenue = () => {
     return bills.reduce((sum, bill) => sum + bill.totalAmount, 0);
@@ -336,7 +336,7 @@ export default function BillsManagementPage() {
           />
         </div>
 
-        <Button
+        {/* <Button
           variant="contained"
           startIcon={<Download />}
           onClick={handleExportExcel}
@@ -344,7 +344,7 @@ export default function BillsManagementPage() {
           disabled={bills.length === 0}
         >
           Xuất Excel
-        </Button>
+        </Button> */}
       </div>
 
       {/* Statistics Cards */}
