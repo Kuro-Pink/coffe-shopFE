@@ -94,7 +94,6 @@ export interface TableAnalytics {
   averageOrderValue: number;
 }
 
-
 export interface CreateBillData {
   tableId: string;
   orderIds: string[]; // Combine multiple orders
@@ -110,7 +109,10 @@ export const storeService = {
     return response.data.data;
   },
 
-  createCategory: async (storeId: string, data: { name: string; order: number }): Promise<Category> => {
+  createCategory: async (
+    storeId: string,
+    data: { name: string; order: number },
+  ): Promise<Category> => {
     const response = await api.post(API_ENDPOINTS.HOST.CATEGORY.LIST(storeId), data);
     return response.data;
   },
@@ -134,7 +136,7 @@ export const storeService = {
     const response = await api.post(API_ENDPOINTS.HOST.PRODUCTS.LIST(storeId), data, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
-    return response.data;
+    return response.data.data;
   },
 
   updateProduct: async (id: string, data: FormData): Promise<Product> => {
@@ -159,7 +161,10 @@ export const storeService = {
     return response.data.data;
   },
 
-  createTable: async (storeId: string, data: { tableNumber: string; area: string }): Promise<Table> => {
+  createTable: async (
+    storeId: string,
+    data: { tableNumber: string; area: string },
+  ): Promise<Table> => {
     const response = await api.post(API_ENDPOINTS.HOST.TABLES.LIST(storeId), data);
     return response.data;
   },
@@ -173,7 +178,10 @@ export const storeService = {
     await api.delete(API_ENDPOINTS.HOST.TABLES.DETAIL(id));
   },
 
-  updateTableStatus: async (id: string, status: 'available' | 'occupied' | 'needs_cleaning'): Promise<Table> => {
+  updateTableStatus: async (
+    id: string,
+    status: 'available' | 'occupied' | 'needs_cleaning',
+  ): Promise<Table> => {
     const response = await api.patch(API_ENDPOINTS.HOST.TABLES.STATUS(id), { status });
     return response.data;
   },
@@ -227,10 +235,13 @@ export const storeService = {
     return response.data.data;
   },
 
-  markBillAsPaid: async (id: string, paymentData: {
-    paymentMethod: 'cash' | 'transfer';
-    amountReceived?: number;
-  }): Promise<Bill> => {
+  markBillAsPaid: async (
+    id: string,
+    paymentData: {
+      paymentMethod: 'cash' | 'transfer';
+      amountReceived?: number;
+    },
+  ): Promise<Bill> => {
     const response = await api.patch(API_ENDPOINTS.HOST.BILLS.PAYMENT(id), paymentData);
     return response.data;
   },
@@ -241,7 +252,10 @@ export const storeService = {
     return response.data.data;
   },
 
- getOrdersToday: async (storeId: string, params?: { startDate?: string; endDate?: string }): Promise<OrdersTodayStats> => {
+  getOrdersToday: async (
+    storeId: string,
+    params?: { startDate?: string; endDate?: string },
+  ): Promise<OrdersTodayStats> => {
     const response = await api.get(API_ENDPOINTS.HOST.ANALYTICS.ORDERS_TODAY(storeId), { params });
     return response.data.data;
   },
