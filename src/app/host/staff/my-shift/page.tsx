@@ -16,6 +16,7 @@ import {
 import {
   AccessTime,
   CheckCircle,
+  Error,
   AttachMoney,
   Receipt,
   TrendingUp,
@@ -31,8 +32,8 @@ import { Shift, ShiftReport } from '@/types';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import CheckInDialog from '@/components/staff/ShiftManager/CheckInDialog';
 import CheckOutDialog from '@/components/staff/ShiftManager/CheckOutDialog';
-import ShiftReportDialog from '@/components/staff/ShiftManager/ShiftReportDialog';
 import { showToast } from '@/components/common/Toast';
+import ShiftReportDialog from '@/components/staff/ShiftManager/ShiftReportDialog';
 
 export default function MyShiftPage() {
   const { user } = useAuthStore();
@@ -41,8 +42,6 @@ export default function MyShiftPage() {
   const [checkInOpen, setCheckInOpen] = useState(false);
   const [checkOutOpen, setCheckOutOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
-  const [selectedShift, setSelectedShift] = useState<Shift | null>(null);
-  const [selectedShiftId, setSelectedShiftId] = useState<string | null>(null);
   const [shiftReport, setShiftReport] = useState<ShiftReport | null>(null);
 
   useEffect(() => {
@@ -72,14 +71,6 @@ export default function MyShiftPage() {
     setCheckInOpen(false);
     fetchCurrentShift();
     showToast.success({ message: '✅ Check-in thành công! Chúc bạn làm việc hiệu quả!' });
-  };
-
-  const handleCheckOutSuccess = async (shift: Shift) => {
-    setCheckOutOpen(false);
-    const report = await shiftService.getShiftReport(shift._id);
-    setShiftReport(report);
-    setReportOpen(true);
-    fetchCurrentShift();
   };
 
   if (loading) return <LoadingSpinner />;
@@ -151,7 +142,7 @@ export default function MyShiftPage() {
                 <Grid container spacing={2}>
                   <Grid size={{ xs: 6, md: 3 }}>
                     <Typography variant="caption" className="text-gray-600 block mb-1">
-                      Bắt đầu
+                      Bắt đầu lúc
                     </Typography>
                     <Typography variant="body1" className="font-semibold">
                       {format(new Date(currentShift.checkInTime), 'HH:mm', { locale: vi })}
@@ -160,7 +151,7 @@ export default function MyShiftPage() {
 
                   <Grid size={{ xs: 6, md: 3 }}>
                     <Typography variant="caption" className="text-gray-600 block mb-1">
-                      Thời gian
+                      Thời gian làm
                     </Typography>
                     <Typography variant="body1" className="font-semibold text-blue-600">
                       {shiftDuration}
@@ -169,7 +160,7 @@ export default function MyShiftPage() {
 
                   <Grid size={{ xs: 6, md: 3 }}>
                     <Typography variant="caption" className="text-gray-600 block mb-1">
-                      Đơn xử lý
+                      Đơn tiếp nhận
                     </Typography>
                     <Typography variant="body1" className="font-semibold text-purple-600">
                       {currentShift.ordersProcessed}
@@ -208,7 +199,7 @@ export default function MyShiftPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <Typography variant="body2" className="opacity-90 mb-1">
-                        Đơn xử lý
+                        Đơn tiếp nhận
                       </Typography>
                       <Typography variant="h3" className="font-bold">
                         {currentShift.ordersProcessed}
@@ -244,13 +235,13 @@ export default function MyShiftPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <Typography variant="body2" className="opacity-90 mb-1">
-                        Đã hoàn thành
+                        Đã hủy
                       </Typography>
                       <Typography variant="h3" className="font-bold">
-                        {currentShift.ordersCompleted ?? 0}
+                        {currentShift.ordersCancelled ?? 0}
                       </Typography>
                     </div>
-                    <CheckCircle className="text-6xl opacity-20" />
+                    <Error className="text-6xl opacity-20" />
                   </div>
                 </CardContent>
               </Card>
@@ -262,7 +253,7 @@ export default function MyShiftPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <Typography variant="body2" className="opacity-90 mb-1">
-                        TB/đơn
+                        Tung bình 1 đơn
                       </Typography>
                       <Typography variant="h3" className="font-bold">
                         {currentShift.averageOrderValue
@@ -300,10 +291,13 @@ export default function MyShiftPage() {
           open={checkOutOpen}
           shift={currentShift}
           onClose={() => setCheckOutOpen(false)}
-          onSuccess={handleCheckOutSuccess}
+          onSuccess={(completedShift) => {
+            setShiftReport(completedShift);
+            setReportOpen(true);
+            setCheckOutOpen(false); // đóng dialog checkout
+          }}
         />
       )}
-
       {/* Shift Report Dialog */}
       {shiftReport && (
         <ShiftReportDialog

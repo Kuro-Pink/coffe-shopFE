@@ -338,8 +338,8 @@ export interface UsageReport {
 
 export interface Shift {
   _id: string;
-  staffId: StaffReference | string; // Có thể là object hoặc string tùy populate
-  storeId: StoreReference | string;
+  staffId: StaffReference; // Có thể là object hoặc string tùy populate
+  storeId: StoreReference;
 
   // Timestamps
   checkInTime: string;

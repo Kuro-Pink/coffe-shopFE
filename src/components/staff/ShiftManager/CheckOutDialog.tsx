@@ -39,12 +39,13 @@ interface CheckOutDialogProps {
   open: boolean;
   shift: Shift;
   onClose: () => void;
-  onSuccess: (shift: Shift) => void;
+  onSuccess: (completedShift: Shift) => void;
 }
 
 export default function CheckOutDialog({ open, shift, onClose, onSuccess }: CheckOutDialogProps) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  console.log('checkout data Shift:', shift);
 
   const {
     register,
@@ -105,6 +106,7 @@ export default function CheckOutDialog({ open, shift, onClose, onSuccess }: Chec
 
       reset();
       onSuccess(completedShift);
+      onClose();
     } catch (err: unknown) {
       console.error('Check-out error:', err);
 
@@ -118,6 +120,8 @@ export default function CheckOutDialog({ open, shift, onClose, onSuccess }: Chec
       }
 
       setError(errorMessage);
+      setLoading(false);
+    } finally {
       setLoading(false);
     }
   };

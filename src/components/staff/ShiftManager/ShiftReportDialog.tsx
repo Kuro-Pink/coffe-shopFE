@@ -34,6 +34,7 @@ interface ShiftReportDialogProps {
 }
 
 export default function ShiftReportDialog({ open, shift, onClose }: ShiftReportDialogProps) {
+  console.log('Shift Report:', shift);
   const handlePrint = () => {
     window.print();
   };
@@ -56,13 +57,13 @@ export default function ShiftReportDialog({ open, shift, onClose }: ShiftReportD
   const hours = Math.floor(shiftDuration / 60);
   const minutes = shiftDuration % 60;
 
+  const staffName = shift.staffId.name ?? 0;
   const ordersCompleted = shift.ordersCompleted ?? 0;
   const totalRevenue = shift.totalRevenue ?? 0;
   const discrepancy = shift.discrepancy ?? 0;
   const unpaidOrders = shift.unpaidOrders ?? 0;
 
   const avgOrderValue = ordersCompleted > 0 ? totalRevenue / ordersCompleted : 0;
-
   const hasDiscrepancy = discrepancy !== 0;
   const isLargeDiscrepancy = Math.abs(discrepancy) > 50000;
 
@@ -92,7 +93,7 @@ export default function ShiftReportDialog({ open, shift, onClose }: ShiftReportD
                 Nhân viên
               </Typography>
               <Typography variant="h6" className="font-bold">
-                {shift.staffName}
+                {staffName}
               </Typography>
             </Grid>
 
@@ -131,7 +132,7 @@ export default function ShiftReportDialog({ open, shift, onClose }: ShiftReportD
             <div className="bg-blue-50 rounded-lg p-3 text-center">
               <Receipt className="text-blue-600 mb-1" />
               <Typography variant="h5" className="font-bold text-blue-600">
-                {shift.ordersProcessed}
+                {shift.ordersProcessed ?? 0}
               </Typography>
               <Typography variant="caption" className="text-gray-600">
                 Tổng đơn
@@ -186,21 +187,10 @@ export default function ShiftReportDialog({ open, shift, onClose }: ShiftReportD
         <div className="bg-gradient-to-br from-green-50 to-teal-50 rounded-lg p-4 mb-4">
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <Typography variant="body2" className="text-gray-700">
-                Tiền mặt đầu ca:
-              </Typography>
-              <Typography variant="body1" className="font-semibold">
-                {money(shift.initialCash)} ₫
-              </Typography>
-            </div>
-
-            <Divider />
-
-            <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <AttachMoney className="text-orange-600" fontSize="small" />
                 <Typography variant="body2" className="text-gray-700">
-                  Tiền mặt thu được:
+                  Tiền mặt:
                 </Typography>
               </div>
               <Typography variant="body1" className="font-semibold text-orange-600">
@@ -243,14 +233,10 @@ export default function ShiftReportDialog({ open, shift, onClose }: ShiftReportD
               : 'bg-green-50 border-2 border-green-200'
           }`}
         >
-          <Typography variant="body2" className="font-semibold mb-2">
-            So sánh với hệ thống:
-          </Typography>
-
           <div className="space-y-2">
             <div className="flex justify-between items-center">
               <Typography variant="body2" className="text-gray-700">
-                Doanh thu hệ thống:
+                Doanh thu hệ thống:
               </Typography>
               <Typography variant="body1" className="font-semibold text-blue-600">
                 {money(shift.systemRevenue)} ₫
