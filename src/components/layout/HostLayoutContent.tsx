@@ -108,7 +108,6 @@ function HostLayoutContent({ children }: { children: ReactNode }) {
 
     const socket = initSocket(user.storeId, token);
     socketRef.current = socket;
-    console.log('Socket initialized:', socket.id);
 
     // 🔔 NEW ORDER
     socket.on('new_order', (order) => {

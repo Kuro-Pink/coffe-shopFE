@@ -10,10 +10,7 @@ interface ProtectedRouteProps {
   allowedRoles?: ('admin' | 'host' | 'staff')[];
 }
 
-export default function ProtectedRoute({ 
-  children, 
-  allowedRoles 
-}: ProtectedRouteProps) {
+export default function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
   const router = useRouter();
   const { user, isAuthenticated, token, initAuth } = useAuthStore();
   const [isChecking, setIsChecking] = useState(true);
@@ -21,9 +18,9 @@ export default function ProtectedRoute({
   useEffect(() => {
     const checkAuth = async () => {
       initAuth();
-      
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
       const currentState = useAuthStore.getState();
       const hasToken = currentState.token;
       const isAuth = currentState.isAuthenticated;
@@ -43,6 +40,8 @@ export default function ProtectedRoute({
           router.push('/admin');
         } else if (currentUser.role === 'host') {
           router.push('/host');
+        } else if (currentUser.role === 'staff') {
+          router.push('/host/orders');
         }
         return;
       }
