@@ -13,7 +13,10 @@ import {
   Avatar,
   Divider,
 } from '@mui/material';
-import { TrendingUp, Person, AttachMoney, Receipt, AccessTime, Star } from '@mui/icons-material';
+import { TrendingUp, Person, AttachMoney, Receipt, AccessTime,  SyncAlt,
+  CheckCircle,
+  Cancel,
+  Star, } from '@mui/icons-material';
 import { format, subDays } from 'date-fns';
 import SummaryCard from '@/components/ui/SummaryCard';
 
@@ -53,20 +56,31 @@ export default function StaffPerformancePage() {
    ===================== */
   const summary = useMemo(() => {
     const totalRevenue = data.reduce((s, i) => s + i.totalRevenue, 0);
-    const totalOrders = data.reduce((s, i) => s + i.ordersProcessed, 0);
+    const totalProcessed = data.reduce((s, i) => s + i.ordersProcessed, 0);
+    const totalCompleted = data.reduce((s, i) => s + i.ordersCompleted, 0);
+    const totalCancelled = data.reduce((s, i) => s + i.ordersCancelled, 0);
     const totalHours = data.reduce((s, i) => s + (i.hoursWorked ?? 0), 0);
 
     return {
       staffCount: data.length,
       totalRevenue,
-      totalOrders,
-      avgRevenuePerStaff: data.length ? totalRevenue / data.length : 0,
-      avgOrdersPerStaff: data.length ? totalOrders / data.length : 0,
-      avgOrdersPerHour: totalHours ? totalOrders / totalHours : 0,
+      totalProcessed,
+      totalCompleted,
+      totalCancelled,
+      avgOrdersPerHour: totalHours ? totalCompleted / totalHours : 0,
     };
   }, [data]);
 
-  const ranked = useMemo(() => [...data].sort((a, b) => b.totalRevenue - a.totalRevenue), [data]);
+
+  const ranked = useMemo(() =>
+    [...data].sort(
+      (a, b) =>
+        b.ordersCompleted - b.ordersCancelled * 2 -
+        (a.ordersCompleted - a.ordersCancelled * 2)
+    ),
+  [data]);
+  console.log('ranked', ranked);
+
 
   if (loading) {
     return (
@@ -138,8 +152,8 @@ export default function StaffPerformancePage() {
 
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <SummaryCard
-            title="Tổng đơn"
-            value={summary.totalOrders}
+            title="Đơn hoàn thành"
+            value={summary.totalCompleted}
             icon={<Receipt />}
             color={{
               bg: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
@@ -219,29 +233,56 @@ export default function StaffPerformancePage() {
                         {index + 1}
                       </Avatar>
 
-                      <div>
-                        <Typography className="font-semibold leading-tight">
-                          {s.staffName}
-                        </Typography>
-                        <Typography variant="body2" className="text-gray-500">
-                          {s.ordersProcessed} đơn • {(s.totalRevenue / 1_000_000).toFixed(1)}M
-                        </Typography>
-                      </div>
+                      <Typography className="font-semibold leading-tight">
+                        {s.staffName}
+                      </Typography>
                     </div>
 
                     {/* RIGHT */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <Chip
                         size="small"
                         color="primary"
-                        label={`${s.ordersPerHour?.toFixed(1) ?? 0} đơn/giờ`}
+                        icon={<SyncAlt fontSize="small" />}
+                        label={`Đã tiếp nhận: ${s.ordersProcessed}`}
                       />
+
                       <Chip
                         size="small"
                         color="success"
+                        icon={<CheckCircle fontSize="small" />}
+                        label={`Hoàn thành: ${s.ordersCompleted}`}
+                      />
+
+                      <Chip
+                        size="small"
+                        color="error"
+                        icon={<Cancel fontSize="small" />}
+                        label={`Đã huỷ: ${s.ordersCancelled}`}
+                      />
+
+                      <Chip
+                        size="small"
+                        color="secondary"
+                        icon={<AttachMoney fontSize="small" />}
+                        label={`Doanh thu: ${(s.totalRevenue / 1_000_000).toFixed(1)}M`}
+                      />
+
+                      <Chip
+                        size="small"
+                        color="info"
+                        icon={<AccessTime fontSize="small" />}
+                        label={`${s.ordersPerHour?.toFixed(1) ?? 0} đơn/giờ`}
+                      />
+
+                      <Chip
+                        size="small"
+                        color="warning"
+                        icon={<Star fontSize="small" />}
                         label={`TB ${(s.avgOrderValue / 1000).toFixed(0)}K / đơn`}
                       />
                     </div>
+
                   </div>
                 );
               })}

@@ -194,8 +194,8 @@ export default function HostAllShiftsPage() {
 
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <SummaryCard
-              title="Tổng đơn hàng"
-              value={stats.totalOrdersProcessed}
+              title="Đơn hoàn thành"
+              value={stats.totalOrdersCompleted}
               icon={<TrendingUp />}
               color={{
                 bg: 'linear-gradient(135deg, #f97316, #ea580c)', // orange
@@ -207,8 +207,8 @@ export default function HostAllShiftsPage() {
 
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <SummaryCard
-              title="Tổng doanh thu"
-              value={(stats.totalRevenue / 1_000_000).toFixed(1) + 'M'}
+             title="Doanh thu hệ thống"
+              value={(stats.totalSystemRevenue / 1_000_000).toFixed(1) + 'M'}
               icon={<AttachMoney />}
               color={{
                 bg: 'linear-gradient(135deg, #22c55e, #16a34a)', // green
@@ -349,7 +349,7 @@ export default function HostAllShiftsPage() {
                           </Grid>
                           <Grid size={{ xs: 6, md: 4 }}>
                             <Typography variant="body2" className="text-gray-600">
-                              Đơn hàng
+                              Đơn đang xử lý
                             </Typography>
                             <Typography variant="body1" className="font-semibold text-blue-600">
                               {shift.ordersProcessed}
@@ -408,7 +408,7 @@ export default function HostAllShiftsPage() {
                 >
                   <CardContent>
                     <Grid container spacing={2} alignItems="center">
-                      <Grid size={{ xs: 12, md: 3 }}>
+                      <Grid size={{ xs: 12, md: 2 }}>
                         <div className="flex items-start gap-3">
                           <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
                             <Person className="text-blue-600" />
@@ -429,9 +429,9 @@ export default function HostAllShiftsPage() {
                         </div>
                       </Grid>
 
-                      <Grid size={{ xs: 12, md: 7 }}>
+                      <Grid size={{ xs: 12, md: 9 }}>
                         <Grid container spacing={2}>
-                          <Grid size={{ xs: 6, md: 3 }}>
+                          <Grid size={{ xs: 6, md: 2 }}>
                             <div className="text-center">
                               <Typography variant="body2" className="text-gray-600 mb-1">
                                 Giờ làm
@@ -442,10 +442,10 @@ export default function HostAllShiftsPage() {
                             </div>
                           </Grid>
 
-                          <Grid size={{ xs: 6, md: 3 }}>
+                          <Grid size={{ xs: 6, md: 2 }}>
                             <div className="text-center">
                               <Typography variant="body2" className="text-gray-600 mb-1">
-                                Đơn hàng
+                                Đơn tiếp nhận
                               </Typography>
                               <Typography variant="h6" className="font-bold text-blue-600">
                                 {shift.ordersProcessed}
@@ -453,7 +453,29 @@ export default function HostAllShiftsPage() {
                             </div>
                           </Grid>
 
-                          <Grid size={{ xs: 6, md: 3 }}>
+                          <Grid size={{ xs: 6, md: 2 }}>
+                            <div className="text-center">
+                              <Typography variant="body2" className="text-gray-600 mb-1">
+                                Đơn hoàn thành
+                              </Typography>
+                              <Typography variant="h6" className="font-bold text-blue-600">
+                                {shift.ordersCompleted}
+                              </Typography>
+                            </div>
+                          </Grid>
+
+                          <Grid size={{ xs: 6, md: 2}}>
+                            <div className="text-center">
+                              <Typography variant="body2" className="text-gray-600 mb-1">
+                                Đơn đã hủy
+                              </Typography>
+                              <Typography variant="h6" className="font-bold text-blue-600">
+                                {shift.ordersCancelled}
+                              </Typography>
+                            </div>
+                          </Grid>
+
+                          <Grid size={{ xs: 6, md: 2 }}>
                             <div className="text-center">
                               <Typography variant="body2" className="text-gray-600 mb-1">
                                 Doanh thu
@@ -464,7 +486,7 @@ export default function HostAllShiftsPage() {
                             </div>
                           </Grid>
 
-                          <Grid size={{ xs: 6, md: 3 }}>
+                          <Grid size={{ xs: 6, md: 2 }}>
                             <div className="text-center">
                               <Typography variant="body2" className="text-gray-600 mb-1">
                                 TB/đơn
@@ -479,7 +501,7 @@ export default function HostAllShiftsPage() {
                         </Grid>
                       </Grid>
 
-                      <Grid size={{ xs: 12, md: 2 }}>
+                      <Grid size={{ xs: 12, md: 1 }}>
                         <Button
                           variant="outlined"
                           fullWidth

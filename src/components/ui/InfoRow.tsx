@@ -1,16 +1,39 @@
+'use client';
+
 import { ReactNode } from 'react';
-import { Box, Typography } from '@mui/material';
+import clsx from 'clsx';
 
 export interface InfoRowProps {
   label: string;
-  value: ReactNode;
+  value: string | number;
+  icon?: ReactNode;
+  className?: string;
 }
 
-export default function InfoRow({ label, value }: InfoRowProps) {
+export default function InfoRow({
+  label,
+  value,
+  icon,
+  className,
+}: InfoRowProps) {
   return (
-    <Box display="flex" justifyContent="space-between" py={0.75}>
-      <Typography color="text.secondary">{label}</Typography>
-      <Typography fontWeight={500}>{value}</Typography>
-    </Box>
+    <div
+      className={clsx(
+        'flex items-center gap-3 p-3 rounded-xl',
+        'bg-gray-50 border border-gray-200',
+        className,
+      )}
+    >
+      {icon && (
+        <div className="w-6 h-6 rounded-lg bg-white flex items-center justify-center shadow-sm">
+          {icon}
+        </div>
+      )}
+
+      <div className="flex-1 w-20 ">
+        <div className="text-xs text-gray-500">{label}</div>
+        <div className="font-semibold text-gray-800">{value}</div>
+      </div>
+    </div>
   );
 }

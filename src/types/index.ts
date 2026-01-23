@@ -262,6 +262,8 @@ export interface StaffPerformance {
   staffName: string;
   staffType: StaffType;
   ordersProcessed: number;
+  ordersCompleted: number;   
+  ordersCancelled: number;
   totalRevenue: number;
   avgOrderValue: number;
   hoursWorked?: number;
@@ -425,7 +427,7 @@ export interface HostShiftStats {
   totalOrdersCompleted: number;
   totalOrdersCancelled: number;
 
-  totalRevenue: number;
+  totalSystemRevenue: number;
   averageRevenuePerShift: number;
   averageHoursPerShift: number;
   staffPerformance?: {

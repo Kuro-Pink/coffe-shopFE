@@ -13,6 +13,7 @@ import {
   AccessTime,
   BarChart,
   History,
+  AccessAlarm
 } from '@mui/icons-material';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { showToast } from '@/components/common/Toast';
@@ -160,7 +161,10 @@ function HostLayoutContent({ children }: { children: ReactNode }) {
   }
   // Staff-only items
   if (canAccess(user, 'my-shift')) {
-    menuItems.push({ text: 'Ca làm việc', icon: <AccessTime />, path: '/host/staff/my-shift' });
+    menuItems.push({ text: 'Ca làm việc', icon: <AccessAlarm />, path: '/host/staff/my-shift' });
+  }
+  if (canAccess(user, 'my-shift')) {
+    menuItems.push({ text: 'Lịch sử ca', icon: <AccessTime />, path: '/host/staff/history' });
   }
 
   // Host-only management items
