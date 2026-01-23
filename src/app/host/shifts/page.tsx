@@ -420,11 +420,6 @@ export default function HostAllShiftsPage() {
                             <Typography variant="body2" className="text-gray-600">
                               {format(new Date(shift.checkInTime), 'dd/MM/yyyy', { locale: vi })}
                             </Typography>
-                            <Chip
-                              label={formatDuration(shift.hoursWorked)}
-                              size="small"
-                              className="mt-1"
-                            />
                           </div>
                         </div>
                       </Grid>

@@ -13,10 +13,17 @@ import {
   Avatar,
   Divider,
 } from '@mui/material';
-import { TrendingUp, Person, AttachMoney, Receipt, AccessTime,  SyncAlt,
+import {
+  TrendingUp,
+  Person,
+  AttachMoney,
+  Receipt,
+  AccessTime,
+  SyncAlt,
   CheckCircle,
   Cancel,
-  Star, } from '@mui/icons-material';
+  Star,
+} from '@mui/icons-material';
 import { format, subDays } from 'date-fns';
 import SummaryCard from '@/components/ui/SummaryCard';
 
@@ -71,17 +78,14 @@ export default function StaffPerformancePage() {
     };
   }, [data]);
 
-
-  const ranked = useMemo(() =>
-    [...data].sort(
-      (a, b) =>
-        b.ordersCompleted - b.ordersCancelled * 2 -
-        (a.ordersCompleted - a.ordersCancelled * 2)
-    ),
-  [data]);
-  console.log('ranked', ranked);
-
-
+  const ranked = useMemo(
+    () =>
+      [...data].sort(
+        (a, b) =>
+          b.ordersCompleted - b.ordersCancelled * 2 - (a.ordersCompleted - a.ordersCancelled * 2),
+      ),
+    [data],
+  );
   if (loading) {
     return (
       <Box className="flex items-center justify-center min-h-screen">
@@ -233,9 +237,7 @@ export default function StaffPerformancePage() {
                         {index + 1}
                       </Avatar>
 
-                      <Typography className="font-semibold leading-tight">
-                        {s.staffName}
-                      </Typography>
+                      <Typography className="font-semibold leading-tight">{s.staffName}</Typography>
                     </div>
 
                     {/* RIGHT */}
@@ -282,7 +284,6 @@ export default function StaffPerformancePage() {
                         label={`TB ${(s.avgOrderValue / 1000).toFixed(0)}K / đơn`}
                       />
                     </div>
-
                   </div>
                 );
               })}

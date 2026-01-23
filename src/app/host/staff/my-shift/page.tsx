@@ -34,6 +34,7 @@ import CheckInDialog from '@/components/staff/ShiftManager/CheckInDialog';
 import CheckOutDialog from '@/components/staff/ShiftManager/CheckOutDialog';
 import { showToast } from '@/components/common/Toast';
 import ShiftReportDialog from '@/components/staff/ShiftManager/ShiftReportDialog';
+import { SummaryCard } from '@/components/ui/';
 
 export default function MyShiftPage() {
   const { user } = useAuthStore();
@@ -194,77 +195,59 @@ export default function MyShiftPage() {
           {/* Shift Stats */}
           <Grid container spacing={3} className="mb-6">
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white">
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Typography variant="body2" className="opacity-90 mb-1">
-                        Đơn tiếp nhận
-                      </Typography>
-                      <Typography variant="h3" className="font-bold">
-                        {currentShift.ordersProcessed}
-                      </Typography>
-                    </div>
-                    <Receipt className="text-6xl opacity-20" />
-                  </div>
-                </CardContent>
-              </Card>
+              <SummaryCard
+                title="Đơn tiếp nhận"
+                value={currentShift.ordersProcessed}
+                icon={<Receipt />}
+                color={{
+                  bg: 'linear-gradient(135deg, #6366f1, #4f46e5)',
+                  iconBg: 'rgba(255,255,255,0.2)',
+                  iconColor: '#fff',
+                }}
+              />
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white">
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Typography variant="body2" className="opacity-90 mb-1">
-                        Hoàn thành
-                      </Typography>
-                      <Typography variant="h3" className="font-bold">
-                        {currentShift.ordersCompleted ?? 0}
-                      </Typography>
-                    </div>
-                    <CheckCircle className="text-6xl opacity-20" />
-                  </div>
-                </CardContent>
-              </Card>
+              <SummaryCard
+                title="Hoàn thành"
+                value={currentShift.ordersCompleted ?? 0}
+                icon={<CheckCircle />}
+                color={{
+                  bg: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
+                  iconBg: 'rgba(255,255,255,0.2)',
+                  iconColor: '#fff',
+                }}
+              />
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <Card className="bg-gradient-to-br from-orange-500 to-orange-600 text-white">
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Typography variant="body2" className="opacity-90 mb-1">
-                        Đã hủy
-                      </Typography>
-                      <Typography variant="h3" className="font-bold">
-                        {currentShift.ordersCancelled ?? 0}
-                      </Typography>
-                    </div>
-                    <Error className="text-6xl opacity-20" />
-                  </div>
-                </CardContent>
-              </Card>
+              <SummaryCard
+                title="Đã huỷ"
+                value={currentShift.ordersCancelled ?? 0}
+                icon={<Error />}
+                color={{
+                  bg: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                  iconBg: 'rgba(255,255,255,0.2)',
+                  iconColor: '#fff',
+                }}
+              />
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white">
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Typography variant="body2" className="opacity-90 mb-1">
-                        Tung bình 1 đơn
-                      </Typography>
-                      <Typography variant="h3" className="font-bold">
-                        {currentShift.averageOrderValue
-                          ? (currentShift.averageOrderValue / 1000).toFixed(0) + 'K'
-                          : '0K'}
-                      </Typography>
-                    </div>
-                    <TrendingUp className="text-6xl opacity-20" />
-                  </div>
-                </CardContent>
-              </Card>
+              <SummaryCard
+                title="Trung bình 1 đơn"
+                value={
+                  currentShift.averageOrderValue
+                    ? (currentShift.averageOrderValue / 1000).toFixed(0) + 'K'
+                    : '0K'
+                }
+                icon={<TrendingUp />}
+                color={{
+                  bg: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                  iconBg: 'rgba(255,255,255,0.2)',
+                  iconColor: '#fff',
+                }}
+              />
             </Grid>
           </Grid>
 
