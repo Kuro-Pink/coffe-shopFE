@@ -19,9 +19,14 @@ import { useCartStore } from '@/lib/stores/cartStore';
 interface ProductCardProps {
   product: Product;
   isBestSeller?: boolean;
+  highlight?: boolean;
 }
 
-export default function ProductCard({ product, isBestSeller = false }: ProductCardProps) {
+export default function ProductCard({
+  product,
+  isBestSeller = false,
+  highlight = false,
+}: ProductCardProps) {
   const [quantity, setQuantity] = useState(1);
   const [detailOpen, setDetailOpen] = useState(false);
   const { addItem } = useCartStore();
@@ -29,6 +34,7 @@ export default function ProductCard({ product, isBestSeller = false }: ProductCa
   const handleAddToCart = () => {
     addItem({
       productId: product._id,
+      storeId: product.storeId, // Bên res BE trả về chưa có storeId, rảnht thì thêm vào
       name: product.name,
       price: product.price,
       quantity,
@@ -41,7 +47,10 @@ export default function ProductCard({ product, isBestSeller = false }: ProductCa
   return (
     <>
       <Card
-        className="hover:shadow-xl transition-all duration-300 cursor-pointer border-0"
+        className={`
+    hover:shadow-xl transition-all duration-300 cursor-pointer border
+    ${highlight ? 'border-orange-500 shadow-orange-200 shadow-lg scale-[1.02]' : 'border-gray-200'}
+  `}
         onClick={() => setDetailOpen(true)}
       >
         <CardContent className="p-0">
@@ -53,13 +62,14 @@ export default function ProductCard({ product, isBestSeller = false }: ProductCa
                 🔥 HOT
               </div>
             )}
+            {highlight && (
+              <div className="absolute top-2 right-2 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-md z-10">
+                🤖 AI gợi ý
+              </div>
+            )}
 
             {product.image ? (
-              <img
-                src={product.image}
-                alt={product.name}
-                className="w-full h-full object-cover"
-              />
+              <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-green-100 to-teal-100 flex items-center justify-center">
                 <Typography variant="h2" className="text-green-300">
@@ -102,12 +112,7 @@ export default function ProductCard({ product, isBestSeller = false }: ProductCa
       </Card>
 
       {/* Detail Dialog */}
-      <Dialog
-        open={detailOpen}
-        onClose={() => setDetailOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
+      <Dialog open={detailOpen} onClose={() => setDetailOpen(false)} maxWidth="sm" fullWidth>
         <DialogContent>
           {/* Image */}
           <Avatar

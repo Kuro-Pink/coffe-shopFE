@@ -125,6 +125,13 @@ export const API_ENDPOINTS = {
     TABLE_INFO: (tableId: string) => `/public/tables/${tableId}`,
     TABLE_CART: (tableId: string) => `/public/tables/${tableId}/cart`,
   },
+  AI: {
+    CHAT: '/ai/chat',
+    RCM_PRODUCTS: '/ai/recommend',
+    COMBO: '/ai/combo',
+    SUGGEST_ORDERS: '/ai/suggest-order',
+    CUSTOMER: '/ai/customer-profile',
+  },
 } as const;
 
 // HTTP Methods

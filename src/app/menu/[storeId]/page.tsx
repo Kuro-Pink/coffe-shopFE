@@ -23,6 +23,7 @@ import ErrorMessage from '@/components/common/ErrorMessage';
 import ProductCard from '@/components/customer/ProductCard';
 import Cart from '@/components/customer/Cart';
 import { AxiosError } from 'axios';
+import AIChatBox from '@/components/ai/AIChatBox';
 
 interface MenuCategory extends Category {
   products: Product[];
@@ -64,25 +65,21 @@ export default function CustomerMenuPage() {
 
       const menuData: MenuResponse = await publicService.getMenu(storeId);
 
-      const categories = menuData.categories.sort(
-        (a, b) => a.order - b.order
-      );
+      const categories = menuData.categories.sort((a, b) => a.order - b.order);
 
-      const products = categories.flatMap(category =>
-        category.products.map(product => ({
+      const products = categories.flatMap((category) =>
+        category.products.map((product) => ({
           ...product,
           categoryId: category._id,
-        }))
+        })),
       );
 
-      const availableProducts = products.filter(p => p.isAvailable);
+      const availableProducts = products.filter((p) => p.isAvailable);
 
       setCategories(categories);
       setProducts(availableProducts);
       setBestSellers(
-        availableProducts
-          .toSorted((a, b) => (b.soldCount ?? 0) - (a.soldCount ?? 0))
-          .slice(0, 3)
+        availableProducts.toSorted((a, b) => (b.soldCount ?? 0) - (a.soldCount ?? 0)).slice(0, 3),
       );
 
       setStoreName(menuData.store?.name || 'Menu');
@@ -91,7 +88,7 @@ export default function CustomerMenuPage() {
       if (tableId) {
         // Set table first to initialize cart for this table
         setTable(tableId, storeId);
-        
+
         const table = await publicService.getTableInfo(tableId);
         setTableInfo({
           tableNumber: table.tableNumber,
@@ -100,11 +97,12 @@ export default function CustomerMenuPage() {
       }
     } catch (err: unknown) {
       console.error('❌ Error fetching data:', err);
-      const errorMessage = err instanceof AxiosError
-        ? err.response?.data?.message || err.response?.data?.error || 'Không thể tải menu'
-        : err instanceof Error
-        ? err.message
-        : 'Không thể tải menu';
+      const errorMessage =
+        err instanceof AxiosError
+          ? err.response?.data?.message || err.response?.data?.error || 'Không thể tải menu'
+          : err instanceof Error
+            ? err.message
+            : 'Không thể tải menu';
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -229,7 +227,12 @@ export default function CustomerMenuPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredProducts.map((product) => (
-              <ProductCard key={product._id} product={product} />
+              <ProductCard
+                key={product._id}
+                product={product}
+                // isBestSeller={product.isBestSeller}
+                // highlight={highlightProducts.includes(product._id)}
+              />
             ))}
           </div>
         )}
@@ -255,7 +258,8 @@ export default function CustomerMenuPage() {
         </Fab>
       )}
 
-      {/* Cart Drawer */}
+      {/* Cart Drawer & AI Chat */}
+      <AIChatBox storeId={storeId} />
       <Cart open={cartOpen} onClose={() => setCartOpen(false)} />
     </div>
   );

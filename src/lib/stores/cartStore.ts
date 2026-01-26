@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 
 interface CartItem {
   productId: string;
+  storeId: string;
   name: string;
   price: number;
   quantity: number;
@@ -22,7 +23,7 @@ interface CartState {
   carts: Record<string, TableCart>;
   currentTableId: string | null;
   currentStoreId: string | null;
-  
+
   // Cart operations
   setTable: (tableId: string, storeId: string) => void;
   addItem: (item: CartItem) => void;
@@ -41,11 +42,11 @@ export const useCartStore = create<CartState>()(
       carts: {},
       currentTableId: null,
       currentStoreId: null,
-      
+
       // ✅ Set current table
       setTable: (tableId, storeId) => {
         set({ currentTableId: tableId, currentStoreId: storeId });
-        
+
         // Initialize cart for this table if not exists
         const carts = get().carts;
         if (!carts[tableId]) {
@@ -62,7 +63,7 @@ export const useCartStore = create<CartState>()(
           });
         }
       },
-      
+
       // ✅ Add item to CURRENT table's cart
       addItem: (item) => {
         const { currentTableId, carts } = get();
@@ -70,18 +71,21 @@ export const useCartStore = create<CartState>()(
           console.error('❌ No table selected');
           return;
         }
-        
-        const currentCart = carts[currentTableId] || { tableId: currentTableId, storeId: get().currentStoreId || '', items: [], updatedAt: new Date().toISOString() };
-        const existingItem = currentCart.items.find(i => i.productId === item.productId);
-        
+
+        const currentCart = carts[currentTableId] || {
+          tableId: currentTableId,
+          storeId: get().currentStoreId || '',
+          items: [],
+          updatedAt: new Date().toISOString(),
+        };
+        const existingItem = currentCart.items.find((i) => i.productId === item.productId);
+
         const updatedItems = existingItem
-          ? currentCart.items.map(i =>
-              i.productId === item.productId
-                ? { ...i, quantity: i.quantity + item.quantity }
-                : i
+          ? currentCart.items.map((i) =>
+              i.productId === item.productId ? { ...i, quantity: i.quantity + item.quantity } : i,
             )
           : [...currentCart.items, item];
-        
+
         set({
           carts: {
             ...carts,
@@ -93,96 +97,93 @@ export const useCartStore = create<CartState>()(
           },
         });
       },
-      
+
       // ✅ Remove item from CURRENT table's cart
       removeItem: (productId) => {
         const { currentTableId, carts } = get();
         if (!currentTableId) return;
-        
+
         const currentCart = carts[currentTableId];
         if (!currentCart) return;
-        
+
         set({
           carts: {
             ...carts,
             [currentTableId]: {
               ...currentCart,
-              items: currentCart.items.filter(i => i.productId !== productId),
+              items: currentCart.items.filter((i) => i.productId !== productId),
               updatedAt: new Date().toISOString(),
             },
           },
         });
       },
-      
+
       // ✅ Update quantity in CURRENT table's cart
       updateQuantity: (productId, quantity) => {
         const { currentTableId, carts } = get();
         if (!currentTableId) return;
-        
+
         const currentCart = carts[currentTableId];
         if (!currentCart) return;
-        
+
         set({
           carts: {
             ...carts,
             [currentTableId]: {
               ...currentCart,
-              items: currentCart.items.map(i =>
-                i.productId === productId ? { ...i, quantity } : i
+              items: currentCart.items.map((i) =>
+                i.productId === productId ? { ...i, quantity } : i,
               ),
               updatedAt: new Date().toISOString(),
             },
           },
         });
       },
-      
+
       // ✅ Clear CURRENT table's cart
       clearCart: () => {
         const { currentTableId, carts } = get();
         if (!currentTableId) return;
-        
+
         const updatedCarts = { ...carts };
         delete updatedCarts[currentTableId];
-        
+
         set({ carts: updatedCarts });
       },
-      
+
       // ✅ NEW: Clear specific table's cart (for payment)
       clearTableCart: (tableId: string) => {
         const carts = get().carts;
         const updatedCarts = { ...carts };
         delete updatedCarts[tableId];
-        
+
         set({ carts: updatedCarts });
       },
-      
+
       // ✅ Get total amount for CURRENT table
       getTotalAmount: () => {
         const { currentTableId, carts } = get();
         if (!currentTableId || !carts[currentTableId]) return 0;
-        
+
         return carts[currentTableId].items.reduce(
           (total, item) => total + item.price * item.quantity,
-          0
+          0,
         );
       },
-      
+
       // ✅ Get total items count for CURRENT table
       getTotalItems: () => {
         const { currentTableId, carts } = get();
         if (!currentTableId || !carts[currentTableId]) return 0;
-        
-        return carts[currentTableId].items.reduce(
-          (total, item) => total + item.quantity,
-          0
-        );
+
+        return carts[currentTableId].items.reduce((total, item) => total + item.quantity, 0);
       },
-      
+
       // ✅ NEW: Get current table's items
       getCurrentItems: () => {
         const { currentTableId, carts } = get();
         if (!currentTableId || !carts[currentTableId]) return [];
-        
+
         return carts[currentTableId].items;
       },
     }),
@@ -191,6 +192,6 @@ export const useCartStore = create<CartState>()(
       storage: createJSONStorage(() => localStorage),
       // ✅ IMPORTANT: Only persist carts, not current table
       partialize: (state) => ({ carts: state.carts }),
-    }
-  )
+    },
+  ),
 );
