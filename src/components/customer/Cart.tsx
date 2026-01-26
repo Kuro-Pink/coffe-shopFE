@@ -12,15 +12,10 @@ import {
   Avatar,
   Box,
 } from '@mui/material';
-import {
-  Close,
-  Add,
-  Remove,
-  Delete,
-  ShoppingCart,
-} from '@mui/icons-material';
+import { Close, Add, Remove, Delete, ShoppingCart } from '@mui/icons-material';
 import { useCartStore } from '@/lib/stores/cartStore';
 import CheckoutModal from './CheckoutModal';
+import ComboSuggestion from './ComboSuggestion';
 
 interface CartProps {
   open: boolean;
@@ -32,7 +27,8 @@ export default function Cart({ open, onClose }: CartProps) {
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const removeItem = useCartStore((state) => state.removeItem);
   const clearCart = useCartStore((state) => state.clearCart);
-  
+  const currentStoreId = useCartStore((state) => state.currentStoreId);
+
   // Get items from current table
   const items = getCurrentItems();
 
@@ -93,65 +89,66 @@ export default function Cart({ open, onClose }: CartProps) {
             ) : (
               <List className="p-4">
                 {items.map((item) => (
-                  <ListItem
-                    key={item.productId}
-                    className="border border-gray-200 rounded-lg mb-3 p-3"
-                  >
-                    <div className="flex gap-3 w-full">
-                      {/* Image */}
-                      <Avatar
-                        src={item.image}
-                        variant="rounded"
-                        className="w-20 h-20"
-                      >
-                        🍽️
-                      </Avatar>
-
-                      {/* Info */}
-                      <div className="flex-1">
-                        <Typography variant="body1" className="font-semibold mb-1">
-                          {item.name}
-                        </Typography>
-                        <Typography variant="body2" className="text-green-600 font-bold mb-2">
-                          {item.price.toLocaleString('vi-VN')} ₫
-                        </Typography>
-
-                        {/* Quantity Controls */}
-                        <div className="flex items-center gap-2">
-                          <IconButton
-                            size="small"
-                            onClick={() =>
-                              updateQuantity(item.productId, Math.max(1, item.quantity - 1))
-                            }
-                            className="border border-gray-300"
-                          >
-                            <Remove fontSize="small" />
-                          </IconButton>
-
-                          <Typography className="font-bold min-w-8 text-center">
-                            {item.quantity}
+                  <div key={item.productId}>
+                    <ListItem className="border border-gray-200 rounded-lg mb-2 p-3">
+                      <div className="flex gap-3 w-full">
+                        {/* Image */}
+                        <Avatar src={item.image} variant="rounded" className="w-20 h-20">
+                          🍽️
+                        </Avatar>
+                        {/* Info */}
+                        <div className="flex-1">
+                          <Typography variant="body1" className="font-semibold mb-1">
+                            {item.name}
+                          </Typography>
+                          <Typography variant="body2" className="text-green-600 font-bold mb-2">
+                            {item.price.toLocaleString('vi-VN')} ₫
                           </Typography>
 
-                          <IconButton
-                            size="small"
-                            onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                            className="border border-gray-300"
-                          >
-                            <Add fontSize="small" />
-                          </IconButton>
+                          {/* Quantity Controls */}
+                          <div className="flex items-center gap-2">
+                            <IconButton
+                              size="small"
+                              onClick={() =>
+                                updateQuantity(item.productId, Math.max(1, item.quantity - 1))
+                              }
+                              className="border border-gray-300"
+                            >
+                              <Remove fontSize="small" />
+                            </IconButton>
 
-                          <IconButton
-                            size="small"
-                            color="error"
-                            onClick={() => removeItem(item.productId)}
-                            className="ml-auto"
-                          >
-                            <Delete fontSize="small" />
-                          </IconButton>
+                            <Typography className="font-bold min-w-8 text-center">
+                              {item.quantity}
+                            </Typography>
+
+                            <IconButton
+                              size="small"
+                              onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                              className="border border-gray-300"
+                            >
+                              <Add fontSize="small" />
+                            </IconButton>
+
+                            <IconButton
+                              size="small"
+                              color="error"
+                              onClick={() => removeItem(item.productId)}
+                              className="ml-auto"
+                            >
+                              <Delete fontSize="small" />
+                            </IconButton>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </ListItem>
+                    </ListItem>
+                    {item.quantity > 0 && currentStoreId && (
+                      <ComboSuggestion
+                        key={`combo-${item.productId}`} // 👈 ép React unmount khi item biến mất
+                        storeId={currentStoreId}
+                        baseProductId={item.productId}
+                      />
+                    )}
+                  </div>
                 ))}
               </List>
             )}
