@@ -5,13 +5,34 @@ export interface AIChatRequest {
   storeId: string;
   phone?: string;
   message?: string;
+  action?:
+    | 'SMART_RECOMMEND'
+    | 'SHOW_COFFEE'
+    | 'SHOW_MILK_TEA'
+    | 'SHOW_TEA'
+    | 'SHOW_JUICE'
+    | 'SHOW_SMOOTHIE'
+    | 'SHOW_YOGURT'
+    | 'SHOW_MATCHA'
+    | 'SHOW_ICE_BLENDED'
+    | 'SHOW_SNACK'
+    | 'SHOW_CAKE'
+    | 'SHOW_COFFEE_PAIRING'
+    | 'AFTER_ADD_TO_CART'; // 🆕 dùng cho upsell
 }
 
 export interface AIChatResponse {
   reply: string;
-  action?: 'CONFIRM_LAST_ORDER';
+  action?: 'CONFIRM_LAST_ORDER' | 'ASK_ADD_MORE' | null; // 🆕 flow tiếp
   phone?: string;
-  products?: [];
+
+  products?: {
+    productId: string;
+    name: string;
+    price: number;
+    image?: string;
+  }[];
+
   lastOrder?: {
     items: {
       productId: string;
@@ -21,13 +42,8 @@ export interface AIChatResponse {
     }[];
     note?: string;
   };
-  suggestedProducts?: {
-    _id: string;
-    name: string;
-    price: number;
-    image?: string;
-  }[];
 }
+
 /* =========================
    2️⃣ RECOMMEND PRODUCTS
 ========================= */
@@ -100,14 +116,6 @@ export const aiService = {
     return res.data;
   },
 
-  // 🎯 Gợi ý món riêng lẻ
-  recommendProducts: async (storeId: string) => {
-    const res = await api.get<RecommendProductsResponse>(
-      `${API_ENDPOINTS.AI.RCM_PRODUCTS}?storeId=${storeId}`,
-    );
-    return res.data;
-  },
-
   // 🍽️ Gợi ý combo theo các món đang có
   recommendCombo: async (storeId: string, productId: string, signal?: AbortSignal) => {
     try {
@@ -122,6 +130,14 @@ export const aiService = {
     } catch {
       return null;
     }
+  },
+
+  // 🎯 Gợi ý món riêng lẻ
+  recommendProducts: async (storeId: string) => {
+    const res = await api.get<RecommendProductsResponse>(
+      `${API_ENDPOINTS.AI.RCM_PRODUCTS}?storeId=${storeId}`,
+    );
+    return res.data;
   },
 
   // 🧠 Upsell toàn bộ giỏ hàng

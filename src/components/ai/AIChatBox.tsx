@@ -30,17 +30,39 @@ interface ChatProduct {
   image?: string;
 }
 
+interface ChatOption {
+  label: string;
+  message: string;
+}
+
 interface ChatMessage {
   role: 'ai' | 'user';
   text: string;
   action?: 'CONFIRM_LAST_ORDER';
   products?: ChatProduct[];
+  options?: ChatOption[]; // 👈 THÊM DÒNG NÀY
 }
-const quickQuestions = [
-  'Gợi ý món cho tôi',
-  'Tôi hay uống món gì?',
-  'Món ít đá cho tôi',
-  'Gọi lại như lần trước',
+
+const MAIN_OPTIONS: ChatOption[] = [
+  { label: '🍹 Đồ uống', message: 'menu nuoc' },
+  { label: '🍰 Bánh ngọt', message: 'banh ngot' },
+  { label: '🍟 Ăn vặt', message: 'an vat' },
+];
+
+const DRINK_OPTIONS: ChatOption[] = [
+  { label: '☕ Cà phê', message: 'ca phe' },
+  { label: '🧋 Trà sữa', message: 'tra sua' },
+  { label: '🍵 Trà', message: 'tra' },
+  { label: '🥤 Sinh tố', message: 'sinh to' },
+  { label: '🍊 Nước ép', message: 'nuoc ep' },
+  { label: '🍫 Matcha / Cacao', message: 'matcha' },
+];
+
+const QUICK_OPTIONS: ChatOption[] = [
+  { label: '🔥 Món bán chạy', message: 'ban chay' },
+  { label: '🌅 Đồ uống buổi sáng', message: 'buoi sang' },
+  { label: '🧊 Món ít đá', message: 'it da' },
+  { label: '♨️ Món nóng', message: 'nong' },
 ];
 
 export default function AIChatBox({ storeId }: Props) {
@@ -48,7 +70,8 @@ export default function AIChatBox({ storeId }: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: 'ai',
-      text: 'Xin chào 👋 Em là trợ lý gọi món, em có thể nhớ món cũ cho anh/chị 😊',
+      text: 'Xin chào 👋 Mình giúp bạn chọn món nhanh nhé!',
+      options: MAIN_OPTIONS,
     },
   ]);
   const [input, setInput] = useState('');
@@ -66,8 +89,8 @@ export default function AIChatBox({ storeId }: Props) {
     left: '50%',
     transform: 'translate(-50%, -50%)',
 
-    width: isMobile ? '95%' : 520,
-    height: isMobile ? '80%' : 600,
+    width: isMobile ? '95%' : 600,
+    height: isMobile ? '80%' : 720,
 
     maxWidth: '95vw',
     maxHeight: '85vh',
@@ -115,9 +138,69 @@ export default function AIChatBox({ storeId }: Props) {
     ]);
     setLastOrder(null);
   };
+
+  const handleAfterAddToCart = async (productId: string, productName: string) => {
+    // AI hỏi upsell ngay sau khi thêm
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: 'ai',
+        text: `Bạn vừa thêm *${productName}* 🛒\nBạn có muốn dùng thêm món ăn kèm hoặc combo không?`,
+        options: [
+          { label: 'Có, gợi ý thêm', message: `goi combo ${productId}` },
+          { label: 'Không, cảm ơn', message: 'khong combo' },
+        ],
+      },
+    ]);
+  };
+
   const handleSendMessage = async (text?: string) => {
     const content = (text ?? input).trim();
     if (!content) return;
+
+    // 👉 Nếu khách chọn upsell combo
+    if (content.startsWith('goi combo')) {
+      const productId = content.split(' ')[2];
+
+      setIsTyping(true);
+      const comboRes = await aiService.recommendCombo(storeId, productId);
+      setIsTyping(false);
+
+      if (comboRes?.combo) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: 'ai',
+            text: comboRes.upsellText || 'Món này hay được gọi kèm nè 😋',
+            products: [comboRes.combo],
+            options: MAIN_OPTIONS,
+          },
+        ]);
+      } else {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: 'ai',
+            text: 'Hiện chưa có combo phù hợp lắm, bạn xem thêm menu nhé 😊',
+            options: MAIN_OPTIONS,
+          },
+        ]);
+      }
+      return;
+    }
+
+    // 👉 Nếu khách từ chối combo
+    if (content === 'khong combo') {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'ai',
+          text: 'Dạ cảm ơn bạn 🥰 Khi nào cần thêm món cứ nói mình nhé!',
+          options: MAIN_OPTIONS,
+        },
+      ]);
+      return;
+    }
 
     // push user message
     setMessages((prev) => [...prev, { role: 'user', text: content }]);
@@ -130,16 +213,31 @@ export default function AIChatBox({ storeId }: Props) {
         phone,
         message: content,
       });
-      // fallback an toàn
-      const aiText = res?.reply || 'AI đang bận chút, anh thử lại nhé 🙏';
+
+      let nextOptions: ChatOption[] | undefined = MAIN_OPTIONS;
+
+      // Nếu user vừa hỏi đồ uống
+      if (content.includes('menu nuoc')) nextOptions = DRINK_OPTIONS;
+
+      // Nếu đã vào nhóm nhỏ rồi thì quay lại menu chính
+      if (
+        content.includes('ca phe') ||
+        content.includes('tra sua') ||
+        content.includes('sinh to') ||
+        content.includes('nuoc ep') ||
+        content.includes('matcha')
+      ) {
+        nextOptions = MAIN_OPTIONS;
+      }
 
       setMessages((prev) => [
         ...prev,
         {
           role: 'ai',
-          text: aiText,
+          text: res?.reply || 'AI đang bận chút, anh thử lại nhé 🙏',
           action: res?.action,
           products: res?.products,
+          options: nextOptions, // 👈 thêm dòng này
         },
       ]);
 
@@ -151,8 +249,6 @@ export default function AIChatBox({ storeId }: Props) {
       setIsTyping(false);
     }
   };
-
-  const quickQuestions = ['Món đề xuất', 'Gọi món như lần trước', 'Món bán chạy'];
 
   return (
     <>
@@ -219,7 +315,22 @@ export default function AIChatBox({ storeId }: Props) {
                             price={p.price}
                             image={p.image}
                             storeId={storeId}
+                            onAddedToCart={handleAfterAddToCart}
                           />
+                        ))}
+                      </Box>
+                    )}
+                    {m.options && (
+                      <Box mt={1} display="flex" flexWrap="wrap" gap={1}>
+                        {m.options.map((opt) => (
+                          <Button
+                            key={opt.label}
+                            size="small"
+                            variant="outlined"
+                            onClick={() => handleSendMessage(opt.message)}
+                          >
+                            {opt.label}
+                          </Button>
                         ))}
                       </Box>
                     )}
@@ -251,31 +362,16 @@ export default function AIChatBox({ storeId }: Props) {
 
             {/* QUICK QUESTIONS */}
             <Box display="flex" flexWrap="wrap" gap={1} mt={1}>
-              {quickQuestions.map((q) => (
+              {QUICK_OPTIONS.map((opt) => (
                 <Button
-                  key={q}
+                  key={opt.message}
                   size="small"
                   variant="outlined"
-                  onClick={() => handleSendMessage(q)}
+                  onClick={() => handleSendMessage(opt.message)}
                 >
-                  {q}
+                  {opt.label}
                 </Button>
               ))}
-            </Box>
-
-            {/* INPUT */}
-            <Box p={2} display="flex" gap={1}>
-              <TextField
-                fullWidth
-                size="small"
-                placeholder="Nhập câu hỏi..."
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-              />
-              <Button variant="contained" onClick={() => handleSendMessage()}>
-                Gửi
-              </Button>
             </Box>
           </Box>
         </Fade>

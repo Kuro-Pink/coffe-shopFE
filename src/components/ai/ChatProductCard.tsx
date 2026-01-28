@@ -8,10 +8,32 @@ interface Props {
   price: number;
   image?: string;
   storeId: string;
+  onAddedToCart?: (productId: string, name: string) => void; // 🆕
 }
 
-export default function ChatProductCard({ productId, name, price, image, storeId }: Props) {
+export default function ChatProductCard({
+  productId,
+  name,
+  price,
+  image,
+  storeId,
+  onAddedToCart,
+}: Props) {
   const addItem = useCartStore((s) => s.addItem);
+
+  const handleAdd = () => {
+    addItem({
+      productId,
+      storeId,
+      name,
+      price,
+      quantity: 1,
+      image,
+    });
+
+    // 🔔 Báo cho AI biết vừa thêm món
+    onAddedToCart?.(productId, name);
+  };
 
   return (
     <Box
@@ -35,20 +57,7 @@ export default function ChatProductCard({ productId, name, price, image, storeId
         </Typography>
       </Box>
 
-      <Button
-        size="small"
-        variant="contained"
-        onClick={() =>
-          addItem({
-            productId,
-            storeId,
-            name,
-            price,
-            quantity: 1,
-            image,
-          })
-        }
-      >
+      <Button size="small" variant="contained" onClick={handleAdd}>
         Thêm
       </Button>
     </Box>
