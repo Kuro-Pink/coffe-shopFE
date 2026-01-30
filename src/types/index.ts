@@ -1,5 +1,12 @@
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
 
+export interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  statusCode: number;
+  data: T;
+}
+
 export interface ToastOptions {
   duration?: number;
   position?:
@@ -52,6 +59,7 @@ export interface User {
   name: string;
   role: 'admin' | 'host' | 'staff';
   phone?: string;
+  avatar?: string;
   storeId?: string;
   staffType?: StaffType;
   currentShift?: Shift;
@@ -262,7 +270,7 @@ export interface StaffPerformance {
   staffName: string;
   staffType: StaffType;
   ordersProcessed: number;
-  ordersCompleted: number;   
+  ordersCompleted: number;
   ordersCancelled: number;
   totalRevenue: number;
   avgOrderValue: number;

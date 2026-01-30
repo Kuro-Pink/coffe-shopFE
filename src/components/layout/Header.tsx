@@ -13,12 +13,7 @@ import {
   Divider,
   Badge,
 } from '@mui/material';
-import {
-  Menu as MenuIcon,
-  Settings,
-  Logout,
-  Notifications,
-} from '@mui/icons-material';
+import { Menu as MenuIcon, Settings, Logout, Notifications, Person } from '@mui/icons-material';
 import { useAuthStore } from '@/lib/stores/authStore';
 import Tooltip from '@mui/material/Tooltip';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
@@ -26,7 +21,7 @@ import VolumeOffIcon from '@mui/icons-material/VolumeOff';
 import { Button } from '@mui/material';
 import { unlockNotificationSoundByUserGesture } from '@/utils/notificationSound';
 import { showToast } from '@/components/common/Toast';
-import { useSoundStore } from '@/lib/stores/soundStore'
+import { useSoundStore } from '@/lib/stores/soundStore';
 
 interface HeaderProps {
   title: string;
@@ -51,8 +46,8 @@ export default function Header({
   const { user, logout } = useAuthStore();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
-  const soundEnabled = useSoundStore(s => s.enabled);
-  const enableSound = useSoundStore(s => s.enable);
+  const soundEnabled = useSoundStore((s) => s.enabled);
+  const enableSound = useSoundStore((s) => s.enable);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -60,6 +55,11 @@ export default function Header({
 
   const handleMenuClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleGoProfile = () => {
+    handleMenuClose();
+    router.push('/host/profile');
   };
 
   const handleLogout = () => {
@@ -70,7 +70,7 @@ export default function Header({
   return (
     <AppBar position="sticky" elevation={0} color="transparent">
       <Toolbar className={`${theme.bgColor} border-b ${theme.borderColor}`}>
-         <Tooltip title={soundEnabled ? 'Âm thanh đã bật' : 'Bật âm thanh thông báo'}>
+        <Tooltip title={soundEnabled ? 'Âm thanh đã bật' : 'Bật âm thanh thông báo'}>
           <span>
             <IconButton
               color={soundEnabled ? 'success' : 'default'}
@@ -78,7 +78,7 @@ export default function Header({
               onClick={async () => {
                 try {
                   await unlockNotificationSoundByUserGesture(); // 🔓 browser
-                  enableSound();                               // 🔊 user preference
+                  enableSound(); // 🔊 user preference
                   showToast.success({ message: '🔊 Đã bật âm thanh thông báo' });
                 } catch {
                   showToast.error({ message: '❌ Không thể bật âm thanh' });
@@ -108,8 +108,11 @@ export default function Header({
 
         {/* User Menu */}
         <IconButton onClick={handleMenuOpen}>
-          <Avatar className={`bg-gradient-to-br ${theme.avatarGradient} w-10 h-10`}>
-            {user?.name?.charAt(0) || 'U'}
+          <Avatar
+            src={user?.avatar}
+            className={`bg-gradient-to-br ${theme.avatarGradient} w-10 h-10`}
+          >
+            {user?.avatar || user?.name?.charAt(0)}
           </Avatar>
         </IconButton>
 
@@ -120,6 +123,10 @@ export default function Header({
           transformOrigin={{ horizontal: 'right', vertical: 'top' }}
           anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         >
+          <MenuItem onClick={handleGoProfile}>
+            <Person fontSize="small" className="mr-2" />
+            Hồ sơ
+          </MenuItem>
           <MenuItem onClick={handleMenuClose}>
             <Settings fontSize="small" className="mr-2" />
             Cài đặt

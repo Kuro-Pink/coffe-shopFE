@@ -1,0 +1,39 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { Container, Stack, Typography, Button } from '@mui/material';
+import ProfileInfoCard from '@/components/host/AuthManager/ProfileInfoCard';
+import ChangePasswordCard from '@/components/host/AuthManager/ChangePasswordCard';
+import { authService } from '@/lib/services/authService';
+import { User } from '@/types';
+
+export default function ProfilePage() {
+  const [user, setUser] = useState<User | null>(null);
+  const [showChangePassword, setShowChangePassword] = useState(false);
+
+  useEffect(() => {
+    authService.getMe().then((res) => setUser(res.data));
+  }, []);
+
+  if (!user) return null;
+
+  return (
+    <Container maxWidth="sm" sx={{ py: 4 }}>
+      <Typography variant="h5" fontWeight={600} mb={3} className="text-gray-600">
+        Hồ sơ cá nhân
+      </Typography>
+
+      <Stack spacing={3}>
+        <ProfileInfoCard user={user} onUpdated={setUser} />
+
+        {!showChangePassword ? (
+          <Button variant="outlined" onClick={() => setShowChangePassword(true)}>
+            Đổi mật khẩu
+          </Button>
+        ) : (
+          <ChangePasswordCard onClose={() => setShowChangePassword(false)} />
+        )}
+      </Stack>
+    </Container>
+  );
+}
