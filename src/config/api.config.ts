@@ -36,6 +36,10 @@ export const API_ENDPOINTS = {
     MY_STORE: '/host/my-store',
     STORE_REQUESTS: '/host/store-requests',
     MY_STORE_REQUESTS: '/host/store-requests/my-requests',
+    STORE: {
+      DETAIL: (id: string) => `/host/stores/${id}`,
+      TOGGLE_STATUS: (id: string) => `/host/stores/${id}/toggle-status`,
+    },
     CATEGORY: {
       LIST: (storeId: string) => `/host/stores/${storeId}/categories`,
       DETAIL: (id: string) => `/host/categories/${id}`,

@@ -1,6 +1,6 @@
 import api from '../api';
 import { API_ENDPOINTS } from '@/config/api.config';
-import { Category, Product, Table, Order, Bill, TablePerformance } from '@/types';
+import { Category, Product, Table, Order, Bill, TablePerformance, Store } from '@/types';
 export interface DashboardStats {
   today: {
     orders: number;
@@ -103,6 +103,27 @@ export interface CreateBillData {
 }
 
 export const storeService = {
+  // ===== STORE =====
+
+  getStoreInfo: async (storeId: string): Promise<Store> => {
+    const response = await api.get(API_ENDPOINTS.HOST.STORE.DETAIL(storeId));
+    return response.data.data;
+  },
+
+  updateStoreInfo: async (storeId: string, data: FormData): Promise<Store> => {
+    const response = await api.put(API_ENDPOINTS.HOST.STORE.DETAIL(storeId), data, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data.data;
+  },
+
+  toggleStoreStatus: async (storeId: string): Promise<Store> => {
+    const response = await api.patch(API_ENDPOINTS.HOST.STORE.TOGGLE_STATUS(storeId));
+    return response.data.data;
+  },
+
   // ===== CATEGORIES =====
   getCategories: async (storeId: string): Promise<Category[]> => {
     const response = await api.get(API_ENDPOINTS.HOST.CATEGORY.LIST(storeId));
