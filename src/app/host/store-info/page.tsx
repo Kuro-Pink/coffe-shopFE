@@ -122,7 +122,7 @@ export default function StoreInfoPage() {
                   width: 96,
                   height: 96,
                   opacity: uploadingLogo ? 0.5 : 1,
-                  border: '2px solid',
+                  border: '4px solid',
                   borderColor: 'divider', // theo theme MUI
                 }}
               />
