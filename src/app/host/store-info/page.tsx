@@ -16,6 +16,7 @@ import { storeService } from '@/lib/services/storeService';
 import { useAuthStore } from '@/lib/stores/authStore';
 import { useStoreStore } from '@/lib/stores/storeStore';
 import { Store } from '@/types';
+import { showToast } from '@/components/common/Toast';
 
 export default function StoreInfoPage() {
   const user = useAuthStore((s) => s.user);
@@ -75,6 +76,7 @@ export default function StoreInfoPage() {
       setGlobalStore(updated);
       setPreview(updated.logo);
       setLogoFile(null);
+      showToast.success({ message: 'Cập nhật cửa hàng thành công' });
     } finally {
       setSaving(false);
     }

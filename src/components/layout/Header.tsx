@@ -52,8 +52,6 @@ export default function Header({
   const router = useRouter();
   const { user, logout } = useAuthStore();
   const store = useStoreStore((s) => s.store);
-  console.log('store', store);
-  console.log('user', user);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const soundEnabled = useSoundStore((s) => s.enabled);
   const enableSound = useSoundStore((s) => s.enable);
@@ -68,11 +66,21 @@ export default function Header({
 
   const handleGoProfile = () => {
     handleMenuClose();
-    router.push('/host/profile');
+    if (user?.role === 'admin') {
+      router.push('/admin/profile');
+    } else {
+      router.push('/host/profile');
+    }
   };
   const handleGoSetting = () => {
     handleMenuClose();
-    router.push('/host/store-info');
+    if (user?.role === 'staff') {
+      router.push('/host/orders');
+    } else if (user?.role === 'admin') {
+      router.push('/admin');
+    } else if (user?.role === 'host') {
+      router.push('/host/store-info');
+    }
   };
 
   const handleLogout = () => {
@@ -111,9 +119,9 @@ export default function Header({
                 color: '#fff',
 
                 boxShadow: `
-      0 8px 24px rgba(0,0,0,0.25),
-      inset 0 1px 0 rgba(255,255,255,0.35)
-    `,
+                  0 8px 24px rgba(0,0,0,0.25),
+                  inset 0 1px 0 rgba(255,255,255,0.35)
+                `,
               }}
             >
               {/* LOGO INLINE */}
@@ -236,10 +244,12 @@ export default function Header({
             <Person fontSize="small" className="mr-2" />
             Hồ sơ
           </MenuItem>
-          <MenuItem onClick={handleGoSetting}>
-            <Settings fontSize="small" className="mr-2" />
-            Cài đặt
-          </MenuItem>
+          {user?.role === 'host' && (
+            <MenuItem onClick={handleGoSetting}>
+              <Settings fontSize="small" className="mr-2" />
+              Cài đặt
+            </MenuItem>
+          )}
           <Divider />
           <MenuItem onClick={handleLogout} className="text-red-600">
             <Logout fontSize="small" className="mr-2" />

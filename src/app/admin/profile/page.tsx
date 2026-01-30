@@ -1,6 +1,5 @@
-// /host/profile/page.tsx
+// /admin/profile/page.tsx
 import ProfilePageContent from '@/components/profile/ProfilePageContent';
-
-export default function HostProfilePage() {
+export default function AdminProfilePage() {
   return <ProfilePageContent />;
 }
