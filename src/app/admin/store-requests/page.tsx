@@ -38,7 +38,7 @@ import { AxiosError } from 'axios';
 import { formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { useStoreRequestStore } from '@/lib/stores/storeRequestStore';
-import { initAdminSocket , getSocket } from '@/lib/socket';
+import { initAdminSocket, getSocket } from '@/lib/socket';
 
 interface ErrorResponse {
   message?: string;
@@ -53,27 +53,27 @@ export default function StoreRequestsPage() {
   // const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedTab, setSelectedTab] = useState<RequestStatus>('pending');
-  
+
   // Menu state
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedRequest, setSelectedRequest] = useState<StoreRequest | null>(null);
-  
+
   // Dialog states
   const [approveDialog, setApproveDialog] = useState<{
     open: boolean;
     request: StoreRequest | null;
   }>({ open: false, request: null });
-  
+
   const [rejectDialog, setRejectDialog] = useState<{
     open: boolean;
     request: StoreRequest | null;
   }>({ open: false, request: null });
-  
+
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean;
     request: StoreRequest | null;
   }>({ open: false, request: null });
-  
+
   const [rejectionReason, setRejectionReason] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
 
@@ -99,8 +99,6 @@ export default function StoreRequestsPage() {
       socket.off('store_request_deleted', refetch);
     };
   }, [fetchRequests]);
-
-
 
   // const fetchRequests = async () => {
   //   try {
@@ -271,7 +269,11 @@ export default function StoreRequestsPage() {
 
       {/* Status Tabs */}
       <Card className="shadow-md border-0 mb-6">
-        <Tabs value={selectedTab} onChange={(_, value) => setSelectedTab(value)} className="border-b border-gray-200">
+        <Tabs
+          value={selectedTab}
+          onChange={(_, value) => setSelectedTab(value)}
+          className="border-b border-gray-200"
+        >
           <Tab
             label={
               <Badge badgeContent={getRequestCount('all')} color="primary">
@@ -337,14 +339,21 @@ export default function StoreRequestsPage() {
                 <CardContent>
                   {/* Header */}
                   <div className="flex items-start gap-3 mb-4">
-                    <Avatar src={request.storeLogo} className="w-16 h-16 bg-gradient-to-br from-green-500 to-teal-600">
+                    <Avatar
+                      src={request.storeLogo}
+                      className="w-16 h-16 bg-gradient-to-br from-green-500 to-teal-600"
+                    >
                       <StoreIcon />
                     </Avatar>
                     <div className="flex-1">
                       <Typography variant="h6" className="font-bold mb-1">
                         {request.storeName}
                       </Typography>
-                      <Chip label={getStatusText(request.status)} color={getStatusColor(request.status)} size="small" />
+                      <Chip
+                        label={getStatusText(request.status)}
+                        color={getStatusColor(request.status)}
+                        size="small"
+                      />
                     </div>
                     {/* Menu Button */}
                     <IconButton size="small" onClick={(e) => handleMenuOpen(e, request)}>
@@ -368,7 +377,10 @@ export default function StoreRequestsPage() {
 
                   {/* Owner Info */}
                   <div className="bg-gray-50 rounded-lg p-3 mb-4">
-                    <Typography variant="caption" className="font-semibold text-gray-700 block mb-2">
+                    <Typography
+                      variant="caption"
+                      className="font-semibold text-gray-700 block mb-2"
+                    >
                       Thông tin chủ sở hữu:
                     </Typography>
                     {request.userId ? (
@@ -388,7 +400,6 @@ export default function StoreRequestsPage() {
                         ⚠️ Tài khoản Host không tồn tại
                       </Typography>
                     )}
-
                   </div>
 
                   {/* Time */}
@@ -489,6 +500,7 @@ export default function StoreRequestsPage() {
         </Typography>
         <TextField
           fullWidth
+          margin="normal"
           multiline
           rows={4}
           value={rejectionReason}

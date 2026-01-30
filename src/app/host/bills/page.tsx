@@ -389,6 +389,7 @@ export default function BillsManagementPage() {
           <Stack spacing={3}>
             {/* Search */}
             <TextField
+              margin="normal"
               fullWidth
               placeholder="Tìm theo mã HĐ, tên, SĐT, số bàn..."
               value={searchQuery}
@@ -420,6 +421,7 @@ export default function BillsManagementPage() {
               {dateFilter === 'custom' && (
                 <>
                   <TextField
+                    margin="normal"
                     fullWidth
                     type="date"
                     label="Từ ngày"
@@ -428,6 +430,7 @@ export default function BillsManagementPage() {
                     InputLabelProps={{ shrink: true }}
                   />
                   <TextField
+                    margin="normal"
                     fullWidth
                     type="date"
                     label="Đến ngày"

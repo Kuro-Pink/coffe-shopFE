@@ -152,6 +152,7 @@ export default function IngredientDialog({
               {...register('name')}
               label="Tên nguyên liệu"
               fullWidth
+              margin="normal"
               error={!!errors.name}
               helperText={errors.name?.message}
               disabled={loading}
@@ -168,6 +169,7 @@ export default function IngredientDialog({
                   select
                   label="Đơn vị"
                   fullWidth
+                  margin="normal"
                   disabled={loading}
                   error={!!errors.unit}
                   helperText={errors.unit?.message}
@@ -188,6 +190,7 @@ export default function IngredientDialog({
                 label="Số lượng ban đầu"
                 type="number"
                 fullWidth
+                margin="normal"
                 error={!!errors.quantity}
                 helperText={errors.quantity?.message || 'Số lượng hiện có trong kho'}
                 disabled={loading}
@@ -200,6 +203,7 @@ export default function IngredientDialog({
               label="Số lượng tối thiểu"
               type="number"
               fullWidth
+              margin="normal"
               error={!!errors.minQuantity}
               helperText={errors.minQuantity?.message || 'Cảnh báo khi tồn kho xuống dưới mức này'}
               disabled={loading}
@@ -211,6 +215,7 @@ export default function IngredientDialog({
               label="Đơn giá (₫)"
               type="number"
               fullWidth
+              margin="normal"
               error={!!errors.cost}
               helperText={errors.cost?.message || 'Giá tiền mỗi đơn vị'}
               disabled={loading}

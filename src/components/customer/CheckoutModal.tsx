@@ -45,7 +45,7 @@ export default function CheckoutModal({ open, onClose, onSuccess }: CheckoutModa
   const { getCurrentItems, getTotalAmount, currentStoreId, currentTableId } = useCartStore();
   const items = getCurrentItems();
   const totalAmount = getTotalAmount();
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -86,7 +86,7 @@ export default function CheckoutModal({ open, onClose, onSuccess }: CheckoutModa
       const orderData = {
         storeId: currentStoreId,
         tableId: currentTableId,
-        customerName: data.customerName, 
+        customerName: data.customerName,
         customerPhone: data.customerPhone,
         customerNote: data.customerNote || '',
         items: items.map((item) => ({
@@ -109,7 +109,7 @@ export default function CheckoutModal({ open, onClose, onSuccess }: CheckoutModa
       }, 3000);
     } catch (err: unknown) {
       console.error('❌ Order creation failed:', err);
-      
+
       let errorMessage = 'Đặt hàng thất bại. Vui lòng thử lại.';
       if (err instanceof AxiosError) {
         const responseData = err.response?.data as ErrorResponse;
@@ -211,6 +211,7 @@ export default function CheckoutModal({ open, onClose, onSuccess }: CheckoutModa
                   {...register('customerName')}
                   label="Tên khách hàng *"
                   fullWidth
+                  margin="normal"
                   error={!!errors.customerName}
                   helperText={errors.customerName?.message || 'Để gọi tên khi mang món'}
                   disabled={isLoading}
@@ -221,6 +222,7 @@ export default function CheckoutModal({ open, onClose, onSuccess }: CheckoutModa
                   {...register('customerPhone')}
                   label="Số điện thoại *"
                   fullWidth
+                  margin="normal"
                   error={!!errors.customerPhone}
                   helperText={errors.customerPhone?.message || 'Để liên hệ khi cần thiết'}
                   disabled={isLoading}
@@ -231,6 +233,7 @@ export default function CheckoutModal({ open, onClose, onSuccess }: CheckoutModa
                   {...register('customerNote')}
                   label="Ghi chú (tùy chọn)"
                   fullWidth
+                  margin="normal"
                   multiline
                   rows={3}
                   disabled={isLoading}
@@ -241,8 +244,8 @@ export default function CheckoutModal({ open, onClose, onSuccess }: CheckoutModa
               {/* Info Note */}
               <Alert severity="info" className="mt-4">
                 <Typography variant="body2">
-                  💡 Đơn hàng sẽ được gửi đến bếp ngay sau khi xác nhận. Món thường có
-                  sau 10-15 phút.
+                  💡 Đơn hàng sẽ được gửi đến bếp ngay sau khi xác nhận. Món thường có sau 10-15
+                  phút.
                 </Typography>
               </Alert>
             </DialogContent>

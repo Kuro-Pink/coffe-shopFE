@@ -68,7 +68,7 @@ export default function StoresListPage() {
       const filtered = stores.filter(
         (store) =>
           store.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          store.address.toLowerCase().includes(searchQuery.toLowerCase())
+          store.address.toLowerCase().includes(searchQuery.toLowerCase()),
       );
       setFilteredStores(filtered);
     } else {
@@ -78,24 +78,23 @@ export default function StoresListPage() {
 
   const fetchStores = async () => {
     try {
-        setLoading(true);
+      setLoading(true);
 
-        const res = await adminService.getStores();
+      const res = await adminService.getStores();
 
-        setStores(res);        
-        setFilteredStores(res);
-
+      setStores(res);
+      setFilteredStores(res);
     } catch (err) {
-        let errorMessage = 'Không thể tải danh sách cửa hàng';
-        if (err instanceof AxiosError) {
+      let errorMessage = 'Không thể tải danh sách cửa hàng';
+      if (err instanceof AxiosError) {
         const responseData = err.response?.data as ErrorResponse;
         errorMessage = responseData?.message || responseData?.error || errorMessage;
-        }
-        setError(errorMessage);
+      }
+      setError(errorMessage);
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
-    };
+  };
 
   const handleDelete = async () => {
     if (!confirmDialog.store) return;
@@ -124,16 +123,12 @@ export default function StoresListPage() {
       await adminService.updateStore(store._id, {
         isActive: !store.isActive,
       });
-      
-      showToast.success({ 
-        message: `Đã ${!store.isActive ? 'kích hoạt' : 'tạm dừng'} cửa hàng!` 
+
+      showToast.success({
+        message: `Đã ${!store.isActive ? 'kích hoạt' : 'tạm dừng'} cửa hàng!`,
       });
-      
-      setStores(
-        stores.map((s) =>
-          s._id === store._id ? { ...s, isActive: !s.isActive } : s
-        )
-      );
+
+      setStores(stores.map((s) => (s._id === store._id ? { ...s, isActive: !s.isActive } : s)));
     } catch (err: unknown) {
       let errorMessage = 'Không thể cập nhật trạng thái';
       if (err instanceof AxiosError) {
@@ -178,6 +173,7 @@ export default function StoresListPage() {
         <CardContent>
           <TextField
             fullWidth
+            margin="normal"
             placeholder="Tìm kiếm cửa hàng theo tên hoặc địa chỉ..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -252,13 +248,14 @@ export default function StoresListPage() {
                         }
                         size="small"
                         icon={
-                          toggleLoadingId === store._id ? undefined : 
-                          store.isActive ? <CheckCircle /> : <Cancel />
+                          toggleLoadingId === store._id ? undefined : store.isActive ? (
+                            <CheckCircle />
+                          ) : (
+                            <Cancel />
+                          )
                         }
                         className={
-                          store.isActive
-                            ? 'bg-green-50 text-green-600'
-                            : 'bg-red-50 text-red-600'
+                          store.isActive ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'
                         }
                         onClick={() => toggleStoreStatus(store)}
                         disabled={toggleLoadingId === store._id}

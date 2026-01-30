@@ -96,7 +96,7 @@ export default function CreateStorePage() {
 
     setIsLoading(true);
     setError('');
-    
+
     try {
       await adminService.createStore(data);
       showToast.success({ message: 'Tạo cửa hàng thành công!' });
@@ -163,12 +163,7 @@ export default function CreateStorePage() {
                 className="border-gray-300"
               >
                 Tải lên logo
-                <input
-                  type="file"
-                  hidden
-                  accept="image/*"
-                  onChange={handleLogoUpload}
-                />
+                <input type="file" hidden accept="image/*" onChange={handleLogoUpload} />
               </Button>
               <Typography variant="caption" className="block mt-2 text-gray-500">
                 Định dạng: JPG, PNG. Tối đa 2MB
@@ -180,6 +175,7 @@ export default function CreateStorePage() {
               {...register('name')}
               label="Tên cửa hàng"
               fullWidth
+              margin="normal"
               error={!!errors.name}
               helperText={errors.name?.message}
               disabled={isLoading}
@@ -191,6 +187,7 @@ export default function CreateStorePage() {
               {...register('address')}
               label="Địa chỉ"
               fullWidth
+              margin="normal"
               multiline
               rows={2}
               error={!!errors.address}
@@ -204,6 +201,7 @@ export default function CreateStorePage() {
               {...register('phone')}
               label="Số điện thoại"
               fullWidth
+              margin="normal"
               error={!!errors.phone}
               helperText={errors.phone?.message}
               disabled={isLoading}
@@ -215,6 +213,7 @@ export default function CreateStorePage() {
               {...register('ownerId')}
               label="Chủ cửa hàng"
               fullWidth
+              margin="normal"
               select
               error={!!errors.ownerId}
               helperText={

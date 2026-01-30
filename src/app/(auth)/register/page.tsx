@@ -34,24 +34,26 @@ import { authService } from '@/lib/services/authService';
 import { storeRequestService } from '@/lib/services/storeRequestService';
 import { AxiosError } from 'axios';
 
-const registrationSchema = z.object({
-  // User info
-  name: z.string().min(2, 'Tên phải có ít nhất 2 ký tự'),
-  email: z.string().email('Email không hợp lệ'),
-  password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
-  confirmPassword: z.string(),
-  phone: z.string().regex(/^[0-9]{10,11}$/, 'Số điện thoại không hợp lệ'),
-  
-  // Store info
-  storeName: z.string().min(2, 'Tên cửa hàng phải có ít nhất 2 ký tự'),
-  storeAddress: z.string().min(5, 'Địa chỉ phải có ít nhất 5 ký tự'),
-  storePhone: z.string().regex(/^[0-9]{10,11}$/, 'Số điện thoại không hợp lệ'),
-  businessLicense: z.string().optional(),
-  description: z.string().optional(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'Mật khẩu không khớp',
-  path: ['confirmPassword'],
-});
+const registrationSchema = z
+  .object({
+    // User info
+    name: z.string().min(2, 'Tên phải có ít nhất 2 ký tự'),
+    email: z.string().email('Email không hợp lệ'),
+    password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
+    confirmPassword: z.string(),
+    phone: z.string().regex(/^[0-9]{10,11}$/, 'Số điện thoại không hợp lệ'),
+
+    // Store info
+    storeName: z.string().min(2, 'Tên cửa hàng phải có ít nhất 2 ký tự'),
+    storeAddress: z.string().min(5, 'Địa chỉ phải có ít nhất 5 ký tự'),
+    storePhone: z.string().regex(/^[0-9]{10,11}$/, 'Số điện thoại không hợp lệ'),
+    businessLicense: z.string().optional(),
+    description: z.string().optional(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Mật khẩu không khớp',
+    path: ['confirmPassword'],
+  });
 
 type RegistrationFormData = z.infer<typeof registrationSchema>;
 
@@ -80,7 +82,7 @@ export default function HostRegistrationPage() {
 
   const handleNext = async () => {
     let isValid = false;
-    
+
     if (activeStep === 0) {
       isValid = await trigger(['name', 'email', 'password', 'confirmPassword', 'phone']);
     } else if (activeStep === 1) {
@@ -131,7 +133,7 @@ export default function HostRegistrationPage() {
 
       // ========== STEP 1: Register user account ==========
       console.log('📝 Step 1: Creating user account...');
-      
+
       await authService.register({
         name: data.name,
         email: data.email,
@@ -144,22 +146,22 @@ export default function HostRegistrationPage() {
 
       // ========== STEP 2: Login to get token ==========
       console.log('🔐 Step 2: Logging in...');
-      
+
       const loginResponse = await authService.login({
         email: data.email,
         password: data.password,
       });
 
       const { token } = loginResponse.data;
-      
+
       // Save token to localStorage (or use your auth store)
       localStorage.setItem('token', token);
-      
+
       console.log('✅ Login successful, token saved');
 
       // ========== STEP 3: Create store request ==========
       console.log('🏪 Step 3: Creating store request...');
-      
+
       await storeRequestService.createStoreRequest({
         storeName: data.storeName,
         storeAddress: data.storeAddress,
@@ -174,10 +176,9 @@ export default function HostRegistrationPage() {
       // ========== SUCCESS ==========
       setRegisteredEmail(data.email);
       setSuccess(true);
-
     } catch (err: unknown) {
       console.error('❌ Registration error:', err);
-      
+
       let errorMessage = 'Đăng ký thất bại. Vui lòng thử lại.';
 
       if (err instanceof AxiosError) {
@@ -231,14 +232,10 @@ export default function HostRegistrationPage() {
             </Alert>
 
             <div className="flex gap-3">
-              <Button
-                fullWidth
-                variant="outlined"
-                onClick={() => router.push('/host/my-requests')}
-              >
+              <Button fullWidth variant="outlined" onClick={() => router.push('/host/my-requests')}>
                 Xem trạng thái yêu cầu
               </Button>
-              
+
               <Button
                 fullWidth
                 variant="contained"
@@ -298,6 +295,7 @@ export default function HostRegistrationPage() {
                   {...register('name')}
                   label="Họ và tên *"
                   fullWidth
+                  margin="normal"
                   error={!!errors.name}
                   helperText={errors.name?.message}
                   disabled={isLoading}
@@ -308,6 +306,7 @@ export default function HostRegistrationPage() {
                   label="Email *"
                   type="email"
                   fullWidth
+                  margin="normal"
                   error={!!errors.email}
                   helperText={errors.email?.message}
                   disabled={isLoading}
@@ -317,6 +316,7 @@ export default function HostRegistrationPage() {
                   {...register('phone')}
                   label="Số điện thoại *"
                   fullWidth
+                  margin="normal"
                   error={!!errors.phone}
                   helperText={errors.phone?.message}
                   disabled={isLoading}
@@ -327,6 +327,7 @@ export default function HostRegistrationPage() {
                   label="Mật khẩu *"
                   type={showPassword ? 'text' : 'password'}
                   fullWidth
+                  margin="normal"
                   error={!!errors.password}
                   helperText={errors.password?.message}
                   disabled={isLoading}
@@ -346,6 +347,7 @@ export default function HostRegistrationPage() {
                   label="Xác nhận mật khẩu *"
                   type={showPassword ? 'text' : 'password'}
                   fullWidth
+                  margin="normal"
                   error={!!errors.confirmPassword}
                   helperText={errors.confirmPassword?.message}
                   disabled={isLoading}
@@ -384,6 +386,7 @@ export default function HostRegistrationPage() {
                   {...register('storeName')}
                   label="Tên cửa hàng *"
                   fullWidth
+                  margin="normal"
                   error={!!errors.storeName}
                   helperText={errors.storeName?.message}
                   disabled={isLoading}
@@ -393,6 +396,7 @@ export default function HostRegistrationPage() {
                   {...register('storeAddress')}
                   label="Địa chỉ cửa hàng *"
                   fullWidth
+                  margin="normal"
                   multiline
                   rows={2}
                   error={!!errors.storeAddress}
@@ -404,6 +408,7 @@ export default function HostRegistrationPage() {
                   {...register('storePhone')}
                   label="Số điện thoại cửa hàng *"
                   fullWidth
+                  margin="normal"
                   error={!!errors.storePhone}
                   helperText={errors.storePhone?.message}
                   disabled={isLoading}
@@ -413,6 +418,7 @@ export default function HostRegistrationPage() {
                   {...register('businessLicense')}
                   label="Số giấy phép kinh doanh"
                   fullWidth
+                  margin="normal"
                   helperText="Tùy chọn"
                   disabled={isLoading}
                 />
@@ -421,6 +427,7 @@ export default function HostRegistrationPage() {
                   {...register('description')}
                   label="Mô tả cửa hàng"
                   fullWidth
+                  margin="normal"
                   multiline
                   rows={3}
                   helperText="Tùy chọn. Tối đa 500 ký tự"

@@ -140,6 +140,7 @@ export default function CheckInDialog({ open, onClose, onSuccess }: CheckInDialo
             {...register('notes')}
             label="Ghi chú (tùy chọn)"
             fullWidth
+            margin="normal"
             multiline
             rows={3}
             disabled={loading}

@@ -153,6 +153,7 @@ export default function StaffDialog({
               {...register('name')}
               label="Tên nhân viên"
               fullWidth
+              margin="normal"
               error={!!errors.name}
               helperText={errors.name?.message}
               disabled={loading}
@@ -165,6 +166,7 @@ export default function StaffDialog({
                   label="Email"
                   type="email"
                   fullWidth
+                  margin="normal"
                   error={!!errors.email}
                   helperText={errors.email?.message}
                   disabled={loading}
@@ -175,6 +177,7 @@ export default function StaffDialog({
                   label="Mật khẩu"
                   type={showPassword ? 'text' : 'password'}
                   fullWidth
+                  margin="normal"
                   error={!!errors.password}
                   helperText={errors.password?.message}
                   disabled={loading}
@@ -195,6 +198,7 @@ export default function StaffDialog({
               {...register('phone')}
               label="Số điện thoại"
               fullWidth
+              margin="normal"
               error={!!errors.phone}
               helperText={errors.phone?.message}
               disabled={loading}
@@ -209,6 +213,7 @@ export default function StaffDialog({
                   select
                   label="Loại nhân viên"
                   fullWidth
+                  margin="normal"
                   error={!!errors.staffType}
                   helperText={errors.staffType?.message}
                   disabled={loading}

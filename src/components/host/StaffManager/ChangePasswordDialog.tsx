@@ -66,6 +66,7 @@ export default function ChangePasswordDialog({ open, staff, onClose }: Props) {
           label="Mật khẩu mới"
           type={show ? 'text' : 'password'}
           fullWidth
+          margin="normal"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           InputProps={{
@@ -83,6 +84,7 @@ export default function ChangePasswordDialog({ open, staff, onClose }: Props) {
           label="Xác nhận mật khẩu"
           type={show ? 'text' : 'password'}
           fullWidth
+          margin="normal"
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
         />

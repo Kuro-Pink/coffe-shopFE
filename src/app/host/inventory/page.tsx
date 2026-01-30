@@ -262,6 +262,7 @@ export default function InventoryManagementPage() {
         <CardContent>
           <TextField
             fullWidth
+            margin="normal"
             placeholder="Tìm nguyên liệu..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}

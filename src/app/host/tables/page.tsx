@@ -398,6 +398,7 @@ export default function TablesManagementPage() {
         <CardContent>
           <TextField
             fullWidth
+            margin="normal"
             placeholder="Tìm kiếm bàn theo số bàn hoặc khu vực..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -545,6 +546,7 @@ export default function TablesManagementPage() {
                     <div className="space-y-2">
                       <Button
                         fullWidth
+                        margin="normal"
                         variant="contained"
                         startIcon={<QrCode />}
                         onClick={() => setQrDialog({ open: true, table })}
@@ -557,6 +559,7 @@ export default function TablesManagementPage() {
                       {(table.status || 'available') === 'occupied' && (
                         <Button
                           fullWidth
+                          margin="normal"
                           variant="contained"
                           size="small"
                           onClick={() => setPaymentDialog({ open: true, table })}

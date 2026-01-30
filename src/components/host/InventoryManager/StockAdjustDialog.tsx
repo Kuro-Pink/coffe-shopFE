@@ -158,6 +158,7 @@ export default function StockAdjustDialog({
             label={`Số lượng ${type === 'in' ? 'nhập' : 'xuất'} (${ingredient.unit})`}
             type="number"
             fullWidth
+            margin="normal"
             error={!!errors.quantity}
             helperText={errors.quantity?.message}
             disabled={loading}
@@ -170,6 +171,7 @@ export default function StockAdjustDialog({
             {...register('note')}
             label="Ghi chú (tùy chọn)"
             fullWidth
+            margin="normal"
             multiline
             rows={3}
             disabled={loading}
@@ -184,8 +186,8 @@ export default function StockAdjustDialog({
                 newQuantity < 0
                   ? 'error'
                   : newQuantity <= ingredient.minQuantity
-                  ? 'warning'
-                  : 'info'
+                    ? 'warning'
+                    : 'info'
               }
               className="mt-4"
             >

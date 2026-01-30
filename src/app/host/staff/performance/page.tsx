@@ -117,6 +117,7 @@ export default function StaffPerformancePage() {
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
                 fullWidth
+                margin="normal"
                 InputLabelProps={{ shrink: true }}
               />
             </Grid>
@@ -127,6 +128,7 @@ export default function StaffPerformancePage() {
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 fullWidth
+                margin="normal"
                 InputLabelProps={{ shrink: true }}
               />
             </Grid>

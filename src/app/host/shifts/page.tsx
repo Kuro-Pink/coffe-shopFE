@@ -207,7 +207,7 @@ export default function HostAllShiftsPage() {
 
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <SummaryCard
-             title="Doanh thu hệ thống"
+              title="Doanh thu hệ thống"
               value={(stats.totalSystemRevenue / 1_000_000).toFixed(1) + 'M'}
               icon={<AttachMoney />}
               color={{
@@ -232,6 +232,7 @@ export default function HostAllShiftsPage() {
                   value={selectedStaff}
                   onChange={(e) => setSelectedStaff(e.target.value)}
                   fullWidth
+                  margin="normal"
                 >
                   <MenuItem value="all">Tất cả</MenuItem>
                   {staffList.map((staff) => (
@@ -459,7 +460,7 @@ export default function HostAllShiftsPage() {
                             </div>
                           </Grid>
 
-                          <Grid size={{ xs: 6, md: 2}}>
+                          <Grid size={{ xs: 6, md: 2 }}>
                             <div className="text-center">
                               <Typography variant="body2" className="text-gray-600 mb-1">
                                 Đơn đã hủy

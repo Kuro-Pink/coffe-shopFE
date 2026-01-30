@@ -248,6 +248,7 @@ export default function StaffManagementPage() {
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 fullWidth
+                margin="normal"
                 placeholder="Tìm theo tên, email, SĐT..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}

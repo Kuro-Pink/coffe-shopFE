@@ -52,9 +52,7 @@ export default function CategoryDialog({
     reset,
   } = useForm<CategoryFormData>({
     resolver: zodResolver(categorySchema),
-    values: category
-      ? { name: category.name, order: category.order }
-      : { name: '', order: 0 },
+    values: category ? { name: category.name, order: category.order } : { name: '', order: 0 },
   });
 
   const onSubmit = async (data: CategoryFormData) => {
@@ -93,6 +91,7 @@ export default function CategoryDialog({
             {...register('name')}
             label="Tên danh mục"
             fullWidth
+            margin="normal"
             error={!!errors.name}
             helperText={errors.name?.message}
             disabled={isLoading}
@@ -104,6 +103,7 @@ export default function CategoryDialog({
             label="Thứ tự hiển thị"
             type="number"
             fullWidth
+            margin="normal"
             error={!!errors.order}
             helperText={errors.order?.message || 'Số nhỏ hơn sẽ hiển thị trước'}
             disabled={isLoading}

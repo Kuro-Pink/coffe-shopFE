@@ -68,7 +68,7 @@ export default function EditStorePage() {
       setLoading(true);
       const store = await adminService.getStore(storeId);
       console.log('Fetched store:', store);
-      
+
       // Populate form
       reset({
         name: store.name,
@@ -77,7 +77,7 @@ export default function EditStorePage() {
         logo: store.logo,
         isActive: store.isActive,
       });
-      
+
       setLogoPreview(store.logo || '');
       setIsActive(store.isActive);
     } catch (err: unknown) {
@@ -190,12 +190,7 @@ export default function EditStorePage() {
                 className="border-gray-300"
               >
                 Thay đổi logo
-                <input
-                  type="file"
-                  hidden
-                  accept="image/*"
-                  onChange={handleLogoUpload}
-                />
+                <input type="file" hidden accept="image/*" onChange={handleLogoUpload} />
               </Button>
             </div>
 
@@ -204,6 +199,7 @@ export default function EditStorePage() {
               {...register('name')}
               label="Tên cửa hàng"
               fullWidth
+              margin="normal"
               error={!!errors.name}
               helperText={errors.name?.message}
               disabled={isLoading}
@@ -214,6 +210,7 @@ export default function EditStorePage() {
               {...register('address')}
               label="Địa chỉ"
               fullWidth
+              margin="normal"
               multiline
               rows={2}
               error={!!errors.address}
@@ -226,6 +223,7 @@ export default function EditStorePage() {
               {...register('phone')}
               label="Số điện thoại"
               fullWidth
+              margin="normal"
               error={!!errors.phone}
               helperText={errors.phone?.message}
               disabled={isLoading}
@@ -256,15 +254,15 @@ export default function EditStorePage() {
 
             {/* Actions */}
             <div className="flex gap-3 pt-4 border-t border-gray-100">
-             <Button
-              type="submit"
-              variant="contained"
-              startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <Save />}
-              disabled={isLoading}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-            >
-              {isLoading ? 'Đang lưu...' : 'Lưu thay đổi'}
-            </Button>
+              <Button
+                type="submit"
+                variant="contained"
+                startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <Save />}
+                disabled={isLoading}
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              >
+                {isLoading ? 'Đang lưu...' : 'Lưu thay đổi'}
+              </Button>
 
               <Button
                 variant="outlined"

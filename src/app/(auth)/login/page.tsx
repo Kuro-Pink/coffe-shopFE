@@ -120,6 +120,7 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
             <TextField
               {...register('email')}
+              margin="normal"
               label="Email"
               fullWidth
               variant="outlined"
@@ -128,6 +129,7 @@ export default function LoginPage() {
 
             <TextField
               {...register('password')}
+              margin="normal"
               label="Mật khẩu"
               type={showPassword ? 'text' : 'password'}
               fullWidth

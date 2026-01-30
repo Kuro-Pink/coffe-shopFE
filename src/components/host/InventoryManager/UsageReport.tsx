@@ -166,6 +166,7 @@ export default function UsageReport({ storeId }: UsageReportProps) {
                   setFilterPeriod('custom');
                 }}
                 fullWidth
+                margin="normal"
                 InputLabelProps={{ shrink: true }}
               />
             </Grid>{' '}
@@ -179,6 +180,7 @@ export default function UsageReport({ storeId }: UsageReportProps) {
                   setFilterPeriod('custom');
                 }}
                 fullWidth
+                margin="normal"
                 InputLabelProps={{ shrink: true }}
               />
             </Grid>{' '}

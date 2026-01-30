@@ -176,6 +176,7 @@ export default function CheckOutDialog({ open, shift, onClose, onSuccess }: Chec
             {...register('notes')}
             label="Ghi chú (tùy chọn)"
             fullWidth
+            margin="normal"
             multiline
             rows={3}
             disabled={loading}

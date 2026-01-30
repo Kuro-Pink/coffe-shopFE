@@ -240,6 +240,7 @@ export default function ProductDialog({
               {...register('name')}
               label="Tên sản phẩm"
               fullWidth
+              margin="normal"
               error={!!errors.name}
               helperText={errors.name?.message}
             />
@@ -248,6 +249,7 @@ export default function ProductDialog({
               {...register('description')}
               label="Mô tả"
               fullWidth
+              margin="normal"
               multiline
               rows={3}
               error={!!errors.description}
@@ -259,6 +261,7 @@ export default function ProductDialog({
               label="Giá (VNĐ)"
               type="number"
               fullWidth
+              margin="normal"
               error={!!errors.price}
               helperText={errors.price?.message}
               InputProps={{
@@ -274,6 +277,7 @@ export default function ProductDialog({
                   select
                   label="Danh mục"
                   fullWidth
+                  margin="normal"
                   value={field.value || ''}
                   onChange={field.onChange}
                   error={!!errors.categoryId}
