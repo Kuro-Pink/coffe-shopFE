@@ -18,11 +18,7 @@ export default function ProfilePage() {
   if (!user) return null;
 
   return (
-    <Container maxWidth="sm" sx={{ py: 4 }}>
-      <Typography variant="h5" fontWeight={600} mb={3} className="text-gray-600">
-        Hồ sơ cá nhân
-      </Typography>
-
+    <Container maxWidth="sm" sx={{ py: 8 }}>
       <Stack spacing={3}>
         <ProfileInfoCard user={user} onUpdated={setUser} />
 

@@ -57,7 +57,7 @@ export default function ProfileInfoCard({ user, onUpdated }: ProfileInfoCardProp
   return (
     <Card>
       <CardContent>
-        <Typography fontWeight={600} mb={2}>
+        <Typography fontWeight={600} mb={2} variant="h6" textAlign="center">
           Thông tin tài khoản
         </Typography>
 
@@ -77,6 +77,8 @@ export default function ProfileInfoCard({ user, onUpdated }: ProfileInfoCardProp
                 width: 96,
                 height: 96,
                 opacity: uploadingAvatar ? 0.5 : 1,
+                border: '4px solid',
+                borderColor: 'divider',
               }}
             />
 
