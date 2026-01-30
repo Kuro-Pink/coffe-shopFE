@@ -167,7 +167,7 @@ export default function Sidebar({
         className={`absolute bottom-0 left-0 right-0 p-4 ${theme.bottomBg} border-t ${theme.bottomBorder}`}
       >
         <div className="flex items-center gap-3">
-          <Avatar className={`bg-gradient-to-br ${theme.avatarGradient}`}>
+          <Avatar src={user?.avatar} className={`bg-gradient-to-br ${theme.avatarGradient}`}>
             {user?.name?.charAt(0) || 'U'}
           </Avatar>
           <div className="flex-1 min-w-0">

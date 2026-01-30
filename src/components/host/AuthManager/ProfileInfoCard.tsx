@@ -38,7 +38,11 @@ export default function ProfileInfoCard({ user, onUpdated }: ProfileInfoCardProp
 
       if (name) formData.append('name', name);
       if (phone) formData.append('phone', phone);
-      if (avatarFile) formData.append('avatar', avatarFile);
+      if (avatarFile) {
+        formData.append('avatar', avatarFile);
+      } else if (user?.avatar) {
+        formData.append('avatar', user.avatar);
+      }
       const updatedUser = await authService.updateMe(formData);
       // ✅ Cập nhật global auth store
       updateUser(updatedUser);

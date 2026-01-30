@@ -13,12 +13,14 @@ import {
   AccessTime,
   BarChart,
   History,
-  AccessAlarm
+  AccessAlarm,
 } from '@mui/icons-material';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { showToast } from '@/components/common/Toast';
 import { SidebarMenuItem } from '@/types';
 import { useAuthStore } from '@/lib/stores/authStore';
+import { useStoreStore } from '@/lib/stores/storeStore';
+import { storeService } from '@/lib/services/storeService';
 import { useOrderBadgeStore } from '@/lib/stores/orderBadgeStore';
 import { initSocket } from '@/lib/socket';
 import { Socket } from 'socket.io-client';
@@ -28,9 +30,12 @@ import OrderNotification from '@/components/host/OrderManager/OrderNotification'
 import { useRouter } from 'next/navigation';
 import { useSoundStore } from '@/lib/stores/soundStore';
 import { canAccess } from '@/utils/permissions';
+
 function HostLayoutContent({ children }: { children: ReactNode }) {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
+  const setStore = useStoreStore((s) => s.setStore);
+  const clearStore = useStoreStore((s) => s.clearStore);
   const showNotify = useOrderNotifyStore((s) => s.show);
   const closeNotify = useOrderNotifyStore((s) => s.close);
   const notifyOpen = useOrderNotifyStore((s) => s.open);
@@ -90,6 +95,27 @@ function HostLayoutContent({ children }: { children: ReactNode }) {
       fetchOrders(user.storeId);
     }
   }, [user?.storeId, fetchOrders]);
+
+  // ✅ FETCH STORE INFO
+  useEffect(() => {
+    if (!user?.storeId) {
+      clearStore();
+      return;
+    }
+
+    const fetchStore = async () => {
+      if (!user?.storeId) return;
+      try {
+        const store = await storeService.getStoreInfo(user.storeId);
+        setStore(store);
+      } catch (e) {
+        console.error('Failed to fetch store info', e);
+        clearStore();
+      }
+    };
+
+    fetchStore();
+  }, [user?.storeId, setStore, clearStore]);
 
   useEffect(() => {
     soundEnabledRef.current = soundEnabled;

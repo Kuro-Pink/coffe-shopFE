@@ -3,8 +3,16 @@ import { Inter } from 'next/font/google';
 import AuthProvider from '@/components/providers/AuthProvider';
 import AuthInitializer from '@/components/providers/AuthInitializer';
 import { ToastProvider } from '@/components/common/Toast';
+import { Cormorant_Garamond } from 'next/font/google';
 
 import './globals.css';
+
+// app/layout.tsx
+
+export const cormorant = Cormorant_Garamond({
+  subsets: ['latin'],
+  weight: ['500', '600', '700'],
+});
 
 const inter = Inter({ subsets: ['latin'] });
 

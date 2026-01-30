@@ -14,10 +14,12 @@ import {
 import { useEffect, useState } from 'react';
 import { storeService } from '@/lib/services/storeService';
 import { useAuthStore } from '@/lib/stores/authStore';
+import { useStoreStore } from '@/lib/stores/storeStore';
 import { Store } from '@/types';
 
 export default function StoreInfoPage() {
   const user = useAuthStore((s) => s.user);
+  const setGlobalStore = useStoreStore((s) => s.setStore);
   const storeId = user?.storeId;
 
   const [store, setStore] = useState<Store | null>(null);
@@ -40,6 +42,7 @@ export default function StoreInfoPage() {
       setLoading(true);
       const data = await storeService.getStoreInfo(storeId);
       setStore(data);
+      setGlobalStore(data);
 
       setName(data.name);
       setAddress(data.address);
@@ -63,10 +66,13 @@ export default function StoreInfoPage() {
       if (name) formData.append('name', name);
       if (address) formData.append('address', address);
       if (phone) formData.append('phone', phone);
-      if (logoFile) formData.append('logo', logoFile);
+      if (logoFile) {
+        formData.append('logo', logoFile);
+      }
 
       const updated = await storeService.updateStoreInfo(store._id, formData);
       setStore(updated);
+      setGlobalStore(updated);
       setPreview(updated.logo);
       setLogoFile(null);
     } finally {
