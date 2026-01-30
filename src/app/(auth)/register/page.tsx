@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -33,6 +33,7 @@ import {
 import { authService } from '@/lib/services/authService';
 import { storeRequestService } from '@/lib/services/storeRequestService';
 import { AxiosError } from 'axios';
+import { showToast } from '@/components/common/Toast';
 
 const registrationSchema = z
   .object({
@@ -40,7 +41,7 @@ const registrationSchema = z
     name: z.string().min(2, 'Tên phải có ít nhất 2 ký tự'),
     email: z.string().email('Email không hợp lệ'),
     password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
-    confirmPassword: z.string(),
+    confirmPassword: z.string().min(1, 'Vui lòng xác nhận mật khẩu'),
     phone: z.string().regex(/^[0-9]{10,11}$/, 'Số điện thoại không hợp lệ'),
 
     // Store info
@@ -51,8 +52,8 @@ const registrationSchema = z
     description: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: 'Mật khẩu không khớp',
     path: ['confirmPassword'],
+    message: 'Mật khẩu không khớp',
   });
 
 type RegistrationFormData = z.infer<typeof registrationSchema>;
@@ -62,7 +63,6 @@ const steps = ['Thông tin cá nhân', 'Thông tin cửa hàng', 'Hoàn tất'];
 export default function HostRegistrationPage() {
   const router = useRouter();
   const [activeStep, setActiveStep] = useState(0);
-  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>('');
@@ -76,16 +76,28 @@ export default function HostRegistrationPage() {
     formState: { errors },
     trigger,
     getValues,
+    watch,
   } = useForm<RegistrationFormData>({
     resolver: zodResolver(registrationSchema),
+    mode: 'onChange',
   });
+
+  const password = watch('password');
+
+  useEffect(() => {
+    if (password) {
+      trigger('confirmPassword');
+    }
+  }, [password, trigger]);
 
   const handleNext = async () => {
     let isValid = false;
 
     if (activeStep === 0) {
-      isValid = await trigger(['name', 'email', 'password', 'confirmPassword', 'phone']);
-    } else if (activeStep === 1) {
+      isValid = await trigger(); // 🔥 KHÔNG truyền field
+    }
+
+    if (activeStep === 1) {
       isValid = await trigger(['storeName', 'storeAddress', 'storePhone']);
     }
 
@@ -102,18 +114,6 @@ export default function HostRegistrationPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file size (max 2MB)
-    if (file.size > 2 * 1024 * 1024) {
-      setError('Kích thước file không được vượt quá 2MB');
-      return;
-    }
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      setError('Chỉ chấp nhận file ảnh');
-      return;
-    }
-
     setLogoFile(file);
 
     // Create preview
@@ -129,7 +129,6 @@ export default function HostRegistrationPage() {
 
     try {
       setIsLoading(true);
-      setError('');
 
       // ========== STEP 1: Register user account ==========
       console.log('📝 Step 1: Creating user account...');
@@ -174,6 +173,10 @@ export default function HostRegistrationPage() {
       console.log('✅ Store request created successfully');
 
       // ========== SUCCESS ==========
+      showToast.success({
+        message: 'Đã gửi yêu cầu đăng ký cửa hàng thành công',
+      });
+
       setRegisteredEmail(data.email);
       setSuccess(true);
     } catch (err: unknown) {
@@ -188,7 +191,7 @@ export default function HostRegistrationPage() {
         errorMessage = err.message;
       }
 
-      setError(errorMessage);
+      showToast.error({ message: errorMessage });
     } finally {
       setIsLoading(false);
     }
@@ -273,12 +276,6 @@ export default function HostRegistrationPage() {
               </Step>
             ))}
           </Stepper>
-
-          {error && (
-            <Alert severity="error" className="mb-6" onClose={() => setError('')}>
-              {error}
-            </Alert>
-          )}
 
           <form onSubmit={handleSubmit(onSubmit)}>
             {/* Step 1: Personal Info */}
