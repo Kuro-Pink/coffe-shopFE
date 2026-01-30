@@ -16,7 +16,11 @@ import {
   List,
   ListItem,
   CircularProgress,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Table, Order } from '@/types';
 import { storeService } from '@/lib/services/storeService';
 import { showToast } from '@/components/common/Toast';
@@ -26,7 +30,7 @@ import { vi } from 'date-fns/locale';
 import { AxiosError } from 'axios';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import type { Bill } from '@/types'; 
+import type { Bill } from '@/types';
 
 type Html2CanvasOptions = Parameters<typeof html2canvas>[1];
 
@@ -71,7 +75,7 @@ export default function PaymentDialog({ open, table, onClose, onSuccess }: Payme
     try {
       // Get unpaid orders for this table (backend auto-filters by session)
       const data = await storeService.getUnpaidOrdersByTable(table._id);
-      
+
       if (data.length === 0) {
         showToast.warning({ message: 'Không có đơn hàng nào cần thanh toán' });
         onClose();
@@ -106,9 +110,22 @@ export default function PaymentDialog({ open, table, onClose, onSuccess }: Payme
   const handlePayment = async () => {
     if (!table) return;
 
-    if (paymentMethod === 'cash' && !amountReceived) {
-      showToast.error({ message: 'Vui lòng nhập số tiền nhận' });
-      return;
+    const totalAmount = getTotalAmount();
+
+    if (paymentMethod === 'cash') {
+      const received = parseFloat(amountReceived);
+
+      if (!amountReceived || isNaN(received)) {
+        showToast.error({ message: 'Vui lòng nhập số tiền khách đưa' });
+        return;
+      }
+
+      if (received < totalAmount) {
+        showToast.error({
+          message: `Số tiền nhận (${received.toLocaleString('vi-VN')} ₫) nhỏ hơn tổng tiền cần thanh toán`,
+        });
+        return;
+      }
     }
 
     setSubmitting(true);
@@ -116,12 +133,11 @@ export default function PaymentDialog({ open, table, onClose, onSuccess }: Payme
       // Create bill (backend auto-combines orders)
       const billData = await storeService.createBill(table.storeId.toString(), {
         tableId: table._id,
-        orderIds: orders.map(o => o._id),
+        orderIds: orders.map((o) => o._id),
         paymentMethod,
         amountReceived: paymentMethod === 'cash' ? parseFloat(amountReceived) : undefined,
       });
       console.log('BILL:', billData);
-
 
       setBill(billData);
       setStep('bill');
@@ -190,7 +206,7 @@ export default function PaymentDialog({ open, table, onClose, onSuccess }: Payme
       </body>
       </html>
     `);
-    
+
     printWindow.document.close();
   };
 
@@ -212,7 +228,6 @@ export default function PaymentDialog({ open, table, onClose, onSuccess }: Payme
         backgroundColor: '#ffffff',
         logging: false,
       } as Html2CanvasOptions);
-      
 
       // Convert canvas to image
       const imgData = canvas.toDataURL('image/png');
@@ -267,15 +282,15 @@ export default function PaymentDialog({ open, table, onClose, onSuccess }: Payme
             {/* Table & Customer Info */}
             <div className="bg-gray-50 rounded-lg p-3">
               <Typography variant="body2" className="text-gray-600 mb-1">
-                <strong>Bàn:</strong> {table?.tableNumber} - {table?.area}
+                <strong>Bàn :</strong> {table?.tableNumber} - {table?.area}
               </Typography>
               {table?.currentSession && (
                 <>
                   <Typography variant="body2" className="text-gray-600 mb-1">
-                    <strong>Khách:</strong> {table.currentSession.customerName || 'Khách'}
+                    <strong>Khách hàng:</strong> {table.currentSession.customerName || 'Khách'}
                   </Typography>
                   <Typography variant="body2" className="text-gray-600">
-                    <strong>SĐT:</strong> {table.currentSession.customerPhone}
+                    <strong>SĐT khách hàng:</strong> {table.currentSession.customerPhone}
                   </Typography>
                 </>
               )}
@@ -286,28 +301,80 @@ export default function PaymentDialog({ open, table, onClose, onSuccess }: Payme
               <Typography variant="subtitle2" className="font-bold mb-2">
                 Đơn hàng ({orders.length}):
               </Typography>
-              <List className="bg-gray-50 rounded-lg max-h-60 overflow-y-auto">
+
+              <div className="bg-gray-50 rounded-lg">
                 {orders.map((order) => (
-                  <ListItem key={order._id} className="px-3 py-2 border-b border-gray-200">
-                    <div className="flex justify-between w-full">
-                      <div className="flex-1">
-                        <Typography variant="body2" className="font-semibold">
-                          {order.orderNumber}
-                        </Typography>
-                        <Typography variant="caption" className="text-gray-600">
-                          {format(new Date(order.createdAt), 'HH:mm - dd/MM/yyyy', { locale: vi })}
-                        </Typography>
-                        <Typography variant="caption" className="text-gray-600 block">
-                          {order.items.length} món
+                  <Accordion
+                    key={order._id}
+                    disableGutters
+                    elevation={0}
+                    sx={{
+                      borderBottom: '1px solid #e5e7eb', // tailwind gray-200
+                      '&:before': {
+                        display: 'none', // bỏ line mặc định của MUI
+                      },
+                    }}
+                  >
+                    <AccordionSummary
+                      expandIcon={<ExpandMoreIcon className="transition-transform" />}
+                      aria-controls="order-content"
+                      id={`order-${order._id}`}
+                      sx={{
+                        borderRadius: 1,
+                        backgroundColor: '#f9fafb', // gray-50
+                        cursor: 'pointer',
+
+                        '&:hover': {
+                          backgroundColor: '#f3f4f6', // gray-100
+                        },
+
+                        '&.Mui-expanded': {
+                          backgroundColor: '#ecfdf5', // green-50
+                        },
+                      }}
+                    >
+                      <div className="flex justify-between w-full items-center">
+                        <div>
+                          <Typography variant="body2" className="font-semibold">
+                            {order.orderNumber}
+                          </Typography>
+                          <Typography variant="caption" className="text-gray-600 block">
+                            {format(new Date(order.createdAt), 'HH:mm - dd/MM/yyyy', {
+                              locale: vi,
+                            })}
+                          </Typography>
+                          <Typography variant="caption" className="text-gray-600">
+                            {order.items.length} món
+                          </Typography>
+                        </div>
+
+                        <Typography variant="body2" className="font-bold text-green-600">
+                          {order.totalAmount.toLocaleString('vi-VN')} ₫
                         </Typography>
                       </div>
-                      <Typography variant="body2" className="font-bold text-green-600">
-                        {order.totalAmount.toLocaleString('vi-VN')} ₫
-                      </Typography>
-                    </div>
-                  </ListItem>
+                    </AccordionSummary>
+
+                    <AccordionDetails className="pt-0">
+                      <List dense>
+                        {order.items.map((item, index) => (
+                          <ListItem
+                            key={index}
+                            className="flex justify-between border-b border-gray-200 py-1"
+                          >
+                            <div>
+                              <Typography variant="body2">{item.name}</Typography>
+                              <Typography variant="caption" className="text-gray-600">
+                                Số lượng: {item.quantity} - Giá:{' '}
+                                {item.price.toLocaleString('vi-VN')} ₫
+                              </Typography>
+                            </div>
+                          </ListItem>
+                        ))}
+                      </List>
+                    </AccordionDetails>
+                  </Accordion>
                 ))}
-              </List>
+              </div>
             </div>
 
             <Divider />
@@ -329,6 +396,7 @@ export default function PaymentDialog({ open, table, onClose, onSuccess }: Payme
             {paymentMethod === 'cash' && (
               <TextField
                 fullWidth
+                margin="normal"
                 label="Tiền nhận"
                 type="number"
                 value={amountReceived}
@@ -391,10 +459,14 @@ export default function PaymentDialog({ open, table, onClose, onSuccess }: Payme
             <Button
               variant="contained"
               onClick={handlePayment}
-              disabled={submitting}
+              disabled={
+                submitting ||
+                (paymentMethod === 'cash' &&
+                  (!amountReceived || parseFloat(amountReceived) < getTotalAmount()))
+              }
               className="bg-green-600 hover:bg-green-700"
             >
-              {submitting ? 'Đang xử lý...' : 'Xác nhận thanh toán'}
+              {submitting ? 'Đang xử lý...' : 'Thanh toán'}
             </Button>
           </>
         )}
