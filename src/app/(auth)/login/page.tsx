@@ -13,11 +13,13 @@ import {
   InputAdornment,
   IconButton,
   Typography,
+  CircularProgress,
 } from '@mui/material';
 import { Visibility, VisibilityOff, RestaurantMenu } from '@mui/icons-material';
 import { useAuthStore } from '@/lib/stores/authStore';
 import { authService } from '@/lib/services/authService';
 import { AxiosError } from 'axios';
+import { showToast } from '@/components/common/Toast';
 
 const loginSchema = z.object({
   email: z.string().email('Email không hợp lệ'),
@@ -37,12 +39,14 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
+    clearErrors,
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -50,9 +54,22 @@ export default function LoginPage() {
       password: '',
     },
   });
+  const onError = () => {
+    setSubmitted(true);
+    showToast.error({
+      message: 'Vui lòng nhập đầy đủ và đúng thông tin đăng nhập',
+    });
+  };
 
   const onSubmit = async (data: LoginFormData) => {
     if (isLoading) return;
+    if (!data.email || !data.password) {
+      showToast.error({
+        message: 'Vui lòng nhập đầy đủ các trường thông tin',
+      });
+      return;
+    }
+    setSubmitted(true);
 
     try {
       setIsLoading(true);
@@ -74,9 +91,8 @@ export default function LoginPage() {
       } else if (user.role === 'staff') {
         router.push('host/orders');
       }
+      setSubmitted(false);
     } catch (err: unknown) {
-      console.error('Login error:', err);
-
       let errorMessage = 'Đăng nhập thất bại. Vui lòng kiểm tra lại email và mật khẩu.';
 
       if (err instanceof AxiosError) {
@@ -86,9 +102,7 @@ export default function LoginPage() {
         errorMessage = err.message;
       }
 
-      setError(errorMessage);
-      setIsLoading(false);
-
+      showToast.error({ message: errorMessage });
       reset({ email: data.email, password: '' });
     } finally {
       setIsLoading(false);
@@ -117,21 +131,29 @@ export default function LoginPage() {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+          <form onSubmit={handleSubmit(onSubmit, onError)} className="flex flex-col gap-4">
             <TextField
-              {...register('email')}
+              {...register('email', {
+                onChange: () => clearErrors('email'),
+              })}
               margin="normal"
               label="Email"
+              error={submitted && !!errors.email}
+              helperText={submitted ? errors.email?.message : ''}
               fullWidth
               variant="outlined"
               className="bg-gray-50 rounded-lg"
             />
 
             <TextField
-              {...register('password')}
+              {...register('password', {
+                onChange: () => clearErrors('password'),
+              })}
               margin="normal"
               label="Mật khẩu"
               type={showPassword ? 'text' : 'password'}
+              error={submitted && !!errors.password}
+              helperText={submitted ? errors.password?.message : ''}
               fullWidth
               variant="outlined"
               className="bg-gray-50 rounded-lg space-x-6"
@@ -155,9 +177,11 @@ export default function LoginPage() {
               variant="contained"
               fullWidth
               size="large"
+              disabled={isLoading}
+              startIcon={isLoading ? <CircularProgress size={18} color="inherit" /> : null}
               className="bg-gradient-to-r from-blue-600/80 via-purple-600/80 to-pink-500/80 text-white py-3 rounded-lg shadow-md hover:shadow-lg"
             >
-              ĐĂNG NHẬP
+              {isLoading ? 'Đang đăng nhập...' : 'ĐĂNG NHẬP'}
             </Button>
           </form>
 
