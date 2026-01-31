@@ -28,6 +28,17 @@ export const adminService = {
     const response = await api.get(API_ENDPOINTS.ADMIN.DASHBOARD_ACTIVITIES);
     return response.data.data;
   },
+
+  getRevenueByStore: async () => {
+    const res = await api.get(API_ENDPOINTS.ADMIN.REVENUE_STORES);
+    return res.data.data;
+  },
+
+  getRevenueByStoreDetail: async (storeId: string, days: number) => {
+    const res = await api.get(`${API_ENDPOINTS.ADMIN.REVENUE_STORES}/${storeId}?days=${days}`);
+    return res.data.data;
+  },
+
   // Get all stores
   getStores: async (): Promise<Store[]> => {
     const response = await api.get(API_ENDPOINTS.ADMIN.STORES);
