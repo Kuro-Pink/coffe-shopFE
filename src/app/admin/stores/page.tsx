@@ -14,14 +14,15 @@ import {
   InputAdornment,
   Box,
   CircularProgress,
-  Drawer,
-  Divider,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableRow,
   Avatar,
+  MenuItem,
+  Pagination,
+  Select,
 } from '@mui/material';
 import {
   Add,
@@ -64,9 +65,12 @@ export default function StoresListPage() {
   const [selectedStore, setSelectedStore] = useState<Store | null>(null);
   const [confirmLock, setConfirmLock] = useState(false);
 
-  const openDetail = (store: Store) => {
-    setSelectedStore(store);
-  };
+  const [status, setStatus] = useState<string>(''); // ✅ controlled ngay
+  const [host, setHost] = useState<string>(''); // ✅
+
+  // Pagination
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10); // table → 10/20/50 là hợp lý
 
   useEffect(() => {
     fetchStores();
@@ -84,6 +88,8 @@ export default function StoresListPage() {
     } else {
       setFilteredStores(stores);
     }
+
+    setPage(1); // 👈 reset page khi filter/search
   }, [searchQuery, stores]);
 
   const fetchStores = async () => {
@@ -151,6 +157,10 @@ export default function StoresListPage() {
     }
   };
 
+  const totalItems = filteredStores.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
+  const paginatedStores = filteredStores.slice((page - 1) * pageSize, page * pageSize);
+
   if (loading) return <LoadingSpinner />;
 
   return (
@@ -199,7 +209,13 @@ export default function StoresListPage() {
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <TextField select fullWidth label="Trạng thái">
+              <TextField
+                select
+                fullWidth
+                label="Trạng thái"
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+              >
                 <option value="">Tất cả</option>
                 <option value="active">Hoạt động</option>
                 <option value="locked">Bị khóa</option>
@@ -207,7 +223,13 @@ export default function StoresListPage() {
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6, md: 2 }}>
-              <TextField select fullWidth label="Host">
+              <TextField
+                select
+                fullWidth
+                label="Host"
+                value={host}
+                onChange={(e) => setHost(e.target.value)}
+              >
                 <option value="">Tất cả host</option>
               </TextField>
             </Grid>
@@ -261,13 +283,8 @@ export default function StoresListPage() {
           </TableHead>
 
           <TableBody>
-            {filteredStores.map((store) => (
-              <TableRow
-                key={store._id}
-                hover
-                className="cursor-pointer"
-                onClick={() => openDetail(store)}
-              >
+            {paginatedStores.map((store) => (
+              <TableRow key={store._id} hover className="cursor-pointer">
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <Avatar src={store.logo} />
@@ -294,7 +311,8 @@ export default function StoresListPage() {
                   <IconButton
                     onClick={(e) => {
                       e.stopPropagation();
-                      toggleStoreStatus(store);
+                      setSelectedStore(store);
+                      setConfirmLock(true);
                     }}
                   >
                     {store.isActive ? <Cancel /> : <CheckCircle />}
@@ -305,77 +323,37 @@ export default function StoresListPage() {
           </TableBody>
         </Table>
       )}
-      <Drawer
-        anchor="right"
-        open={!!selectedStore}
-        onClose={() => setSelectedStore(null)}
-        ModalProps={{
-          keepMounted: true,
-        }}
-      >
-        <Box className="flex items-center gap-3">
-          <Avatar src={selectedStore?.logo} sx={{ width: 56, height: 56 }}>
-            <StoreIcon />
-          </Avatar>
 
-          <Box className="flex-1">
-            <Typography variant="h6" fontWeight={600}>
-              {selectedStore?.name}
-            </Typography>
+      {/* ===== PAGINATION ===== */}
+      <div className="flex flex-wrap items-center justify-center gap-3 mt-8">
+        {/* Page size */}
+        <div className="flex items-center gap-2 text-sm text-gray-600">
+          <span>Hiển thị</span>
+          <Select
+            size="small"
+            value={[5, 10, 15, 20].includes(pageSize) ? pageSize : 10}
+            onChange={(e) => {
+              setPageSize(Number(e.target.value));
+              setPage(1);
+            }}
+          >
+            {[5, 10, 15, 20].map((size) => (
+              <MenuItem key={size} value={size}>
+                {size}
+              </MenuItem>
+            ))}
+          </Select>
+          <span>yêu cầu / trang</span>
+        </div>
 
-            <Chip
-              label={selectedStore?.isActive ? 'Hoạt động' : 'Bị khóa'}
-              color={selectedStore?.isActive ? 'success' : 'error'}
-              size="small"
-              variant="filled"
-            />
-          </Box>
-
-          <Divider />
-
-          <Box className="space-y-2">
-            <Typography variant="subtitle2" color="text.secondary">
-              Thông tin cửa hàng
-            </Typography>
-            <Typography variant="body2">📍 {selectedStore?.address}</Typography>
-            <Typography variant="body2">📞 {selectedStore?.phone}</Typography>
-            {selectedStore && (
-              <Typography variant="body2">
-                🗓 Ngày tạo: {new Date(selectedStore.createdAt).toLocaleDateString()}
-              </Typography>
-            )}
-          </Box>
-
-          <Divider />
-
-          <Box className="space-y-2">
-            <Typography variant="subtitle2" color="text.secondary">
-              Chủ cửa hàng (Host)
-            </Typography>
-
-            <Typography variant="body2">
-              👤 {typeof selectedStore?.ownerId === 'object' ? selectedStore.ownerId.email : '—'}
-            </Typography>
-          </Box>
-
-          <Divider />
-
-          <Box className="space-y-2">
-            <Button
-              fullWidth
-              color={selectedStore?.isActive ? 'error' : 'success'}
-              variant="contained"
-              onClick={() => setConfirmLock(true)}
-            >
-              {selectedStore?.isActive ? 'Khóa cửa hàng' : 'Mở khóa'}
-            </Button>
-
-            <Button fullWidth variant="outlined">
-              Xem lịch sử hoạt động
-            </Button>
-          </Box>
-        </Box>
-      </Drawer>
+        <Pagination
+          page={page}
+          count={totalPages}
+          color="primary"
+          onChange={(_, value) => setPage(value)}
+          disabled={totalPages <= 1}
+        />
+      </div>
 
       <ConfirmDialog
         open={confirmLock}
@@ -387,11 +365,16 @@ export default function StoresListPage() {
         cancelText="Hủy"
         loading={toggleLoadingId === selectedStore?._id}
         onConfirm={() => {
-          toggleStoreStatus(selectedStore!);
+          if (!selectedStore) return;
+
+          toggleStoreStatus(selectedStore); // 👈 gọi API TẠI ĐÂY
           setConfirmLock(false);
           setSelectedStore(null);
         }}
-        onCancel={() => setConfirmLock(false)}
+        onCancel={() => {
+          setConfirmLock(false);
+          setSelectedStore(null);
+        }}
       />
 
       {/* Confirm Delete Dialog */}

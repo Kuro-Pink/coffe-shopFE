@@ -13,6 +13,8 @@ import {
   IconButton,
   Menu,
   MenuItem,
+  Pagination,
+  Select,
 } from '@mui/material';
 import {
   PendingActions,
@@ -74,6 +76,10 @@ export default function StoreRequestsPage() {
 
   const [rejectionReason, setRejectionReason] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(9); // hợp lý với grid 3 cột
 
   useEffect(() => {
     fetchRequests();
@@ -216,6 +222,11 @@ export default function StoreRequestsPage() {
     return req.status === selectedTab;
   });
 
+  const totalItems = filteredRequests.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
+
+  const paginatedRequests = filteredRequests.slice((page - 1) * pageSize, page * pageSize);
+
   const getRequestCount = (status: RequestStatus): number => {
     if (status === 'all') return requests.length;
     return requests.filter((r) => r.status === status).length;
@@ -247,6 +258,11 @@ export default function StoreRequestsPage() {
     }
   };
 
+  const handleTabChange = (status: RequestStatus) => {
+    setSelectedTab(status);
+    setPage(1);
+  };
+
   if (loading) return <LoadingSpinner />;
 
   return (
@@ -272,7 +288,7 @@ export default function StoreRequestsPage() {
           count={getRequestCount('all')}
           active={selectedTab === 'all'}
           color="primary"
-          onClick={() => setSelectedTab('all')}
+          onClick={() => handleTabChange('all')}
         />
 
         <StatTab
@@ -280,7 +296,7 @@ export default function StoreRequestsPage() {
           count={getRequestCount('pending')}
           active={selectedTab === 'pending'}
           color="warning"
-          onClick={() => setSelectedTab('pending')}
+          onClick={() => handleTabChange('pending')}
         />
 
         <StatTab
@@ -288,7 +304,7 @@ export default function StoreRequestsPage() {
           count={getRequestCount('approved')}
           active={selectedTab === 'approved'}
           color="success"
-          onClick={() => setSelectedTab('approved')}
+          onClick={() => handleTabChange('approved')}
         />
 
         <StatTab
@@ -296,7 +312,7 @@ export default function StoreRequestsPage() {
           count={getRequestCount('rejected')}
           active={selectedTab === 'rejected'}
           color="error"
-          onClick={() => setSelectedTab('rejected')}
+          onClick={() => handleTabChange('rejected')}
         />
       </div>
 
@@ -314,7 +330,7 @@ export default function StoreRequestsPage() {
         </Card>
       ) : (
         <Grid container spacing={3}>
-          {filteredRequests.map((request) => (
+          {paginatedRequests.map((request) => (
             <Grid size={{ xs: 12, md: 6, lg: 4 }} key={request._id}>
               <Card
                 className={`hover:shadow-xl transition-all border-2 ${
@@ -450,6 +466,36 @@ export default function StoreRequestsPage() {
           ))}
         </Grid>
       )}
+      {/* ===== PAGINATION ===== */}
+      <div className="flex flex-wrap items-center justify-center gap-3 mt-8">
+        {/* Page size */}
+        <div className="flex items-center gap-2 text-sm text-gray-600">
+          <span>Hiển thị</span>
+          <Select
+            size="small"
+            value={pageSize}
+            onChange={(e) => {
+              setPageSize(Number(e.target.value));
+              setPage(1);
+            }}
+          >
+            {[6, 9, 15, 21].map((size) => (
+              <MenuItem key={size} value={size}>
+                {size}
+              </MenuItem>
+            ))}
+          </Select>
+          <span>yêu cầu / trang</span>
+        </div>
+
+        <Pagination
+          page={page}
+          count={totalPages}
+          color="primary"
+          onChange={(_, value) => setPage(value)}
+          disabled={totalPages <= 1}
+        />
+      </div>
 
       {/* Context Menu */}
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>

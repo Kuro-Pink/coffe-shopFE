@@ -15,6 +15,9 @@ import {
   Chip,
   IconButton,
   Tooltip,
+  MenuItem,
+  Pagination,
+  Select,
 } from '@mui/material';
 import { Lock, LockOpen } from '@mui/icons-material';
 import { adminHostService } from '@/lib/services/adminHostService';
@@ -33,6 +36,9 @@ export default function AdminHostsPage() {
   const router = useRouter();
   const [hosts, setHosts] = useState<Host[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
 
   const fetchHosts = async () => {
     try {
@@ -60,6 +66,10 @@ export default function AdminHostsPage() {
     fetchHosts();
   };
 
+  const totalPages = Math.ceil(hosts.length / pageSize);
+
+  const paginatedHosts = hosts.slice((page - 1) * pageSize, page * pageSize);
+
   return (
     <Card>
       <CardContent>
@@ -82,7 +92,7 @@ export default function AdminHostsPage() {
             </TableHead>
 
             <TableBody>
-              {hosts.map((host) => (
+              {paginatedHosts.map((host) => (
                 <TableRow
                   key={host._id}
                   hover
@@ -131,6 +141,37 @@ export default function AdminHostsPage() {
             </TableBody>
           </Table>
         </TableContainer>
+
+        {/* ===== PAGINATION ===== */}
+        <div className="flex flex-wrap items-center justify-center gap-3 mt-8">
+          {/* Page size */}
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <span>Hiển thị</span>
+            <Select
+              size="small"
+              value={pageSize}
+              onChange={(e) => {
+                setPageSize(Number(e.target.value));
+                setPage(1);
+              }}
+            >
+              {[5, 10, 15, 20].map((size) => (
+                <MenuItem key={size} value={size}>
+                  {size}
+                </MenuItem>
+              ))}
+            </Select>
+            <span>yêu cầu / trang</span>
+          </div>
+
+          <Pagination
+            page={page}
+            count={totalPages}
+            color="primary"
+            onChange={(_, value) => setPage(value)}
+            disabled={totalPages <= 1}
+          />
+        </div>
       </CardContent>
     </Card>
   );
