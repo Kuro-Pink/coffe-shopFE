@@ -24,17 +24,7 @@ import {
   Pagination,
   Select,
 } from '@mui/material';
-import {
-  Add,
-  Search,
-  Edit,
-  Delete,
-  Store as StoreIcon,
-  Phone,
-  LocationOn,
-  CheckCircle,
-  Cancel,
-} from '@mui/icons-material';
+import { Add, Search, Store as StoreIcon, Lock, LockOpen } from '@mui/icons-material';
 import { adminService } from '@/lib/services/adminService';
 import { Store } from '@/types';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -65,8 +55,8 @@ export default function StoresListPage() {
   const [selectedStore, setSelectedStore] = useState<Store | null>(null);
   const [confirmLock, setConfirmLock] = useState(false);
 
-  const [status, setStatus] = useState<string>(''); // ✅ controlled ngay
-  const [host, setHost] = useState<string>(''); // ✅
+  const [status, setStatus] = useState<string>('');
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest');
 
   // Pagination
   const [page, setPage] = useState(1);
@@ -77,20 +67,32 @@ export default function StoresListPage() {
   }, []);
 
   useEffect(() => {
-    // Filter stores based on search
-    if (searchQuery) {
-      const filtered = stores.filter(
-        (store) =>
-          store.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          store.address.toLowerCase().includes(searchQuery.toLowerCase()),
+    let result = [...stores];
+
+    // 🔍 Search theo tên / địa chỉ
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
+        (store) => store.name.toLowerCase().includes(q) || store.address.toLowerCase().includes(q),
       );
-      setFilteredStores(filtered);
-    } else {
-      setFilteredStores(stores);
     }
 
-    setPage(1); // 👈 reset page khi filter/search
-  }, [searchQuery, stores]);
+    // 🔒 Filter theo status
+    if (status) {
+      result = result.filter((store) => (status === 'active' ? store.isActive : !store.isActive));
+    }
+
+    // ✅ SORT THEO NGÀY TẠO
+    result.sort((a, b) => {
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
+
+      return sortBy === 'newest' ? dateB - dateA : dateA - dateB;
+    });
+
+    setFilteredStores(result);
+    setPage(1);
+  }, [searchQuery, status, sortBy, stores]);
 
   const fetchStores = async () => {
     try {
@@ -157,6 +159,12 @@ export default function StoresListPage() {
     }
   };
 
+  const hosts = Array.from(
+    new Map(
+      stores.filter((s) => typeof s.ownerId === 'object').map((s) => [s.ownerId._id, s.ownerId]),
+    ).values(),
+  );
+
   const totalItems = filteredStores.length;
   const totalPages = Math.ceil(totalItems / pageSize);
   const paginatedStores = filteredStores.slice((page - 1) * pageSize, page * pageSize);
@@ -183,7 +191,7 @@ export default function StoresListPage() {
       <Card className="mb-4">
         <CardContent>
           <Grid container spacing={2}>
-            <Grid size={{ xs: 12, sm: 6, md: 5 }}>
+            <Grid size={{ xs: 12, sm: 6, md: 6 }}>
               <TextField
                 fullWidth
                 placeholder="Tìm theo tên cửa hàng"
@@ -199,17 +207,23 @@ export default function StoresListPage() {
               />
             </Grid>
 
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Grid size={{ xs: 12, sm: 6, md: 2 }}>
               <TextField
                 select
                 fullWidth
                 label="Trạng thái"
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
+                SelectProps={{
+                  displayEmpty: true,
+                }}
+                InputLabelProps={{
+                  shrink: true, // 🔥 BẮT BUỘC
+                }}
               >
-                <option value="">Tất cả</option>
-                <option value="active">Hoạt động</option>
-                <option value="locked">Bị khóa</option>
+                <MenuItem value="">Tất cả</MenuItem>
+                <MenuItem value="active">Hoạt động</MenuItem>
+                <MenuItem value="locked">Bị khóa</MenuItem>
               </TextField>
             </Grid>
 
@@ -217,16 +231,27 @@ export default function StoresListPage() {
               <TextField
                 select
                 fullWidth
-                label="Host"
-                value={host}
-                onChange={(e) => setHost(e.target.value)}
+                label="Sắp xếp"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as 'newest' | 'oldest')}
               >
-                <option value="">Tất cả host</option>
+                <MenuItem value="newest">Mới nhất</MenuItem>
+                <MenuItem value="oldest">Cũ nhất</MenuItem>
               </TextField>
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6, md: 2 }}>
-              <Button fullWidth variant="outlined">
+              <Button
+                fullWidth
+                variant="outlined"
+                onClick={() => {
+                  setSearchQuery('');
+                  setStatus('');
+                  setSortBy('newest');
+                  setFilteredStores(stores);
+                  setPage(1);
+                }}
+              >
                 Reset
               </Button>
             </Grid>
@@ -265,11 +290,12 @@ export default function StoresListPage() {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Store</TableCell>
-              <TableCell>Host</TableCell>
-              <TableCell>Trạng thái</TableCell>
+              <TableCell>Cửa hàng</TableCell>
+              <TableCell>Chủ cửa hàng</TableCell>
+              <TableCell>Email</TableCell>
               <TableCell>Ngày tạo</TableCell>
-              <TableCell align="right">Hành động</TableCell>
+              <TableCell>Trạng thái</TableCell>
+              <TableCell align="right">Mở/Khóa</TableCell>
             </TableRow>
           </TableHead>
 
@@ -284,19 +310,22 @@ export default function StoresListPage() {
                 </TableCell>
 
                 <TableCell>
+                  {typeof store.ownerId === 'object' ? store.ownerId.name : '—'}
+                </TableCell>
+                <TableCell>
                   {typeof store.ownerId === 'object' ? store.ownerId.email : '—'}
                 </TableCell>
 
+                <TableCell>{new Date(store.createdAt).toLocaleDateString()}</TableCell>
+
                 <TableCell>
                   <Chip
-                    label={store.isActive ? 'Hoạt động' : 'Bị khóa'}
+                    label={store.isActive ? 'Hoạt động' : 'Khóa'}
                     color={store.isActive ? 'success' : 'error'}
                     size="small"
                     variant="filled"
                   />
                 </TableCell>
-
-                <TableCell>{new Date(store.createdAt).toLocaleDateString()}</TableCell>
 
                 <TableCell align="right">
                   <IconButton
@@ -305,8 +334,9 @@ export default function StoresListPage() {
                       setSelectedStore(store);
                       setConfirmLock(true);
                     }}
+                    color={store.isActive ? 'error' : 'success'}
                   >
-                    {store.isActive ? <Cancel /> : <CheckCircle />}
+                    {store.isActive ? <Lock /> : <LockOpen />}
                   </IconButton>
                 </TableCell>
               </TableRow>
@@ -352,6 +382,7 @@ export default function StoresListPage() {
         message={`Bạn có chắc chắn muốn ${
           selectedStore?.isActive ? 'khóa' : 'mở khóa'
         } cửa hàng "${selectedStore?.name}"?`}
+        variant={selectedStore?.isActive ? 'danger' : 'success'}
         confirmText="Xác nhận"
         cancelText="Hủy"
         loading={toggleLoadingId === selectedStore?._id}

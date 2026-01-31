@@ -21,6 +21,8 @@ import {
 } from '@mui/material';
 import { Lock, LockOpen } from '@mui/icons-material';
 import { adminHostService } from '@/lib/services/adminHostService';
+import { showToast } from '@/components/common/Toast';
+import ConfirmDialog from '@/components/common/ConfirmDialog';
 
 interface Host {
   _id: string;
@@ -36,6 +38,10 @@ export default function AdminHostsPage() {
   const router = useRouter();
   const [hosts, setHosts] = useState<Host[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const [confirmLock, setConfirmLock] = useState(false);
+  const [selectedHost, setSelectedHost] = useState<Host | null>(null);
+  const [lockLoadingId, setLockLoadingId] = useState<string | null>(null);
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
@@ -54,16 +60,25 @@ export default function AdminHostsPage() {
   }, []);
 
   const toggleLock = async (host: Host) => {
-    const confirm = window.confirm(`${host.isActive ? 'Khóa' : 'Mở khóa'} host ${host.email}?`);
-    if (!confirm) return;
+    setLockLoadingId(host._id);
 
-    if (host.isActive) {
-      await adminHostService.lockHost(host._id);
-    } else {
-      await adminHostService.unlockHost(host._id);
+    try {
+      if (host.isActive) {
+        await adminHostService.lockHost(host._id);
+        showToast.success({
+          message: 'Khóa host thành công!',
+        });
+      } else {
+        await adminHostService.unlockHost(host._id);
+        showToast.success({
+          message: 'Mở khóa host thành công',
+        });
+      }
+
+      fetchHosts();
+    } finally {
+      setLockLoadingId(null);
     }
-
-    fetchHosts();
   };
 
   const totalPages = Math.ceil(hosts.length / pageSize);
@@ -87,7 +102,7 @@ export default function AdminHostsPage() {
                 <TableCell align="right">Doanh thu</TableCell>
                 <TableCell align="center">Trạng thái</TableCell>
                 <TableCell align="center">Tạo lúc</TableCell>
-                <TableCell align="center">Action</TableCell>
+                <TableCell align="center">Khoắ/Mở</TableCell>
               </TableRow>
             </TableHead>
 
@@ -111,7 +126,7 @@ export default function AdminHostsPage() {
                   <TableCell align="center">
                     <Chip
                       size="small"
-                      label={host.isActive ? 'Active' : 'Locked'}
+                      label={host.isActive ? 'Hoạt động' : 'Khóa'}
                       color={host.isActive ? 'success' : 'error'}
                     />
                   </TableCell>
@@ -122,7 +137,10 @@ export default function AdminHostsPage() {
                     <Tooltip title={host.isActive ? 'Khóa host' : 'Mở khóa'}>
                       <IconButton
                         color={host.isActive ? 'error' : 'success'}
-                        onClick={() => toggleLock(host)}
+                        onClick={() => {
+                          setSelectedHost(host);
+                          setConfirmLock(true);
+                        }}
                       >
                         {host.isActive ? <Lock /> : <LockOpen />}
                       </IconButton>
@@ -141,6 +159,28 @@ export default function AdminHostsPage() {
             </TableBody>
           </Table>
         </TableContainer>
+
+        <ConfirmDialog
+          open={confirmLock}
+          title={selectedHost?.isActive ? 'Xác nhận khóa host' : 'Xác nhận mở khóa host'}
+          message={`Bạn có chắc chắn muốn ${
+            selectedHost?.isActive ? 'khóa' : 'mở khóa'
+          } tài khoản host "${selectedHost?.name}" với Email "${selectedHost?.email}"?`}
+          variant={selectedHost?.isActive ? 'danger' : 'success'}
+          confirmText="Xác nhận"
+          cancelText="Hủy"
+          loading={lockLoadingId === selectedHost?._id}
+          onConfirm={() => {
+            if (!selectedHost) return;
+            toggleLock(selectedHost);
+            setConfirmLock(false);
+            setSelectedHost(null);
+          }}
+          onCancel={() => {
+            setConfirmLock(false);
+            setSelectedHost(null);
+          }}
+        />
 
         {/* ===== PAGINATION ===== */}
         <div className="flex flex-wrap items-center justify-center gap-3 mt-8">
