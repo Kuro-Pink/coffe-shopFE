@@ -1,16 +1,10 @@
 'use client';
 
 import { ReactNode, useEffect } from 'react';
-import {
-  Dashboard,
-  Store,
-  People,
-  Settings,
-  AdminPanelSettings,
-} from '@mui/icons-material';
+import { Dashboard, Store, People, Settings, AdminPanelSettings } from '@mui/icons-material';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { ToastProvider } from '@/components/common/Toast';
-import { SidebarMenuItem  } from '@/types';
+import { SidebarMenuItem } from '@/types';
 import { useStoreRequestStore } from '@/lib/stores/storeRequestStore';
 
 const adminTheme = {
@@ -49,13 +43,13 @@ function AdminLayoutContent({ children }: { children: ReactNode }) {
 
   // ✅ DYNAMIC MENU ITEMS
   const menuItems: SidebarMenuItem[] = [
-    { text: 'Dashboard', icon: <Dashboard />, path: '/admin' },
+    { text: 'Trang chủ', icon: <Dashboard />, path: '/admin' },
     { text: 'Quản lý cửa hàng', icon: <Store />, path: '/admin/stores' },
     {
-      text: 'Tài khoản Host',
+      text: 'Yêu cầu cửa hàng',
       icon: <People />,
       path: '/admin/store-requests',
-      badge: pendingCount ? pendingCount : undefined, 
+      badge: pendingCount ? pendingCount : undefined,
       badgeColor: 'warning',
     },
     { text: 'Cài đặt', icon: <Settings />, path: '/admin/settings' },

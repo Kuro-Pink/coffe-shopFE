@@ -16,6 +16,9 @@ import {
   IconButton,
   Menu,
   MenuItem,
+  Drawer,
+  Divider,
+  Alert,
 } from '@mui/material';
 import {
   PendingActions,
@@ -76,6 +79,11 @@ export default function StoreRequestsPage() {
 
   const [rejectionReason, setRejectionReason] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+  // Drawer state
+  const [detailDrawer, setDetailDrawer] = useState<{
+    open: boolean;
+    request: StoreRequest | null;
+  }>({ open: false, request: null });
 
   useEffect(() => {
     fetchRequests();
@@ -213,6 +221,14 @@ export default function StoreRequestsPage() {
     }
   };
 
+  const openDetailDrawer = (request: StoreRequest) => {
+    setDetailDrawer({ open: true, request });
+  };
+
+  const closeDetailDrawer = () => {
+    setDetailDrawer({ open: false, request: null });
+  };
+
   const filteredRequests = requests.filter((req) => {
     if (selectedTab === 'all') return true;
     return req.status === selectedTab;
@@ -332,6 +348,7 @@ export default function StoreRequestsPage() {
           {filteredRequests.map((request) => (
             <Grid size={{ xs: 12, md: 6, lg: 4 }} key={request._id}>
               <Card
+                onClick={() => openDetailDrawer(request)}
                 className={`hover:shadow-xl transition-all border-2 ${
                   request.status === 'pending' ? 'border-orange-300' : 'border-gray-200'
                 }`}
@@ -356,7 +373,13 @@ export default function StoreRequestsPage() {
                       />
                     </div>
                     {/* Menu Button */}
-                    <IconButton size="small" onClick={(e) => handleMenuOpen(e, request)}>
+                    <IconButton
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleMenuOpen(e, request);
+                      }}
+                    >
                       <MoreVert />
                     </IconButton>
                   </div>
@@ -467,6 +490,74 @@ export default function StoreRequestsPage() {
           Xóa yêu cầu
         </MenuItem>
       </Menu>
+
+      <Drawer
+        anchor="right"
+        open={detailDrawer.open}
+        onClose={closeDetailDrawer}
+        PaperProps={{ className: 'w-full md:w-[520px] p-6' }}
+      >
+        {detailDrawer.request && (
+          <div className="space-y-4">
+            <Typography variant="h5" className="font-bold">
+              {detailDrawer.request.storeName}
+            </Typography>
+
+            <Chip
+              label={getStatusText(detailDrawer.request.status)}
+              color={getStatusColor(detailDrawer.request.status)}
+            />
+
+            <Divider />
+
+            <Typography variant="subtitle2">Thông tin cửa hàng</Typography>
+            <Typography>📍 {detailDrawer.request.storeAddress}</Typography>
+            <Typography>📞 {detailDrawer.request.storePhone}</Typography>
+
+            {detailDrawer.request.description && (
+              <Typography>{detailDrawer.request.description}</Typography>
+            )}
+
+            <Divider />
+
+            <Typography variant="subtitle2">Chủ sở hữu</Typography>
+            <Typography>{detailDrawer.request.userId.name}</Typography>
+            <Typography>{detailDrawer.request.userId.email}</Typography>
+            <Typography>{detailDrawer.request.userId.phone}</Typography>
+
+            {detailDrawer.request.status === 'pending' && (
+              <div className="flex gap-2 pt-4">
+                <Button
+                  fullWidth
+                  variant="contained"
+                  color="success"
+                  onClick={() => {
+                    closeDetailDrawer();
+                    handleApproveClick(detailDrawer.request!);
+                  }}
+                >
+                  Duyệt
+                </Button>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  color="error"
+                  onClick={() => {
+                    closeDetailDrawer();
+                    handleRejectClick(detailDrawer.request!);
+                  }}
+                >
+                  Từ chối
+                </Button>
+              </div>
+            )}
+
+            {detailDrawer.request.status === 'rejected' && (
+              <Alert severity="error">{detailDrawer.request.rejectionReason}</Alert>
+            )}
+          </div>
+        )}
+      </Drawer>
 
       {/* Approve Confirm Dialog */}
       <ConfirmDialog

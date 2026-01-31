@@ -17,6 +17,9 @@ export const API_ENDPOINTS = {
 
   // Admin endpoints
   ADMIN: {
+    DASHBOARD_STATS: '/admin/dashboard-stats',
+    DASHBOARD_REVENUE: (days: number) => `/admin/dashboard/revenue?days=${days}`,
+    DASHBOARD_ACTIVITIES: `/admin/dashboard/activities `,
     STATS: '/admin/stats',
     STORES: '/admin/stores',
     STORE_DETAIL: (id: string) => `/admin/stores/${id}`,

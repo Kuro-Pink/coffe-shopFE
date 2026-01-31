@@ -65,20 +65,23 @@ export interface User {
   currentShift?: Shift;
 }
 
+export interface StoreOwner {
+  _id: string;
+  name: string;
+  email: string;
+  phone?: string;
+}
+
 export interface Store {
   _id: string;
   name: string;
   address: string;
   phone: string;
-  email?: string;
   logo?: string;
-  ownerId: string;
+
+  ownerId: string | StoreOwner; // 👈 QUAN TRỌNG
+
   isActive: boolean;
-  bankAccount?: {
-    bankName: string;
-    accountNumber: string;
-    accountName: string;
-  };
   createdAt: string;
 }
 

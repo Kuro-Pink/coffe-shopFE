@@ -12,10 +12,15 @@ import {
   Chip,
   TextField,
   InputAdornment,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
+  Box,
+  CircularProgress,
+  Drawer,
+  Divider,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
   Avatar,
 } from '@mui/material';
 import {
@@ -36,7 +41,6 @@ import ErrorMessage from '@/components/common/ErrorMessage';
 import { AxiosError } from 'axios';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import { showToast } from '@/components/common/Toast';
-import { CircularProgress } from '@mui/material';
 
 interface ErrorResponse {
   message?: string;
@@ -57,6 +61,12 @@ export default function StoresListPage() {
 
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [toggleLoadingId, setToggleLoadingId] = useState<string | null>(null);
+  const [selectedStore, setSelectedStore] = useState<Store | null>(null);
+  const [confirmLock, setConfirmLock] = useState(false);
+
+  const openDetail = (store: Store) => {
+    setSelectedStore(store);
+  };
 
   useEffect(() => {
     fetchStores();
@@ -169,22 +179,45 @@ export default function StoresListPage() {
       {error && <ErrorMessage message={error} />}
 
       {/* Search Bar */}
-      <Card className="mb-6 shadow-md">
+      <Card className="mb-4">
         <CardContent>
-          <TextField
-            fullWidth
-            margin="normal"
-            placeholder="Tìm kiếm cửa hàng theo tên hoặc địa chỉ..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search className="text-gray-400" />
-                </InputAdornment>
-              ),
-            }}
-          />
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12, sm: 6, md: 5 }}>
+              <TextField
+                fullWidth
+                placeholder="Tìm theo tên cửa hàng"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Search />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <TextField select fullWidth label="Trạng thái">
+                <option value="">Tất cả</option>
+                <option value="active">Hoạt động</option>
+                <option value="locked">Bị khóa</option>
+              </TextField>
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+              <TextField select fullWidth label="Host">
+                <option value="">Tất cả host</option>
+              </TextField>
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+              <Button fullWidth variant="outlined">
+                Reset
+              </Button>
+            </Grid>
+          </Grid>
         </CardContent>
       </Card>
 
@@ -216,92 +249,150 @@ export default function StoresListPage() {
           </CardContent>
         </Card>
       ) : (
-        <Grid container spacing={3}>
-          {filteredStores?.map((store) => (
-            <Grid size={{ xs: 12, md: 6, lg: 4 }} key={store._id}>
-              <Card className="hover:shadow-xl transition-all duration-300 border-0 h-full">
-                <CardContent>
-                  {/* Header with Logo */}
-                  <div className="flex items-start gap-3 mb-4">
-                    <Avatar
-                      src={store.logo}
-                      className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600"
-                    >
-                      <StoreIcon />
-                    </Avatar>
-                    <div className="flex-1">
-                      <Typography variant="h6" className="font-bold text-gray-800 mb-1">
-                        {store.name}
-                      </Typography>
-                      <Chip
-                        label={
-                          toggleLoadingId === store._id ? (
-                            <span className="flex items-center gap-1">
-                              <CircularProgress size={12} color="inherit" />
-                              Đang xử lý...
-                            </span>
-                          ) : store.isActive ? (
-                            'Hoạt động'
-                          ) : (
-                            'Tạm dừng'
-                          )
-                        }
-                        size="small"
-                        icon={
-                          toggleLoadingId === store._id ? undefined : store.isActive ? (
-                            <CheckCircle />
-                          ) : (
-                            <Cancel />
-                          )
-                        }
-                        className={
-                          store.isActive ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'
-                        }
-                        onClick={() => toggleStoreStatus(store)}
-                        disabled={toggleLoadingId === store._id}
-                      />
-                    </div>
-                  </div>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Store</TableCell>
+              <TableCell>Host</TableCell>
+              <TableCell>Trạng thái</TableCell>
+              <TableCell>Ngày tạo</TableCell>
+              <TableCell align="right">Hành động</TableCell>
+            </TableRow>
+          </TableHead>
 
-                  {/* Store Info */}
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-start gap-2 text-gray-600">
-                      <LocationOn fontSize="small" className="mt-0.5" />
-                      <Typography variant="body2" className="flex-1">
-                        {store.address}
-                      </Typography>
-                    </div>
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <Phone fontSize="small" />
-                      <Typography variant="body2">{store.phone}</Typography>
-                    </div>
+          <TableBody>
+            {filteredStores.map((store) => (
+              <TableRow
+                key={store._id}
+                hover
+                className="cursor-pointer"
+                onClick={() => openDetail(store)}
+              >
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Avatar src={store.logo} />
+                    <span className="font-medium">{store.name}</span>
                   </div>
+                </TableCell>
 
-                  {/* Actions */}
-                  <div className="flex gap-2 pt-4 border-t border-gray-100">
-                    <Button
-                      fullWidth
-                      variant="outlined"
-                      startIcon={<Edit />}
-                      onClick={() => router.push(`/admin/stores/${store._id}/edit`)}
-                      className="border-blue-600 text-blue-600 hover:bg-blue-50"
-                    >
-                      Chỉnh sửa
-                    </Button>
-                    <IconButton
-                      color="error"
-                      onClick={() => setConfirmDialog({ open: true, store })}
-                      className="border border-red-200 hover:bg-red-50"
-                    >
-                      <Delete />
-                    </IconButton>
-                  </div>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
+                <TableCell>
+                  {typeof store.ownerId === 'object' ? store.ownerId.email : '—'}
+                </TableCell>
+
+                <TableCell>
+                  <Chip
+                    label={store.isActive ? 'Hoạt động' : 'Bị khóa'}
+                    color={store.isActive ? 'success' : 'error'}
+                    size="small"
+                    variant="filled"
+                  />
+                </TableCell>
+
+                <TableCell>{new Date(store.createdAt).toLocaleDateString()}</TableCell>
+
+                <TableCell align="right">
+                  <IconButton
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleStoreStatus(store);
+                    }}
+                  >
+                    {store.isActive ? <Cancel /> : <CheckCircle />}
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       )}
+      <Drawer
+        anchor="right"
+        open={!!selectedStore}
+        onClose={() => setSelectedStore(null)}
+        ModalProps={{
+          keepMounted: true,
+        }}
+      >
+        <Box className="flex items-center gap-3">
+          <Avatar src={selectedStore?.logo} sx={{ width: 56, height: 56 }}>
+            <StoreIcon />
+          </Avatar>
+
+          <Box className="flex-1">
+            <Typography variant="h6" fontWeight={600}>
+              {selectedStore?.name}
+            </Typography>
+
+            <Chip
+              label={selectedStore?.isActive ? 'Hoạt động' : 'Bị khóa'}
+              color={selectedStore?.isActive ? 'success' : 'error'}
+              size="small"
+              variant="filled"
+            />
+          </Box>
+
+          <Divider />
+
+          <Box className="space-y-2">
+            <Typography variant="subtitle2" color="text.secondary">
+              Thông tin cửa hàng
+            </Typography>
+            <Typography variant="body2">📍 {selectedStore?.address}</Typography>
+            <Typography variant="body2">📞 {selectedStore?.phone}</Typography>
+            {selectedStore && (
+              <Typography variant="body2">
+                🗓 Ngày tạo: {new Date(selectedStore.createdAt).toLocaleDateString()}
+              </Typography>
+            )}
+          </Box>
+
+          <Divider />
+
+          <Box className="space-y-2">
+            <Typography variant="subtitle2" color="text.secondary">
+              Chủ cửa hàng (Host)
+            </Typography>
+
+            <Typography variant="body2">
+              👤 {typeof selectedStore?.ownerId === 'object' ? selectedStore.ownerId.email : '—'}
+            </Typography>
+          </Box>
+
+          <Divider />
+
+          <Box className="space-y-2">
+            <Button
+              fullWidth
+              color={selectedStore?.isActive ? 'error' : 'success'}
+              variant="contained"
+              onClick={() => setConfirmLock(true)}
+            >
+              {selectedStore?.isActive ? 'Khóa cửa hàng' : 'Mở khóa'}
+            </Button>
+
+            <Button fullWidth variant="outlined">
+              Xem lịch sử hoạt động
+            </Button>
+          </Box>
+        </Box>
+      </Drawer>
+
+      <ConfirmDialog
+        open={confirmLock}
+        title={selectedStore?.isActive ? 'Xác nhận khóa cửa hàng' : 'Xác nhận mở khóa cửa hàng'}
+        message={`Bạn có chắc chắn muốn ${
+          selectedStore?.isActive ? 'khóa' : 'mở khóa'
+        } cửa hàng "${selectedStore?.name}"?`}
+        confirmText="Xác nhận"
+        cancelText="Hủy"
+        loading={toggleLoadingId === selectedStore?._id}
+        onConfirm={() => {
+          toggleStoreStatus(selectedStore!);
+          setConfirmLock(false);
+          setSelectedStore(null);
+        }}
+        onCancel={() => setConfirmLock(false)}
+      />
 
       {/* Confirm Delete Dialog */}
       <ConfirmDialog

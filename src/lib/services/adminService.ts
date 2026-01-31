@@ -1,6 +1,6 @@
 import api from '../api';
 import { API_ENDPOINTS } from '@/config/api.config';
-import { Store, StoreRequest  } from '@/types';
+import { Store, StoreRequest } from '@/types';
 
 export interface CreateStoreData {
   name: string;
@@ -15,6 +15,19 @@ export interface UpdateStoreData extends Partial<CreateStoreData> {
 }
 
 export const adminService = {
+  // Get all stores data to dashboard
+  getDashboardStats: async () => {
+    const response = await api.get(API_ENDPOINTS.ADMIN.DASHBOARD_STATS);
+    return response.data.data;
+  },
+  getRevenueChart: async (days: number) => {
+    const response = await api.get(API_ENDPOINTS.ADMIN.DASHBOARD_REVENUE(days));
+    return response.data.data;
+  },
+  getRecentActivities: async () => {
+    const response = await api.get(API_ENDPOINTS.ADMIN.DASHBOARD_ACTIVITIES);
+    return response.data.data;
+  },
   // Get all stores
   getStores: async (): Promise<Store[]> => {
     const response = await api.get(API_ENDPOINTS.ADMIN.STORES);
@@ -68,7 +81,7 @@ export const adminService = {
     return response.data;
   },
 
-   deleteStoreRequest: async (requestId: string): Promise<void> => {
+  deleteStoreRequest: async (requestId: string): Promise<void> => {
     await api.delete(API_ENDPOINTS.ADMIN.STORE_REQUESTS.DETAIL(requestId));
   },
 };
