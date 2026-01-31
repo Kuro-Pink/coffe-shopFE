@@ -8,6 +8,7 @@ import { Card, CardContent, Typography, Button, Grid, Box, Chip } from '@mui/mat
 import { Add, Store, ShoppingCart, TrendingUp, People, ArrowUpward } from '@mui/icons-material';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { adminService } from '@/lib/services/adminService';
+import SummaryCard from '@/components/ui/SummaryCard';
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -25,19 +26,24 @@ export default function AdminDashboard() {
     {
       title: 'Cửa hàng hoạt động',
       value: `${stats.activeStores}/${stats.totalStores}`,
-      color: 'from-purple-500 to-blue-600',
-      bgColor: 'bg-blue-50',
       icon: <Store />,
       onClick: () => router.push('/admin/stores'),
+      color: {
+        bg: 'linear-gradient(135deg, #8b5cf6, #2563eb)', // purple → blue
+        iconBg: 'rgba(255,255,255,0.25)',
+        iconColor: '#fff',
+      },
     },
     {
       title: 'Tổng đơn hàng',
       value: stats.totalOrders,
-      color: 'from-green-500 to-teal-600',
-      bgColor: 'bg-green-50',
-
       icon: <ShoppingCart />,
       onClick: () => router.push('/admin/orders'),
+      color: {
+        bg: 'linear-gradient(135deg, #22c55e, #14b8a6)', // green → teal
+        iconBg: 'rgba(255,255,255,0.25)',
+        iconColor: '#fff',
+      },
     },
     {
       title: 'Doanh thu hệ thống',
@@ -45,19 +51,24 @@ export default function AdminDashboard() {
         style: 'currency',
         currency: 'VND',
       }).format(stats.totalRevenue),
-      color: 'from-red-500 to-purple-600',
-      bgColor: 'bg-purple-50',
-
       icon: <TrendingUp />,
       onClick: () => router.push('/admin/revenue'),
+      color: {
+        bg: 'linear-gradient(135deg, #ef4444, #9333ea)', // red → purple
+        iconBg: 'rgba(255,255,255,0.25)',
+        iconColor: '#fff',
+      },
     },
     {
       title: 'Host',
       value: stats.totalHosts,
-      color: 'from-orange-500 to-yellow-600',
-      bgColor: 'bg-orange-50',
       icon: <People />,
       onClick: () => router.push('/admin/hosts'),
+      color: {
+        bg: 'linear-gradient(135deg, #f97316, #eab308)', // orange → yellow
+        iconBg: 'rgba(255,255,255,0.25)',
+        iconColor: '#fff',
+      },
     },
   ];
 
@@ -140,41 +151,20 @@ export default function AdminDashboard() {
         </div>
 
         {/* Stats Cards */}
-        <Grid container spacing={3} className="mb-8">
+        {/* ===== SUMMARY CARDS ===== */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {statsData.map((stat, index) => (
-            <Grid size={{ xs: 12, sm: 6, lg: 3 }} key={index}>
-              <Card
-                onClick={stat.onClick}
-                className="hover:shadow-xl transition-shadow duration-300 border-0 overflow-hidden"
-              >
-                <CardContent className="relative">
-                  {/* Background Icon */}
-                  <div
-                    className={`absolute top-0 right-0 w-32 h-32 ${stat.bgColor} rounded-full -mr-16 -mt-16 opacity-20`}
-                  />
-
-                  {/* Content */}
-                  <div className="relative">
-                    <div className="flex items-center justify-between mb-4">
-                      <div
-                        className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-lg`}
-                      >
-                        {stat.icon}
-                      </div>
-                    </div>
-
-                    <Typography color="textSecondary" gutterBottom className="text-sm">
-                      {stat.title}
-                    </Typography>
-                    <Typography variant="h4" className="font-bold text-gray-800">
-                      {stat.value}
-                    </Typography>
-                  </div>
-                </CardContent>
-              </Card>
-            </Grid>
+            <SummaryCard
+              key={index}
+              title={stat.title}
+              value={stat.value}
+              icon={stat.icon}
+              color={stat.color}
+              onClick={stat.onClick}
+            />
           ))}
-        </Grid>
+        </div>
+
         <Card className="mb-8">
           <CardContent>
             <div className="flex justify-between items-center mb-4">
@@ -257,21 +247,40 @@ export default function AdminDashboard() {
             </Typography>
 
             {activities.length === 0 ? (
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="text.secondary" className="text-center py-6">
                 Chưa có hoạt động nào
               </Typography>
             ) : (
               <ul className="space-y-3 text-sm">
                 {activities.map((item, index) => (
-                  <li key={index} className="flex justify-between items-center">
-                    <span>
-                      {item.type === 'store' && '🏪 '}
-                      {item.type === 'host' && '👤 '}
-                      {item.type === 'order' && '🧾 '}
-                      {item.message}
-                    </span>
+                  <li
+                    key={index}
+                    className="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3 hover:bg-gray-100 transition"
+                  >
+                    {/* LEFT */}
+                    <div className="flex items-center gap-3">
+                      {/* Icon */}
+                      <span
+                        className={`flex h-7 w-7 items-center justify-center rounded-full text-xs
+              ${
+                item.type === 'store'
+                  ? 'bg-blue-100 text-blue-600'
+                  : item.type === 'host'
+                    ? 'bg-purple-100 text-purple-600'
+                    : 'bg-green-100 text-green-600'
+              }`}
+                      >
+                        {item.type === 'store' && '🏪'}
+                        {item.type === 'host' && '👤'}
+                        {item.type === 'order' && '🧾'}
+                      </span>
 
-                    <span className="text-gray-400 text-xs">
+                      {/* Message */}
+                      <p className="text-gray-800">{item.message}</p>
+                    </div>
+
+                    {/* RIGHT – Date */}
+                    <span className="text-gray-400 text-xs whitespace-nowrap">
                       {new Date(item.createdAt).toLocaleDateString('vi-VN')}
                     </span>
                   </li>

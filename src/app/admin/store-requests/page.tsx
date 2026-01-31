@@ -8,17 +8,11 @@ import {
   Button,
   Grid,
   Chip,
-  Tabs,
-  Tab,
   TextField,
   Avatar,
-  Badge,
   IconButton,
   Menu,
   MenuItem,
-  Drawer,
-  Divider,
-  Alert,
 } from '@mui/material';
 import {
   PendingActions,
@@ -42,6 +36,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { useStoreRequestStore } from '@/lib/stores/storeRequestStore';
 import { initAdminSocket, getSocket } from '@/lib/socket';
+import { StatTab } from '@/components/ui';
 
 interface ErrorResponse {
   message?: string;
@@ -79,11 +74,6 @@ export default function StoreRequestsPage() {
 
   const [rejectionReason, setRejectionReason] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
-  // Drawer state
-  const [detailDrawer, setDetailDrawer] = useState<{
-    open: boolean;
-    request: StoreRequest | null;
-  }>({ open: false, request: null });
 
   useEffect(() => {
     fetchRequests();
@@ -221,14 +211,6 @@ export default function StoreRequestsPage() {
     }
   };
 
-  const openDetailDrawer = (request: StoreRequest) => {
-    setDetailDrawer({ open: true, request });
-  };
-
-  const closeDetailDrawer = () => {
-    setDetailDrawer({ open: false, request: null });
-  };
-
   const filteredRequests = requests.filter((req) => {
     if (selectedTab === 'all') return true;
     return req.status === selectedTab;
@@ -283,53 +265,40 @@ export default function StoreRequestsPage() {
 
       {error && <ErrorMessage message={error} />}
 
-      {/* Status Tabs */}
-      <Card className="shadow-md border-0 mb-6">
-        <Tabs
-          value={selectedTab}
-          onChange={(_, value) => setSelectedTab(value)}
-          className="border-b border-gray-200"
-        >
-          <Tab
-            label={
-              <Badge badgeContent={getRequestCount('all')} color="primary">
-                <span className="mr-2">Tất cả</span>
-              </Badge>
-            }
-            value="all"
-          />
-          <Tab
-            icon={<PendingActions />}
-            iconPosition="start"
-            label={
-              <Badge badgeContent={getRequestCount('pending')} color="warning">
-                <span className="mr-2">Chờ duyệt</span>
-              </Badge>
-            }
-            value="pending"
-          />
-          <Tab
-            icon={<CheckCircle />}
-            iconPosition="start"
-            label={
-              <Badge badgeContent={getRequestCount('approved')} color="success">
-                <span className="mr-2">Đã duyệt</span>
-              </Badge>
-            }
-            value="approved"
-          />
-          <Tab
-            icon={<Cancel />}
-            iconPosition="start"
-            label={
-              <Badge badgeContent={getRequestCount('rejected')} color="error">
-                <span className="mr-2">Đã từ chối</span>
-              </Badge>
-            }
-            value="rejected"
-          />
-        </Tabs>
-      </Card>
+      {/* ===== STATUS TABS ===== */}
+      <div className="flex flex-wrap gap-3 mb-6">
+        <StatTab
+          label="Tất cả"
+          count={getRequestCount('all')}
+          active={selectedTab === 'all'}
+          color="primary"
+          onClick={() => setSelectedTab('all')}
+        />
+
+        <StatTab
+          label="Chờ duyệt"
+          count={getRequestCount('pending')}
+          active={selectedTab === 'pending'}
+          color="warning"
+          onClick={() => setSelectedTab('pending')}
+        />
+
+        <StatTab
+          label="Đã duyệt"
+          count={getRequestCount('approved')}
+          active={selectedTab === 'approved'}
+          color="success"
+          onClick={() => setSelectedTab('approved')}
+        />
+
+        <StatTab
+          label="Đã từ chối"
+          count={getRequestCount('rejected')}
+          active={selectedTab === 'rejected'}
+          color="error"
+          onClick={() => setSelectedTab('rejected')}
+        />
+      </div>
 
       {/* Requests Grid */}
       {filteredRequests.length === 0 ? (
@@ -348,7 +317,6 @@ export default function StoreRequestsPage() {
           {filteredRequests.map((request) => (
             <Grid size={{ xs: 12, md: 6, lg: 4 }} key={request._id}>
               <Card
-                onClick={() => openDetailDrawer(request)}
                 className={`hover:shadow-xl transition-all border-2 ${
                   request.status === 'pending' ? 'border-orange-300' : 'border-gray-200'
                 }`}
@@ -490,74 +458,6 @@ export default function StoreRequestsPage() {
           Xóa yêu cầu
         </MenuItem>
       </Menu>
-
-      <Drawer
-        anchor="right"
-        open={detailDrawer.open}
-        onClose={closeDetailDrawer}
-        PaperProps={{ className: 'w-full md:w-[520px] p-6' }}
-      >
-        {detailDrawer.request && (
-          <div className="space-y-4">
-            <Typography variant="h5" className="font-bold">
-              {detailDrawer.request.storeName}
-            </Typography>
-
-            <Chip
-              label={getStatusText(detailDrawer.request.status)}
-              color={getStatusColor(detailDrawer.request.status)}
-            />
-
-            <Divider />
-
-            <Typography variant="subtitle2">Thông tin cửa hàng</Typography>
-            <Typography>📍 {detailDrawer.request.storeAddress}</Typography>
-            <Typography>📞 {detailDrawer.request.storePhone}</Typography>
-
-            {detailDrawer.request.description && (
-              <Typography>{detailDrawer.request.description}</Typography>
-            )}
-
-            <Divider />
-
-            <Typography variant="subtitle2">Chủ sở hữu</Typography>
-            <Typography>{detailDrawer.request.userId.name}</Typography>
-            <Typography>{detailDrawer.request.userId.email}</Typography>
-            <Typography>{detailDrawer.request.userId.phone}</Typography>
-
-            {detailDrawer.request.status === 'pending' && (
-              <div className="flex gap-2 pt-4">
-                <Button
-                  fullWidth
-                  variant="contained"
-                  color="success"
-                  onClick={() => {
-                    closeDetailDrawer();
-                    handleApproveClick(detailDrawer.request!);
-                  }}
-                >
-                  Duyệt
-                </Button>
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  color="error"
-                  onClick={() => {
-                    closeDetailDrawer();
-                    handleRejectClick(detailDrawer.request!);
-                  }}
-                >
-                  Từ chối
-                </Button>
-              </div>
-            )}
-
-            {detailDrawer.request.status === 'rejected' && (
-              <Alert severity="error">{detailDrawer.request.rejectionReason}</Alert>
-            )}
-          </div>
-        )}
-      </Drawer>
 
       {/* Approve Confirm Dialog */}
       <ConfirmDialog
