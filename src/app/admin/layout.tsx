@@ -1,7 +1,15 @@
 'use client';
 
 import { ReactNode, useEffect } from 'react';
-import { Dashboard, Store, People, Settings, AdminPanelSettings } from '@mui/icons-material';
+import {
+  Dashboard,
+  Store,
+  People,
+  Settings,
+  AdminPanelSettings,
+  MonetizationOn,
+  ReceiptLong,
+} from '@mui/icons-material';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { ToastProvider } from '@/components/common/Toast';
 import { SidebarMenuItem } from '@/types';
@@ -43,8 +51,11 @@ function AdminLayoutContent({ children }: { children: ReactNode }) {
 
   // ✅ DYNAMIC MENU ITEMS
   const menuItems: SidebarMenuItem[] = [
-    { text: 'Trang chủ', icon: <Dashboard />, path: '/admin' },
-    { text: 'Quản lý cửa hàng', icon: <Store />, path: '/admin/stores' },
+    {
+      text: 'Trang chủ',
+      icon: <Dashboard />,
+      path: '/admin',
+    },
     {
       text: 'Yêu cầu cửa hàng',
       icon: <People />,
@@ -52,7 +63,26 @@ function AdminLayoutContent({ children }: { children: ReactNode }) {
       badge: pendingCount ? pendingCount : undefined,
       badgeColor: 'warning',
     },
-    { text: 'Cài đặt', icon: <Settings />, path: '/admin/settings' },
+    {
+      text: 'Quản lý cửa hàng',
+      icon: <Store />,
+      path: '/admin/stores',
+    },
+    {
+      text: 'Quản lý Host',
+      icon: <People />,
+      path: '/admin/hosts',
+    },
+    {
+      text: 'Doanh thu',
+      icon: <MonetizationOn />,
+      path: '/admin/revenue',
+    },
+    // {
+    //   text: 'Activity Log',
+    //   icon: <ReceiptLong />,
+    //   path: '/admin/activity-logs',
+    // },
   ];
 
   return (

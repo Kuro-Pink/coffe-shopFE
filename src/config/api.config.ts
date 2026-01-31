@@ -23,7 +23,8 @@ export const API_ENDPOINTS = {
     STATS: '/admin/stats',
     STORES: '/admin/stores',
     STORE_DETAIL: (id: string) => `/admin/stores/${id}`,
-
+    REVENUE_STORES: '/admin/revenue/stores',
+    HOSTS: '/admin/hosts',
     // Store Requests
     STORE_REQUESTS: {
       LIST: '/admin/store-requests',
