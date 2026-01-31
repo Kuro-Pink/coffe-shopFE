@@ -240,52 +240,54 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent>
+        <Card className="h-full">
+          <CardContent className="flex flex-col h-full">
+            {/* HEADER */}
             <Typography variant="h6" className="mb-4">
               Hoạt động gần đây
             </Typography>
 
+            {/* BODY */}
             {activities.length === 0 ? (
               <Typography variant="body2" color="text.secondary" className="text-center py-6">
                 Chưa có hoạt động nào
               </Typography>
             ) : (
-              <ul className="space-y-3 text-sm">
-                {activities.map((item, index) => (
-                  <li
-                    key={index}
-                    className="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3 hover:bg-gray-100 transition"
-                  >
-                    {/* LEFT */}
-                    <div className="flex items-center gap-3">
-                      {/* Icon */}
-                      <span
-                        className={`flex h-7 w-7 items-center justify-center rounded-full text-xs
-              ${
-                item.type === 'store'
-                  ? 'bg-blue-100 text-blue-600'
-                  : item.type === 'host'
-                    ? 'bg-purple-100 text-purple-600'
-                    : 'bg-green-100 text-green-600'
-              }`}
-                      >
-                        {item.type === 'store' && '🏪'}
-                        {item.type === 'host' && '👤'}
-                        {item.type === 'order' && '🧾'}
+              <div className="flex-1 overflow-y-auto pr-1 max-h-[240px]">
+                <ul className="space-y-3 text-sm">
+                  {activities.map((item, index) => (
+                    <li
+                      key={index}
+                      className="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3 hover:bg-gray-100 transition"
+                    >
+                      {/* LEFT */}
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={`flex h-7 w-7 items-center justify-center rounded-full text-xs
+                    ${
+                      item.type === 'store'
+                        ? 'bg-blue-100 text-blue-600'
+                        : item.type === 'host'
+                          ? 'bg-purple-100 text-purple-600'
+                          : 'bg-green-100 text-green-600'
+                    }`}
+                        >
+                          {item.type === 'store' && '🏪'}
+                          {item.type === 'host' && '👤'}
+                          {item.type === 'order' && '🧾'}
+                        </span>
+
+                        <p className="text-gray-800">{item.message}</p>
+                      </div>
+
+                      {/* DATE */}
+                      <span className="text-gray-400 text-xs whitespace-nowrap">
+                        {new Date(item.createdAt).toLocaleDateString('vi-VN')}
                       </span>
-
-                      {/* Message */}
-                      <p className="text-gray-800">{item.message}</p>
-                    </div>
-
-                    {/* RIGHT – Date */}
-                    <span className="text-gray-400 text-xs whitespace-nowrap">
-                      {new Date(item.createdAt).toLocaleDateString('vi-VN')}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
           </CardContent>
         </Card>
