@@ -175,15 +175,6 @@ export default function StoresListPage() {
             Quản lý tất cả cửa hàng trong hệ thống
           </Typography>
         </div>
-
-        <Button
-          variant="contained"
-          startIcon={<Add />}
-          onClick={() => router.push('/admin/stores/create')}
-          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-lg"
-        >
-          Tạo cửa hàng mới
-        </Button>
       </div>
 
       {error && <ErrorMessage message={error} />}
