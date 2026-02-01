@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Public routes
   const publicRoutes = ['/login', '/register', '/menu'];
-  const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
-  
+  const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
+
   if (isPublicRoute) {
     return NextResponse.next();
   }
