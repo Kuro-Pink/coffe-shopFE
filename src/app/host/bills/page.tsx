@@ -81,7 +81,7 @@ export default function BillsManagementPage() {
 
   // Pagination
   const [page, setPage] = useState(1);
-  const itemsPerPage = 15;
+  const [pageSize, setPageSize] = useState(15);
 
   // Detail dialog
   const [detailOpen, setDetailOpen] = useState(false);
@@ -315,8 +315,13 @@ export default function BillsManagementPage() {
   };
 
   // Pagination
-  const totalPages = Math.ceil(filteredBills.length / itemsPerPage);
-  const paginatedBills = filteredBills.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+  const totalPages = Math.ceil(filteredBills.length / pageSize);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(1);
+  }, [totalPages]);
+
+  const paginatedBills = filteredBills.slice((page - 1) * pageSize, page * pageSize);
 
   if (loading) return <LoadingSpinner />;
 
@@ -552,13 +557,34 @@ export default function BillsManagementPage() {
           </TableContainer>
 
           {/* Pagination */}
-          <div className="flex justify-center mt-6">
+          {/* ===== PAGINATION ===== */}
+          <div className="flex flex-wrap items-center justify-between gap-3 mt-6">
+            {/* Page size */}
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <span>Hiển thị</span>
+              <Select
+                size="small"
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setPage(1);
+                }}
+              >
+                {[10, 15, 25, 50].map((size) => (
+                  <MenuItem key={size} value={size}>
+                    {size}
+                  </MenuItem>
+                ))}
+              </Select>
+              <span>hóa đơn / trang</span>
+            </div>
+
             <Pagination
               count={totalPages}
               page={page}
               onChange={(_, value) => setPage(value)}
               color="primary"
-              size="large"
+              disabled={totalPages <= 1}
             />
           </div>
         </>

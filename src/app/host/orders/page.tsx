@@ -1,17 +1,23 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, Typography, Chip, Tabs, Tab, Box, Badge } from '@mui/material';
-import { Schedule, CheckCircle, Cancel, Notifications } from '@mui/icons-material';
+import {
+  Card,
+  CardContent,
+  Typography,
+  Chip,
+  Box,
+  Select,
+  MenuItem,
+  Pagination,
+} from '@mui/material';
+import { Schedule, Notifications } from '@mui/icons-material';
 import { AxiosError } from 'axios';
-
-import { Order } from '@/types';
 import { storeService } from '@/lib/services/storeService';
 import { useAuthStore } from '@/lib/stores/authStore';
 import { useOrderBadgeStore } from '@/lib/stores/orderBadgeStore';
 
 import LoadingSpinner from '@/components/common/LoadingSpinner';
-import ErrorMessage from '@/components/common/ErrorMessage';
 import OrderCard from '@/components/host/OrderManager/OrderCard';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import { showToast } from '@/components/common/Toast';
@@ -28,15 +34,12 @@ export default function OrdersManagementPage() {
   /* ===== GLOBAL DATA (ZUSTAND) ===== */
   const orders = useOrderBadgeStore((s) => s.orders);
   const loading = useOrderBadgeStore((s) => s.loading);
-  const setOrders = useOrderBadgeStore((s) => s.setOrders);
-  const addOrder = useOrderBadgeStore((s) => s.addOrder);
   const updateOrder = useOrderBadgeStore((s) => s.updateOrder);
 
   /* ===== AUTH ===== */
   const user = useAuthStore((s) => s.user);
 
   /* ===== LOCAL UI STATE ===== */
-  const [error, setError] = useState('');
   const [selectedTab, setSelectedTab] = useState<OrderStatus>('all');
 
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -46,6 +49,13 @@ export default function OrdersManagementPage() {
   }>({ open: false, orderId: '', status: 'completed' });
 
   const [updateLoading, setUpdateLoading] = useState(false);
+
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(6);
+
+  useEffect(() => {
+    setPage(1);
+  }, [selectedTab]);
 
   /* ===== ACTIONS ===== */
   const handleUpdateStatus = async (orderId: string, status: 'completed' | 'cancelled') => {
@@ -83,6 +93,10 @@ export default function OrdersManagementPage() {
   const filteredOrders = orders.filter((order) =>
     selectedTab === 'all' ? true : order.status === selectedTab,
   );
+
+  const totalPages = Math.ceil(filteredOrders.length / pageSize);
+
+  const paginatedOrders = filteredOrders.slice((page - 1) * pageSize, page * pageSize);
 
   const getOrderCount = (status: OrderStatus) => {
     if (status === 'all') return orders.length;
@@ -124,8 +138,6 @@ export default function OrdersManagementPage() {
           className="bg-green-50 text-green-600 animate-pulse"
         />
       </div>
-
-      {error && <ErrorMessage message={error} />}
 
       {/* ===== TABS ===== */}
       <div className="flex flex-wrap gap-3 mb-6">
@@ -171,13 +183,42 @@ export default function OrdersManagementPage() {
         </Card>
       ) : (
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-          {filteredOrders.map((order) => (
+          {paginatedOrders.map((order) => (
             <OrderCard
               key={order._id}
               order={order}
               onUpdateStatus={(id, status) => setConfirmDialog({ open: true, orderId: id, status })}
             />
           ))}
+          <div className="flex flex-wrap items-center justify-between gap-3 mt-8">
+            {/* Page size */}
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <span>Hiển thị</span>
+              <Select
+                size="small"
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setPage(1);
+                }}
+              >
+                {[6, 9, 12, 24].map((size) => (
+                  <MenuItem key={size} value={size}>
+                    {size}
+                  </MenuItem>
+                ))}
+              </Select>
+              <span>yêu cầu / trang</span>
+            </div>
+
+            <Pagination
+              page={page}
+              count={totalPages}
+              color="primary"
+              onChange={(_, value) => setPage(value)}
+              disabled={totalPages <= 1}
+            />
+          </div>
         </div>
       )}
 

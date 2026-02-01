@@ -10,6 +10,7 @@ import {
   Box,
   MenuItem,
   Grid,
+  Pagination,
 } from '@mui/material';
 import {
   AccessTime,
@@ -47,6 +48,10 @@ export default function HostAllShiftsPage() {
     shift: Shift | null;
   }>({ open: false, shift: null });
 
+  // Pagination
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(4);
+
   useEffect(() => {
     if (user?.storeId) {
       fetchStaffList();
@@ -58,6 +63,10 @@ export default function HostAllShiftsPage() {
       fetchData();
     }
   }, [user?.storeId, startDate, endDate, selectedStaff, currentTab]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [startDate, endDate, selectedStaff, currentTab]);
 
   const fetchStaffList = async () => {
     if (!user?.storeId) return;
@@ -124,6 +133,11 @@ export default function HostAllShiftsPage() {
     if (typeof shift.staffId === 'object') return shift.staffId.name;
     return '';
   };
+
+  // ===== PAGINATION LOGIC =====
+  const totalPages = Math.ceil(shifts.length / pageSize);
+
+  const paginatedShifts = shifts.slice((page - 1) * pageSize, page * pageSize);
 
   if (loading) return <LoadingSpinner />;
 
@@ -402,7 +416,7 @@ export default function HostAllShiftsPage() {
             </Card>
           ) : (
             <div className="space-y-4">
-              {shifts.map((shift) => (
+              {paginatedShifts.map((shift) => (
                 <Card
                   key={shift._id}
                   className="hover:shadow-lg transition-shadow border-l-4 border-blue-500"
@@ -514,6 +528,41 @@ export default function HostAllShiftsPage() {
           )}
         </>
       )}
+
+      {/* ===== PAGINATION ===== */}
+      <div className="flex flex-wrap items-center justify-between gap-3 mt-6">
+        {/* Page size */}
+        <div className="flex items-center gap-2 text-sm text-gray-600">
+          <span>Hiển thị</span>
+          <TextField
+            select
+            size="small"
+            value={pageSize}
+            onChange={(e) => {
+              setPageSize(Number(e.target.value));
+              setPage(1);
+            }}
+            sx={{ width: 90 }}
+          >
+            {[4, 8, 12, 20].map((size) => (
+              <MenuItem key={size} value={size}>
+                {size}
+              </MenuItem>
+            ))}
+          </TextField>
+          <span>ca / trang</span>
+        </div>
+
+        <Box>
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={(_, value) => setPage(value)}
+            color="primary"
+            disabled={totalPages <= 1}
+          />
+        </Box>
+      </div>
 
       {/* Shift Report Dialog */}
       {reportDialog.shift && (
