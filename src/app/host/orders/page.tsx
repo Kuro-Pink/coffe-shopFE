@@ -190,37 +190,37 @@ export default function OrdersManagementPage() {
               onUpdateStatus={(id, status) => setConfirmDialog({ open: true, orderId: id, status })}
             />
           ))}
-          <div className="flex flex-wrap items-center justify-between gap-3 mt-8">
-            {/* Page size */}
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <span>Hiển thị</span>
-              <Select
-                size="small"
-                value={pageSize}
-                onChange={(e) => {
-                  setPageSize(Number(e.target.value));
-                  setPage(1);
-                }}
-              >
-                {[6, 9, 12, 24].map((size) => (
-                  <MenuItem key={size} value={size}>
-                    {size}
-                  </MenuItem>
-                ))}
-              </Select>
-              <span>yêu cầu / trang</span>
-            </div>
-
-            <Pagination
-              page={page}
-              count={totalPages}
-              color="primary"
-              onChange={(_, value) => setPage(value)}
-              disabled={totalPages <= 1}
-            />
-          </div>
         </div>
       )}
+      <div className="flex flex-wrap items-center justify-center gap-3 mt-8">
+        {/* Page size */}
+        <div className="flex items-center gap-2 text-sm text-gray-600">
+          <span>Hiển thị</span>
+          <Select
+            size="small"
+            value={pageSize}
+            onChange={(e) => {
+              setPageSize(Number(e.target.value));
+              setPage(1);
+            }}
+          >
+            {[6, 9, 12, 24].map((size) => (
+              <MenuItem key={size} value={size}>
+                {size}
+              </MenuItem>
+            ))}
+          </Select>
+          <span>yêu cầu / trang</span>
+        </div>
+
+        <Pagination
+          page={page}
+          count={totalPages}
+          color="primary"
+          onChange={(_, value) => setPage(value)}
+          disabled={totalPages <= 1}
+        />
+      </div>
 
       {/* ===== CONFIRM DIALOG ===== */}
       <ConfirmDialog

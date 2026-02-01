@@ -10,6 +10,8 @@ import {
   CircularProgress,
   Box,
   Chip,
+  MenuItem,
+  Pagination,
 } from '@mui/material';
 import { TrendingUp, Restaurant, AttachMoney, ShoppingCart } from '@mui/icons-material';
 import { format, subDays, subMonths } from 'date-fns';
@@ -28,6 +30,15 @@ export default function UsageReport({ storeId }: UsageReportProps) {
   const [startDate, setStartDate] = useState(format(subMonths(new Date(), 1), 'yyyy-MM-dd'));
   const [endDate, setEndDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [filterPeriod, setFilterPeriod] = useState<'week' | 'month' | 'custom'>('month');
+
+  // Pagination
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(6);
+
+  useEffect(() => {
+    setPage(1);
+  }, [startDate, endDate, filterPeriod]);
+
   useEffect(() => {
     fetchUsageReport();
   }, [storeId, startDate, endDate]);
@@ -65,6 +76,10 @@ export default function UsageReport({ storeId }: UsageReportProps) {
   const totalItemsUsed = usageData.length;
 
   const sortedUsage = [...usageData].sort((a, b) => getItemTotalCost(b) - getItemTotalCost(a));
+
+  const totalPages = Math.ceil(sortedUsage.length / pageSize);
+
+  const paginatedUsage = sortedUsage.slice((page - 1) * pageSize, page * pageSize);
 
   if (loading) {
     return (
@@ -212,79 +227,117 @@ export default function UsageReport({ storeId }: UsageReportProps) {
               Chi tiết sử dụng nguyên liệu
             </Typography>{' '}
             <div className="space-y-3">
-              {sortedUsage.map((item, index) => (
-                <Card
-                  key={item.ingredientId}
-                  variant="outlined"
-                  className="hover:shadow-md transition-shadow"
-                >
-                  <CardContent>
-                    <Grid container spacing={2} alignItems="center">
-                      {/* Rank */}
-                      <Grid size={{ xs: 12, sm: 1 }}>
-                        <div className="text-center">
-                          {index === 0 && <span className="text-2xl">🥇</span>}
-                          {index === 1 && <span className="text-2xl">🥈</span>}
-                          {index === 2 && <span className="text-2xl">🥉</span>}
-                          {index > 2 && (
-                            <Typography variant="body2" className="font-bold text-gray-400">
-                              #{index + 1}
-                            </Typography>
-                          )}
-                        </div>
-                      </Grid>{' '}
-                      {/* Ingredient Name */}
-                      <Grid size={{ xs: 12, sm: 4 }}>
-                        <Typography variant="h6" className="font-semibold">
-                          {item.name}
-                        </Typography>
-                        <Typography variant="body2" className="text-gray-600">
-                          Đơn vị: {item.unit}
-                        </Typography>
-                      </Grid>{' '}
-                      {/* Stats */}
-                      <Grid size={{ xs: 12, sm: 7 }}>
-                        <Grid container spacing={2}>
-                          <Grid size={{ xs: 4 }}>
-                            <div className="text-center">
-                              <Typography variant="body2" className="text-gray-600 mb-1">
-                                Đã dùng
+              {paginatedUsage.map((item, index) => {
+                const globalIndex = (page - 1) * pageSize + index;
+
+                return (
+                  <Card
+                    key={item.ingredientId}
+                    variant="outlined"
+                    className="hover:shadow-md transition-shadow"
+                  >
+                    <CardContent>
+                      <Grid container spacing={2} alignItems="center">
+                        {/* Rank */}
+                        <Grid size={{ xs: 12, sm: 1 }}>
+                          <div className="text-center">
+                            {globalIndex === 0 && <span>🥇</span>}
+                            {globalIndex === 1 && <span>🥈</span>}
+                            {globalIndex === 2 && <span>🥉</span>}
+                            {globalIndex > 2 && (
+                              <Typography variant="body2" className="font-bold text-gray-400">
+                                #{index + 1}
                               </Typography>
-                              <Typography variant="h6" className="font-bold text-blue-600">
-                                {item.totalUsed.toLocaleString()} {item.unit}
-                              </Typography>
-                            </div>
-                          </Grid>{' '}
-                          <Grid size={{ xs: 4 }}>
-                            <div className="text-center">
-                              <Typography variant="body2" className="text-gray-600 mb-1">
-                                Chi phí
-                              </Typography>
-                              <Typography variant="h6" className="font-bold text-green-600">
-                                {formatMoneyShort(item.cost * item.totalUsed)}
-                              </Typography>
-                            </div>
-                          </Grid>{' '}
-                          <Grid size={{ xs: 4 }}>
-                            <div className="text-center">
-                              <Typography variant="body2" className="text-gray-600 mb-1">
-                                Lượt dùng
-                              </Typography>
-                              <Typography variant="h6" className="font-bold text-purple-600">
-                                {item.timesUsed}
-                              </Typography>
-                            </div>
+                            )}
+                          </div>
+                        </Grid>{' '}
+                        {/* Ingredient Name */}
+                        <Grid size={{ xs: 12, sm: 4 }}>
+                          <Typography variant="h6" className="font-semibold">
+                            {item.name}
+                          </Typography>
+                          <Typography variant="body2" className="text-gray-600">
+                            Đơn vị: {item.unit}
+                          </Typography>
+                        </Grid>{' '}
+                        {/* Stats */}
+                        <Grid size={{ xs: 12, sm: 7 }}>
+                          <Grid container spacing={2}>
+                            <Grid size={{ xs: 4 }}>
+                              <div className="text-center">
+                                <Typography variant="body2" className="text-gray-600 mb-1">
+                                  Đã dùng
+                                </Typography>
+                                <Typography variant="h6" className="font-bold text-blue-600">
+                                  {item.totalUsed.toLocaleString()} {item.unit}
+                                </Typography>
+                              </div>
+                            </Grid>{' '}
+                            <Grid size={{ xs: 4 }}>
+                              <div className="text-center">
+                                <Typography variant="body2" className="text-gray-600 mb-1">
+                                  Chi phí
+                                </Typography>
+                                <Typography variant="h6" className="font-bold text-green-600">
+                                  {formatMoneyShort(item.cost * item.totalUsed)}
+                                </Typography>
+                              </div>
+                            </Grid>{' '}
+                            <Grid size={{ xs: 4 }}>
+                              <div className="text-center">
+                                <Typography variant="body2" className="text-gray-600 mb-1">
+                                  Lượt dùng
+                                </Typography>
+                                <Typography variant="h6" className="font-bold text-purple-600">
+                                  {item.timesUsed}
+                                </Typography>
+                              </div>
+                            </Grid>
                           </Grid>
                         </Grid>
                       </Grid>
-                    </Grid>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           </CardContent>
         </Card>
       )}
+      {/* ===== PAGINATION ===== */}
+      <div className="flex flex-wrap items-center justify-center gap-3 mt-6">
+        {/* Page size */}
+        <div className="flex items-center gap-2 text-sm text-gray-600">
+          <span>Hiển thị</span>
+          <TextField
+            select
+            size="small"
+            value={pageSize}
+            onChange={(e) => {
+              setPageSize(Number(e.target.value));
+              setPage(1);
+            }}
+            sx={{ width: 90 }}
+          >
+            {[6, 12, 24].map((size) => (
+              <MenuItem key={size} value={size}>
+                {size}
+              </MenuItem>
+            ))}
+          </TextField>
+          <span>nguyên liệu / trang</span>
+        </div>
+
+        <Box>
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={(_, value) => setPage(value)}
+            color="primary"
+            disabled={totalPages <= 1}
+          />
+        </Box>
+      </div>
     </div>
   );
 }

@@ -9,8 +9,7 @@ import {
   TextField,
   CircularProgress,
   Box,
-  Tabs,
-  Tab,
+  Pagination,
   ToggleButton,
   ToggleButtonGroup,
   MenuItem,
@@ -48,6 +47,14 @@ export default function TransactionHistory({ storeId, ingredientId }: Transactio
     subDays(new Date(), 7),
     new Date(),
   ]);
+
+  // Pagination
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(6);
+
+  useEffect(() => {
+    setPage(1);
+  }, [tab, typeFilter, sort, dateRange, search]);
 
   useEffect(() => {
     fetchTransactions();
@@ -89,6 +96,17 @@ export default function TransactionHistory({ storeId, ingredientId }: Transactio
       );
     }
 
+    // Search
+    if (search.trim()) {
+      const keyword = search.toLowerCase();
+      result = result.filter(
+        (t) =>
+          t.ingredientId.name.toLowerCase().includes(keyword) ||
+          t.note?.toLowerCase().includes(keyword) ||
+          t.orderId?.orderNumber?.toLowerCase().includes(keyword),
+      );
+    }
+
     // Sort
     result.sort((a, b) => {
       switch (sort) {
@@ -114,6 +132,10 @@ export default function TransactionHistory({ storeId, ingredientId }: Transactio
     setSearch('');
     setSort('date_desc');
   };
+
+  const totalPages = Math.ceil(filteredTransactions.length / pageSize);
+
+  const paginatedTransactions = filteredTransactions.slice((page - 1) * pageSize, page * pageSize);
 
   if (loading) {
     return (
@@ -281,7 +303,7 @@ export default function TransactionHistory({ storeId, ingredientId }: Transactio
           Không có giao dịch phù hợp
         </Typography>
       ) : (
-        filteredTransactions.map((transaction) => (
+        paginatedTransactions.map((transaction) => (
           <Card key={transaction._id}>
             <CardContent>
               <Grid container spacing={2} alignItems="center">
@@ -353,6 +375,41 @@ export default function TransactionHistory({ storeId, ingredientId }: Transactio
           </Card>
         ))
       )}
+
+      {/* ===== PAGINATION ===== */}
+      <div className="flex flex-wrap items-center justify-center gap-3 mt-6">
+        {/* Page size */}
+        <div className="flex items-center gap-2 text-sm text-gray-600">
+          <span>Hiển thị</span>
+          <TextField
+            select
+            size="small"
+            value={pageSize}
+            onChange={(e) => {
+              setPageSize(Number(e.target.value));
+              setPage(1);
+            }}
+            sx={{ width: 90 }}
+          >
+            {[6, 12, 24].map((size) => (
+              <MenuItem key={size} value={size}>
+                {size}
+              </MenuItem>
+            ))}
+          </TextField>
+          <span>giao dịch / trang</span>
+        </div>
+
+        <Box>
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={(_, value) => setPage(value)}
+            color="primary"
+            disabled={totalPages <= 1}
+          />
+        </Box>
+      </div>
     </div>
   );
 }

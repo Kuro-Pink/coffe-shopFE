@@ -13,8 +13,8 @@ import {
   Alert,
   CircularProgress,
   Box,
-  Tabs,
-  Tab,
+  MenuItem,
+  Pagination,
 } from '@mui/material';
 import {
   Add,
@@ -55,6 +55,14 @@ export default function InventoryManagementPage() {
   const [adjustingIngredient, setAdjustingIngredient] = useState<Ingredient | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingIngredient, setDeletingIngredient] = useState<Ingredient | null>(null);
+
+  // Pagination
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(6);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, stockFilter]);
 
   useEffect(() => {
     if (user?.storeId) {
@@ -131,6 +139,10 @@ export default function InventoryManagementPage() {
     }
     return { label: 'Còn hàng', color: 'success' as const };
   };
+
+  const totalPages = Math.ceil(filteredIngredients.length / pageSize);
+
+  const paginatedIngredients = filteredIngredients.slice((page - 1) * pageSize, page * pageSize);
 
   if (loading) {
     return (
@@ -331,7 +343,7 @@ export default function InventoryManagementPage() {
         </Card>
       ) : (
         <Grid container spacing={3}>
-          {filteredIngredients.map((ingredient) => {
+          {paginatedIngredients.map((ingredient) => {
             const status = getStockStatus(ingredient);
             return (
               <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={ingredient._id}>
@@ -421,6 +433,41 @@ export default function InventoryManagementPage() {
           })}
         </Grid>
       )}
+
+      {/* ===== PAGINATION ===== */}
+      <div className="flex flex-wrap items-center justify-center gap-3 mt-6">
+        {/* Page size */}
+        <div className="flex items-center gap-2 text-sm text-gray-600">
+          <span>Hiển thị</span>
+          <TextField
+            select
+            size="small"
+            value={pageSize}
+            onChange={(e) => {
+              setPageSize(Number(e.target.value));
+              setPage(1);
+            }}
+            sx={{ width: 90 }}
+          >
+            {[6, 9, 15, 21].map((size) => (
+              <MenuItem key={size} value={size}>
+                {size}
+              </MenuItem>
+            ))}
+          </TextField>
+          <span>ca / trang</span>
+        </div>
+
+        <Box>
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={(_, value) => setPage(value)}
+            color="primary"
+            disabled={totalPages <= 1}
+          />
+        </Box>
+      </div>
 
       {/* Ingredient Dialog */}
       <IngredientDialog

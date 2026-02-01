@@ -530,7 +530,7 @@ export default function HostAllShiftsPage() {
       )}
 
       {/* ===== PAGINATION ===== */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mt-6">
+      <div className="flex flex-wrap items-center justify-center gap-3 mt-6">
         {/* Page size */}
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <span>Hiển thị</span>
