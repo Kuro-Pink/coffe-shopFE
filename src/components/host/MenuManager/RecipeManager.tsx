@@ -69,24 +69,24 @@ const RecipeManager = forwardRef<RecipeManagerRef, RecipeManagerProps>(
       try {
         setLoading(true);
 
-        const [ingredientsData, recipeResponse] = await Promise.all([
-          inventoryService.getIngredients(storeId),
-          inventoryService.getProductRecipe(productId).catch(() => ({ ingredients: [] })),
-        ]);
-
+        const ingredientsData = await inventoryService.getIngredients(storeId);
         setIngredients(ingredientsData);
 
-        // 🔥 CHỈ SET KHI CHƯA CÓ RECIPE (EDIT MODE)
-        const recipeData = recipeResponse.ingredients;
+        let recipeData: ProductIngredient[] = [];
+        try {
+          const recipeResponse = await inventoryService.getProductRecipe(productId);
+          recipeData = recipeResponse.ingredients || [];
+        } catch {
+          recipeData = [];
+        }
 
         if (recipe.length === 0 && recipeData.length > 0) {
           onRecipeChange(recipeData);
           onRecipeInitialized?.();
         }
       } catch (e) {
-        showToast.error({
-          message: 'Bạn có thay đổi chưa được lưu',
-        });
+        console.error(e);
+        setError('Không thể tải nguyên liệu');
       } finally {
         setLoading(false);
       }
