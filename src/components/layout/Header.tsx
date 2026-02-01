@@ -108,6 +108,7 @@ export default function Header({
                 display: 'flex',
                 alignItems: 'center',
                 gap: 2,
+                cursor: 'pointer',
 
                 px: 2.2,
                 py: 0.5,
@@ -123,6 +124,7 @@ export default function Header({
                   inset 0 1px 0 rgba(255,255,255,0.35)
                 `,
               }}
+              onClick={() => router.push('/')}
             >
               {/* LOGO INLINE */}
               <Avatar
