@@ -14,6 +14,7 @@ import {
   BarChart,
   History,
   AccessAlarm,
+  LocalOffer,
 } from '@mui/icons-material';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { showToast } from '@/components/common/Toast';
@@ -182,9 +183,19 @@ function HostLayoutContent({ children }: { children: ReactNode }) {
       path: '/host/orders',
     });
   }
+
+  if (canAccess(user, 'voucher')) {
+    menuItems.push({
+      text: 'Khuyến mại',
+      icon: <LocalOffer />,
+      path: '/host/vouchers',
+    });
+  }
+
   if (canAccess(user, 'bills')) {
     menuItems.push({ text: 'Hóa đơn', icon: <Receipt />, path: '/host/bills' });
   }
+
   // Staff-only items
   if (canAccess(user, 'my-shift')) {
     menuItems.push({ text: 'Ca làm việc', icon: <AccessAlarm />, path: '/host/staff/my-shift' });

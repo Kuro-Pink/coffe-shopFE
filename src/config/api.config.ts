@@ -108,6 +108,13 @@ export const API_ENDPOINTS = {
       INVENTORY_TRANSACTIONS: (storeId: string) => `/host/stores/${storeId}/inventory/transactions`,
       USAGE_REPORT: (storeId: string) => `/host/stores/${storeId}/inventory/usage-report`,
     },
+    VOUCHERS: {
+      LIST: (storeId: string) => `/host/stores/${storeId}/vouchers`,
+      CREATE: (storeId: string) => `/host/stores/${storeId}/vouchers`,
+      DETAIL: (id: string) => `/host/vouchers/${id}`,
+      TOGGLE: (id: string) => `/host/vouchers/${id}/toggle`,
+      PRODUCTS: (id: string) => `/host/vouchers/products/${id}`,
+    },
     ANALYTICS: {
       DASHBOARD: (storeId: string) => `/host/stores/${storeId}/analytics/dashboard`,
       ORDERS_TODAY: (storeId: string) => `/host/stores/${storeId}/orders/today`,

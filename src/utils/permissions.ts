@@ -14,6 +14,7 @@ export const canAccess = (user: User | null, feature: string): boolean => {
       'tables-manage', // CRUD tables
       'orders',
       'bills',
+      'voucher',
       'staff',
       'inventory',
       'reports',

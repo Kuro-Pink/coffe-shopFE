@@ -1,4 +1,9 @@
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
+export type VoucherType = 'percent' | 'fixed';
+export type VoucherScope = 'product' | 'order';
+export type ModalSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+export type ModalVariant = 'default' | 'danger' | 'warning' | 'success' | 'info';
+export type StaffType = 'cashier' | 'bar' | 'kitchen';
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -17,10 +22,6 @@ export interface ToastOptions {
     | 'bottom-center'
     | 'bottom-left';
 }
-
-export type ModalSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
-export type ModalVariant = 'default' | 'danger' | 'warning' | 'success' | 'info';
-export type StaffType = 'cashier' | 'bar' | 'kitchen';
 
 export interface ConfirmDialogProps {
   open: boolean;
@@ -472,4 +473,60 @@ export interface StaffReference {
 export interface StoreReference {
   _id: string;
   name: string;
+}
+
+export interface Voucher {
+  _id: string;
+  code?: string; // null = auto
+  name: string;
+  type: VoucherType;
+  value: number;
+
+  scope: VoucherScope;
+
+  productIds?: string[];
+
+  minBillValue?: number;
+  maxDiscount?: number;
+
+  usageLimit?: number;
+  usedCount: number;
+
+  startDate: string;
+  endDate: string;
+
+  isActive: boolean;
+  storeId: string;
+
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateVoucherPayload {
+  code?: string; // nếu có => manual
+  name: string;
+  type: VoucherType;
+  value: number;
+  scope: VoucherScope;
+
+  productIds?: string[];
+
+  minBillValue?: number;
+  maxDiscount?: number;
+
+  usageLimit?: number;
+
+  startDate: string;
+  endDate: string;
+}
+
+export interface UpdateVoucherPayload extends Partial<CreateVoucherPayload> {
+  isActive?: boolean;
+}
+
+export type VoucherApplyMode = 'all' | 'category' | 'product';
+
+export interface ApplyVoucherPayload {
+  categoryIds?: string[];
+  productIds?: string[];
 }
