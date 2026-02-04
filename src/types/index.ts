@@ -98,13 +98,24 @@ export interface Product {
   _id: string;
   name: string;
   description: string;
-  price: number;
+
+  // Giá
+  price: number; // fallback (giá mặc định)
+  originalPrice: number; // giá gốc
+  finalPrice: number; // giá sau giảm
+
+  // Discount info
+  discountAmount?: number; // giảm bao nhiêu tiền
+  discountPercent?: number; // giảm %
+  hasDiscount?: boolean; // có giảm hay không
+
   image?: string;
   categoryId: string;
   storeId: string;
   isAvailable: boolean;
   soldCount?: number;
   recipe?: ProductIngredient[];
+
   createdAt: string;
 }
 

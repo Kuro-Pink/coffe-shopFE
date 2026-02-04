@@ -42,13 +42,23 @@ interface ErrorResponse {
 }
 
 export default function CheckoutModal({ open, onClose, onSuccess }: CheckoutModalProps) {
-  const { getCurrentItems, getTotalAmount, currentStoreId, currentTableId } = useCartStore();
+  const { getCurrentItems, currentStoreId, currentTableId } = useCartStore();
   const items = getCurrentItems();
-  const totalAmount = getTotalAmount();
+  const getOriginal = (item: any) => item.originalPrice ?? item.price;
+  const getFinal = (item: any) => item.finalPrice ?? item.price;
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+
+  const [voucherCode, setVoucherCode] = useState('');
+  const [orderDiscount, setOrderDiscount] = useState(0);
+  const originalTotal = items.reduce((sum, item) => sum + getOriginal(item) * item.quantity, 0);
+
+  const finalTotal = items.reduce((sum, item) => sum + getFinal(item) * item.quantity, 0);
+  const savingTotal = originalTotal - finalTotal;
+
+  const payTotal = finalTotal - orderDiscount;
 
   const {
     register,
@@ -105,6 +115,8 @@ export default function CheckoutModal({ open, onClose, onSuccess }: CheckoutModa
         reset();
         setSuccess(false);
         setIsLoading(false); // ✅ CRITICAL: Reset loading state
+        setVoucherCode('');
+        setOrderDiscount(0);
         onSuccess();
       }, 3000);
     } catch (err: unknown) {
@@ -178,30 +190,89 @@ export default function CheckoutModal({ open, onClose, onSuccess }: CheckoutModa
                 <List className="bg-gray-50 rounded-lg p-2">
                   {items.map((item) => (
                     <ListItem key={item.productId} className="px-2">
-                      <div className="flex justify-between w-full">
-                        <div className="flex-1">
-                          <Typography variant="body2">{item.name}</Typography>
-                          <Typography variant="caption" className="text-gray-600">
-                            {item.price.toLocaleString('vi-VN')} ₫ x {item.quantity}
+                      <div className="flex-1">
+                        <Typography variant="body2">{item.name}</Typography>
+
+                        {getOriginal(item) > getFinal(item) && (
+                          <Typography
+                            variant="caption"
+                            className="text-gray-400 line-through block"
+                          >
+                            {getOriginal(item).toLocaleString('vi-VN')} ₫
                           </Typography>
-                        </div>
-                        <Typography variant="body2" className="font-semibold">
-                          {(item.price * item.quantity).toLocaleString('vi-VN')} ₫
+                        )}
+
+                        <Typography variant="caption" className="text-red-600 font-semibold">
+                          {getFinal(item).toLocaleString('vi-VN')} ₫ x {item.quantity}
                         </Typography>
                       </div>
+
+                      {/* 👉 THÊM CỤC NÀY */}
+                      <Typography variant="body2" className="font-semibold">
+                        {(getFinal(item) * item.quantity).toLocaleString('vi-VN')} ₫
+                      </Typography>
                     </ListItem>
                   ))}
                 </List>
-
                 <Divider className="my-3" />
 
-                <div className="flex justify-between items-center">
-                  <Typography variant="h6" className="font-bold">
-                    Tổng cộng:
-                  </Typography>
-                  <Typography variant="h5" className="text-green-600 font-bold">
-                    {totalAmount.toLocaleString('vi-VN')} ₫
-                  </Typography>
+                {/* Voucher */}
+                <div className="mt-2 mb-3">
+                  <TextField
+                    label="Mã giảm giá"
+                    fullWidth
+                    size="small"
+                    value={voucherCode}
+                    disabled={isLoading}
+                    onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
+                    placeholder="VD: SALE10"
+                  />
+
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    size="small"
+                    className="mt-2"
+                    onClick={() => alert('Voucher sẽ hoạt động khi kết nối BE')}
+                  >
+                    Áp dụng mã
+                  </Button>
+                </div>
+
+                <div className="space-y-1">
+                  {/* Tạm tính */}
+                  <div className="flex justify-between text-sm">
+                    <span>Tạm tính:</span>
+                    <span>{originalTotal.toLocaleString('vi-VN')} ₫</span>
+                  </div>
+
+                  {/* Tiết kiệm */}
+                  {savingTotal > 0 && (
+                    <div className="flex justify-between text-sm text-green-600">
+                      <span>Tiết kiệm:</span>
+                      <span>-{(originalTotal - finalTotal).toLocaleString('vi-VN')} ₫</span>
+                    </div>
+                  )}
+
+                  {/* Voucher Discount */}
+                  {orderDiscount > 0 && (
+                    <div className="flex justify-between text-sm text-green-600">
+                      <span>Voucher:</span>
+                      <span>-{orderDiscount.toLocaleString('vi-VN')} ₫</span>
+                    </div>
+                  )}
+
+                  <Divider className="my-2" />
+
+                  {/* Tổng cộng */}
+                  <div className="flex justify-between items-center">
+                    <Typography variant="h6" className="font-bold">
+                      Tổng cộng:
+                    </Typography>
+                    <Typography variant="h5" className="text-green-600 font-bold">
+                      {payTotal.toLocaleString('vi-VN')} ₫
+                    </Typography>
+                  </div>
                 </div>
               </div>
 

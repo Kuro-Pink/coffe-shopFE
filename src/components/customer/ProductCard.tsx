@@ -31,15 +31,30 @@ export default function ProductCard({
   const [detailOpen, setDetailOpen] = useState(false);
   const { addItem } = useCartStore();
 
+  console.log('PRODUCT SNAPSHOT', product);
+
   const handleAddToCart = () => {
+    const original = product.originalPrice ?? product.finalPrice ?? 0;
+    const final = product.finalPrice ?? product.originalPrice ?? 0;
+
     addItem({
       productId: product._id,
-      storeId: product.storeId, // Bên res BE trả về chưa có storeId, rảnht thì thêm vào
+      storeId: product.storeId,
       name: product.name,
-      price: product.price,
       quantity,
+
+      // QUAN TRỌNG
+      price: original,
+      originalPrice: original,
+      finalPrice: final,
+
+      hasDiscount: original > final,
+      discountAmount: original - final,
+      discountPercent: original > 0 ? Math.round(((original - final) / original) * 100) : 0,
+
       image: product.image,
     });
+
     setQuantity(1);
     setDetailOpen(false);
   };
@@ -62,14 +77,20 @@ export default function ProductCard({
                 🔥 HOT
               </div>
             )}
-            {highlight && (
-              <div className="absolute top-2 right-2 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-md z-10">
-                🤖 AI gợi ý
-              </div>
-            )}
 
             {product.image ? (
-              <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+              <>
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="w-full h-full object-cover"
+                />
+                {(product.originalPrice ?? 0) > (product.finalPrice ?? 0) && (
+                  <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-lg text-xs font-bold shadow-md z-10">
+                    Giảm giá
+                  </div>
+                )}
+              </>
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-green-100 to-teal-100 flex items-center justify-center">
                 <Typography variant="h2" className="text-green-300">
@@ -90,9 +111,35 @@ export default function ProductCard({
             </Typography>
 
             <div className="flex items-center justify-between">
-              <Typography variant="h6" className="text-green-600 font-bold">
-                {product.price.toLocaleString('vi-VN')} ₫
-              </Typography>
+              {/* PRICE BLOCK */}
+              <div className="flex flex-col">
+                {product.originalPrice > product.finalPrice ? (
+                  <>
+                    <Typography variant="body2" className="text-gray-400 line-through font-medium">
+                      {product.originalPrice.toLocaleString('vi-VN')} ₫
+                    </Typography>
+
+                    <div className="flex items-center gap-2">
+                      <Typography variant="h6" className="text-red-600 font-bold">
+                        {product.finalPrice.toLocaleString('vi-VN')} ₫
+                      </Typography>
+
+                      <span className="bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded-full font-semibold">
+                        -
+                        {Math.round(
+                          ((product.originalPrice - product.finalPrice) / product.originalPrice) *
+                            100,
+                        )}
+                        %
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <Typography variant="h6" className="text-green-600 font-bold">
+                    {product.finalPrice.toLocaleString('vi-VN')} ₫
+                  </Typography>
+                )}
+              </div>
 
               <Button
                 variant="contained"
@@ -133,9 +180,22 @@ export default function ProductCard({
             {product.description}
           </Typography>
 
-          <Typography variant="h5" className="text-green-600 font-bold mb-6">
-            {product.price.toLocaleString('vi-VN')} ₫
-          </Typography>
+          <div className="mb-6">
+            {product.originalPrice > product.finalPrice ? (
+              <>
+                <Typography className="line-through text-gray-400">
+                  {product.originalPrice.toLocaleString('vi-VN')} ₫
+                </Typography>
+                <Typography variant="h5" className="text-red-600 font-bold">
+                  {product.finalPrice.toLocaleString('vi-VN')} ₫
+                </Typography>
+              </>
+            ) : (
+              <Typography variant="h5" className="text-green-600 font-bold">
+                {product.finalPrice.toLocaleString('vi-VN')} ₫
+              </Typography>
+            )}
+          </div>
 
           {/* Quantity Selector */}
           <div className="flex items-center justify-center gap-4 mb-6">
@@ -165,7 +225,7 @@ export default function ProductCard({
                 Tạm tính:
               </Typography>
               <Typography variant="h6" className="text-green-600 font-bold">
-                {(product.price * quantity).toLocaleString('vi-VN')} ₫
+                {(product.finalPrice * quantity).toLocaleString('vi-VN')} ₫
               </Typography>
             </div>
           </div>

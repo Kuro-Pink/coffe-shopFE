@@ -230,8 +230,9 @@ export default function CustomerMenuPage() {
               <ProductCard
                 key={product._id}
                 product={product}
-                // isBestSeller={product.isBestSeller}
-                // highlight={highlightProducts.includes(product._id)}
+                highlight={
+                  (product.originalPrice ?? product.price) > (product.finalPrice ?? product.price)
+                }
               />
             ))}
           </div>
@@ -248,7 +249,7 @@ export default function CustomerMenuPage() {
             position: 'fixed',
             bottom: 24,
             right: 36,
-            zIndex: 9999,
+            zIndex: 999,
             background: 'linear-gradient(to right, #16a34a, #14b8a6)',
           }}
         >

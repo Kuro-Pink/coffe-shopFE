@@ -6,7 +6,7 @@ import {
   Typography,
   IconButton,
   Button,
-  Divider,
+  Chip,
   List,
   ListItem,
   Avatar,
@@ -31,9 +31,11 @@ export default function Cart({ open, onClose }: CartProps) {
 
   // Get items from current table
   const items = getCurrentItems();
-
-  // Auto update when items change
-  const totalAmount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const getOriginal = (item: any) => item.originalPrice ?? item.price;
+  const getFinal = (item: any) => item.finalPrice ?? item.price;
+  console.log('items', items);
+  console.log('getOriginal', getOriginal);
+  console.log('getFinal', getFinal);
 
   const [checkoutOpen, setCheckoutOpen] = useState(false);
 
@@ -48,6 +50,11 @@ export default function Cart({ open, onClose }: CartProps) {
     onClose(); // Close drawer
   };
 
+  const originalTotal = items.reduce((sum, item) => sum + getOriginal(item) * item.quantity, 0);
+
+  const finalTotal = items.reduce((sum, item) => sum + getFinal(item) * item.quantity, 0);
+
+  const savingTotal = originalTotal - finalTotal;
   return (
     <>
       <Drawer
@@ -101,9 +108,35 @@ export default function Cart({ open, onClose }: CartProps) {
                           <Typography variant="body1" className="font-semibold mb-1">
                             {item.name}
                           </Typography>
-                          <Typography variant="body2" className="text-green-600 font-bold mb-2">
-                            {item.price.toLocaleString('vi-VN')} ₫
-                          </Typography>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {getOriginal(item) > getFinal(item) && (
+                              <Typography className="text-gray-400 line-through text-sm">
+                                {getOriginal(item).toLocaleString('vi-VN')} ₫
+                              </Typography>
+                            )}
+
+                            <Typography
+                              className={`font-bold ${
+                                getOriginal(item) > getFinal(item)
+                                  ? 'text-red-600'
+                                  : 'text-green-600'
+                              }`}
+                            >
+                              {getFinal(item).toLocaleString('vi-VN')} ₫
+                            </Typography>
+
+                            {/* % GIẢM */}
+                            {getOriginal(item) > getFinal(item) && (
+                              <Chip
+                                label={`-${Math.round(
+                                  ((getOriginal(item) - getFinal(item)) / getOriginal(item)) * 100,
+                                )}%`}
+                                color="error"
+                                size="small"
+                                className="w-fit mt-1"
+                              />
+                            )}
+                          </div>
 
                           {/* Quantity Controls */}
                           <div className="flex items-center gap-2">
@@ -141,13 +174,13 @@ export default function Cart({ open, onClose }: CartProps) {
                         </div>
                       </div>
                     </ListItem>
-                    {item.quantity > 0 && currentStoreId && (
+                    {/* {item.quantity > 0 && currentStoreId && (
                       <ComboSuggestion
-                        key={`combo-${item.productId}`} // 👈 ép React unmount khi item biến mất
+                        key={`combo-${item.productId}`} 
                         storeId={currentStoreId}
                         baseProductId={item.productId}
                       />
-                    )}
+                    )} */}
                   </div>
                 ))}
               </List>
@@ -158,13 +191,23 @@ export default function Cart({ open, onClose }: CartProps) {
           {items.length > 0 && (
             <div className="border-t border-gray-200 p-4">
               {/* Total */}
-              <div className="flex items-center justify-between mb-4">
-                <Typography variant="h6" className="font-bold">
-                  Tổng cộng:
-                </Typography>
-                <Typography variant="h5" className="text-green-600 font-bold">
-                  {totalAmount.toLocaleString('vi-VN')} ₫
-                </Typography>
+              <div className="space-y-1 text-sm mt-2">
+                <div className="flex justify-between">
+                  <span>Tiền tạm tính</span>
+                  <span>{originalTotal.toLocaleString()}đ</span>
+                </div>
+
+                {savingTotal > 0 && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Tiết kiệm</span>
+                    <span>-{savingTotal.toLocaleString()}đ</span>
+                  </div>
+                )}
+
+                <div className="flex justify-between font-bold text-lg">
+                  <span>Thành tiền</span>
+                  <span className="text-green-600">{finalTotal.toLocaleString()}đ</span>
+                </div>
               </div>
 
               {/* Actions */}

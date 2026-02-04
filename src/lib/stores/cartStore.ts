@@ -1,13 +1,22 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
-interface CartItem {
+export interface CartItem {
   productId: string;
   storeId: string;
   name: string;
+
+  // SNAPSHOT PRICE (LOCK)
   price: number;
+  originalPrice: number;
+  finalPrice: number;
+
   quantity: number;
   image?: string;
+
+  discountAmount?: number;
+  discountPercent?: number;
+  hasDiscount?: boolean;
 }
 
 // ✅ NEW: Structure to store carts by tableId
@@ -31,7 +40,6 @@ interface CartState {
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
   clearTableCart: (tableId: string) => void; // ✅ NEW: Clear specific table
-  getTotalAmount: () => number;
   getTotalItems: () => number;
   getCurrentItems: () => CartItem[];
 }
@@ -82,7 +90,19 @@ export const useCartStore = create<CartState>()(
 
         const updatedItems = existingItem
           ? currentCart.items.map((i) =>
-              i.productId === item.productId ? { ...i, quantity: i.quantity + item.quantity } : i,
+              i.productId === item.productId
+                ? {
+                    ...i,
+                    quantity: i.quantity + item.quantity,
+
+                    // 👇 SNAPSHOT LẠI GIÁ
+                    originalPrice: item.originalPrice,
+                    finalPrice: item.finalPrice,
+                    discountAmount: item.discountAmount,
+                    discountPercent: item.discountPercent,
+                    hasDiscount: item.hasDiscount,
+                  }
+                : i,
             )
           : [...currentCart.items, item];
 
@@ -160,17 +180,6 @@ export const useCartStore = create<CartState>()(
         set({ carts: updatedCarts });
       },
 
-      // ✅ Get total amount for CURRENT table
-      getTotalAmount: () => {
-        const { currentTableId, carts } = get();
-        if (!currentTableId || !carts[currentTableId]) return 0;
-
-        return carts[currentTableId].items.reduce(
-          (total, item) => total + item.price * item.quantity,
-          0,
-        );
-      },
-
       // ✅ Get total items count for CURRENT table
       getTotalItems: () => {
         const { currentTableId, carts } = get();
@@ -185,6 +194,33 @@ export const useCartStore = create<CartState>()(
         if (!currentTableId || !carts[currentTableId]) return [];
 
         return carts[currentTableId].items;
+      },
+      getSubtotal: () => {
+        const { currentTableId, carts } = get();
+        if (!currentTableId || !carts[currentTableId]) return 0;
+
+        return carts[currentTableId].items.reduce(
+          (t, i) => t + Number(i.originalPrice) * i.quantity,
+          0,
+        );
+      },
+      getFinalTotal: () => {
+        const { currentTableId, carts } = get();
+        if (!currentTableId || !carts[currentTableId]) return 0;
+
+        return carts[currentTableId].items.reduce(
+          (t, i) => t + Number(i.finalPrice) * i.quantity,
+          0,
+        );
+      },
+      getSaving: () => {
+        const { currentTableId, carts } = get();
+        if (!currentTableId || !carts[currentTableId]) return 0;
+
+        return carts[currentTableId].items.reduce(
+          (t, i) => t + (Number(i.originalPrice) - Number(i.finalPrice)) * i.quantity,
+          0,
+        );
       },
     }),
     {
