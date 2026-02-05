@@ -13,13 +13,7 @@ import {
   MenuItem,
 } from '@mui/material';
 import { Add, Edit, Delete, LocalOffer } from '@mui/icons-material';
-import {
-  Voucher,
-  CreateVoucherPayload,
-  UpdateVoucherPayload,
-  VoucherType,
-  VoucherScope,
-} from '@/types';
+import { Voucher, CreateVoucherPayload, UpdateVoucherPayload, VoucherType } from '@/types';
 import { voucherService } from '@/lib/services/voucherService';
 import { useAuthStore } from '@/lib/stores/authStore';
 
@@ -34,24 +28,60 @@ export default function VoucherPage() {
   const storeId = user?.storeId;
   const [vouchers, setVouchers] = useState<Voucher[]>([]);
   const [loading, setLoading] = useState(false);
-
   const [openForm, setOpenForm] = useState(false);
   const [editingVoucher, setEditingVoucher] = useState<Voucher | null>(null);
-
   const [openDelete, setOpenDelete] = useState(false);
   const [selectedVoucher, setSelectedVoucher] = useState<Voucher | null>(null);
-
   const [openApply, setOpenApply] = useState(false);
-
+  const [formError, setFormError] = useState<string | null>(null);
   const [formData, setFormData] = useState<CreateVoucherPayload>({
     name: '',
     code: '',
     type: 'percent',
     value: 0,
-    scope: 'order',
     startDate: '',
     endDate: '',
   });
+
+  const [errors, setErrors] = useState<{
+    name?: string;
+    value?: string;
+    startDate?: string;
+    endDate?: string;
+  }>({});
+
+  const validateField = (field: string, value: any) => {
+    let message = '';
+
+    switch (field) {
+      case 'name':
+        if (!value.trim()) message = 'Tên khuyến mãi không được để trống';
+        break;
+
+      case 'value':
+        if (!value || value <= 0) message = 'Giá trị giảm phải lớn hơn 0';
+        if (formData.type === 'percent' && value > 100) {
+          message = 'Giá trị giảm không được lớn hơn 100%';
+        }
+        break;
+
+      case 'startDate':
+        if (!value) message = 'Cần có thời gian bắt đầu';
+        if (formData.endDate && new Date(value) > new Date(formData.endDate)) {
+          message = 'Phải trước ngày kết thúc';
+        }
+        break;
+
+      case 'endDate':
+        if (!value) message = 'Cần có thời gian kết thúc';
+        if (formData.startDate && new Date(value) < new Date(formData.startDate)) {
+          message = 'Phải sau ngày bắt đầu';
+        }
+        break;
+    }
+
+    setErrors((prev) => ({ ...prev, [field]: message }));
+  };
 
   useEffect(() => {
     if (storeId) {
@@ -85,11 +115,11 @@ export default function VoucherPage() {
       code: '',
       type: 'percent',
       value: 0,
-      scope: 'order',
       startDate: '',
       endDate: '',
     });
     setOpenForm(true);
+    setErrors({});
   };
 
   // ================= EDIT =================
@@ -100,7 +130,6 @@ export default function VoucherPage() {
       code: voucher.code || '',
       type: voucher.type,
       value: voucher.value,
-      scope: voucher.scope,
       minBillValue: voucher.minBillValue,
       maxDiscount: voucher.maxDiscount,
       usageLimit: voucher.usageLimit,
@@ -108,31 +137,44 @@ export default function VoucherPage() {
       endDate: voucher.endDate?.slice(0, 10),
     });
     setOpenForm(true);
+    setErrors({});
   };
 
   // ================= SUBMIT FORM =================
   const handleSubmit = async () => {
     if (!storeId) return;
 
+    // validate toàn bộ lần cuối
+    validateField('name', formData.name);
+    validateField('value', formData.value);
+    validateField('startDate', formData.startDate);
+    validateField('endDate', formData.endDate);
+
+    const hasError = Object.values(errors).some((e) => e);
+    if (hasError) return;
+
     try {
       setLoading(true);
 
+      const payload = {
+        ...formData,
+        code: formData.code?.toUpperCase() || undefined,
+      };
+
       if (editingVoucher) {
-        const payload: UpdateVoucherPayload = {
-          ...formData,
-        };
-
         await voucherService.updateVoucher(editingVoucher._id, payload);
+        showToast.success({ message: 'Cập nhật thành công' });
       } else {
-        const payload: CreateVoucherPayload = {
-          ...formData,
-        };
-
         await voucherService.createVoucher(storeId, payload);
+        showToast.success({ message: 'Tạo thành công' });
       }
 
       await fetchData();
       setOpenForm(false);
+    } catch (err: any) {
+      showToast.error({
+        message: err?.response?.data?.message || 'Có lỗi xảy ra',
+      });
     } finally {
       setLoading(false);
     }
@@ -148,9 +190,17 @@ export default function VoucherPage() {
 
   // ================= TOGGLE ACTIVE =================
   const handleToggle = async (voucher: Voucher) => {
-    await voucherService.toggleVoucher(voucher._id);
-    showToast.success({ message: 'Thực hành thành công!' });
-    fetchData();
+    try {
+      await voucherService.toggleVoucher(voucher._id);
+      showToast.success({ message: 'Thành công' });
+      fetchData();
+    } catch {
+      showToast.error({ message: 'Lỗi khi đổi trạng thái' });
+    }
+  };
+  const handleChange = (field: keyof CreateVoucherPayload, value: any) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    validateField(field, value);
   };
 
   if (!storeId) {
@@ -186,14 +236,6 @@ export default function VoucherPage() {
               <Typography variant="body2" className="text-sm text-gray-500 mt-1">
                 {v.type === 'percent' ? `Giảm ${v.value}%` : `Giảm ${v.value.toLocaleString()}đ`}
               </Typography>
-
-              <Chip
-                size="small"
-                label={v.scope}
-                className={`mt-2 font-medium
-            ${v.scope === 'product' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}
-          `}
-              />
             </Box>
 
             {/* ACTIONS */}
@@ -248,7 +290,9 @@ export default function VoucherPage() {
             fullWidth
             margin="normal"
             value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            error={!!errors.name}
+            helperText={errors.name}
+            onChange={(e) => handleChange('name', e.target.value)}
           />
 
           {/* CODE */}
@@ -279,22 +323,15 @@ export default function VoucherPage() {
             type="number"
             fullWidth
             margin="normal"
+            inputProps={{
+              min: 1,
+              max: formData.type === 'percent' ? 100 : undefined,
+            }}
             value={formData.value}
-            onChange={(e) => setFormData({ ...formData, value: Number(e.target.value) })}
+            error={!!errors.value}
+            helperText={errors.value}
+            onChange={(e) => handleChange('value', Math.max(0, Number(e.target.value)))}
           />
-
-          {/* SCOPE */}
-          <TextField
-            select
-            label="Phạm vi áp dụng"
-            fullWidth
-            margin="normal"
-            value={formData.scope}
-            onChange={(e) => setFormData({ ...formData, scope: e.target.value as VoucherScope })}
-          >
-            <MenuItem value="order">Toàn đơn hàng</MenuItem>
-            <MenuItem value="product">Theo sản phẩm</MenuItem>
-          </TextField>
 
           {/* MIN BILL */}
           <TextField
@@ -349,7 +386,9 @@ export default function VoucherPage() {
             margin="normal"
             InputLabelProps={{ shrink: true }}
             value={formData.startDate}
-            onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+            error={!!errors.startDate}
+            helperText={errors.startDate}
+            onChange={(e) => handleChange('startDate', e.target.value)}
           />
 
           {/* END DATE */}
@@ -360,7 +399,9 @@ export default function VoucherPage() {
             margin="normal"
             InputLabelProps={{ shrink: true }}
             value={formData.endDate}
-            onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+            error={!!errors.endDate}
+            helperText={errors.endDate}
+            onChange={(e) => handleChange('endDate', e.target.value)}
           />
         </Box>
       </FormDialog>
