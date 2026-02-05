@@ -1,19 +1,10 @@
 'use client';
 
 import { useEffect } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  Typography,
-  Button,
-  Divider,
-} from '@mui/material';
+import { Dialog, DialogContent, Typography, Button, Divider } from '@mui/material';
 import { Notifications, Visibility, Close } from '@mui/icons-material';
 import { Order } from '@/types';
-import {
-  playNotificationSound,
-  stopNotificationSound,
-} from '@/utils/notificationSound';
+import { playNotificationSound, stopNotificationSound } from '@/utils/notificationSound';
 
 interface OrderNotificationProps {
   open: boolean;
@@ -28,7 +19,6 @@ export default function OrderNotification({
   onClose,
   onView,
 }: OrderNotificationProps) {
-
   useEffect(() => {
     if (open) {
       playNotificationSound();
@@ -38,7 +28,10 @@ export default function OrderNotification({
 
     return () => stopNotificationSound();
   }, [open]);
+  console.log('order', order);
 
+  const getOriginal = (item: any) => item.originalPrice ?? item.price ?? 0;
+  const getFinal = (item: any) => item.finalPrice ?? item.price ?? 0;
 
   if (!order) return null;
 
@@ -80,13 +73,46 @@ export default function OrderNotification({
                 <span>
                   {item.name} x{item.quantity}
                 </span>
-                <span className="font-semibold">
-                  {(item.price * item.quantity).toLocaleString('vi-VN')} ₫
-                </span>
+
+                <div className="text-right">
+                  {getOriginal(item) > getFinal(item) && (
+                    <Typography variant="caption" className="text-gray-400 line-through block">
+                      {(getOriginal(item) * item.quantity).toLocaleString('vi-VN')} ₫
+                    </Typography>
+                  )}
+
+                  <span className="font-semibold text-red-600">
+                    {(getFinal(item) * item.quantity).toLocaleString('vi-VN')} ₫
+                  </span>
+                </div>
               </div>
             ))}
           </div>
           <Divider className="my-2" />
+
+          <div className="space-y-1 text-sm">
+            <div className="flex justify-between">
+              <span>Tạm tính:</span>
+              <span>{order.subtotal?.toLocaleString('vi-VN')} ₫</span>
+            </div>
+
+            {order.productSaving > 0 && (
+              <div className="flex justify-between text-green-600">
+                <span>Khuyến mại:</span>
+                <span>-{order.productSaving.toLocaleString('vi-VN')} ₫</span>
+              </div>
+            )}
+
+            {order.voucherDiscount > 0 && (
+              <div className="flex justify-between text-blue-600">
+                <span>Mã giảm giá:</span>
+                <span>-{order.voucherDiscount.toLocaleString('vi-VN')} ₫</span>
+              </div>
+            )}
+          </div>
+
+          <Divider className="my-2" />
+
           <div className="flex justify-between font-bold text-green-600">
             <span>Tổng cộng:</span>
             <span>{order.totalAmount.toLocaleString('vi-VN')} ₫</span>
@@ -95,21 +121,17 @@ export default function OrderNotification({
 
         {/* Customer Info */}
         <div className="bg-blue-50 rounded-lg p-3 mb-6 text-left">
-          <Typography variant="caption" className="font-semibold text-blue-800">
+          <Typography variant="body2" className="font-semibold text-red-700">
             📞 Liên hệ:
+            <span className="text-gray-700"> {order.customerPhone}</span>
           </Typography>
-          <Typography variant="body2" className="text-blue-700">
-            {order.customerPhone}
+          <Typography variant="body2" className="text-yellow-600">
+            🧑Tên khách hàng: <span className="text-gray-700">{order.customerName}</span>
           </Typography>
           {order.customerNote && (
-            <>
-              <Typography variant="caption" className="font-semibold text-blue-800 mt-2 block">
-                📝 Ghi chú:
-              </Typography>
-              <Typography variant="body2" className="text-blue-700">
-                {order.customerNote}
-              </Typography>
-            </>
+            <Typography variant="body2" className="font-semibold text-blue-600 mt-2 block">
+              📝 Ghi chú: <span className="text-gray-700"> {order.customerNote}</span>
+            </Typography>
           )}
         </div>
 
@@ -125,12 +147,7 @@ export default function OrderNotification({
           >
             Xem đơn hàng
           </Button>
-          <Button
-            variant="outlined"
-            size="large"
-            startIcon={<Close />}
-            onClick={onClose}
-          >
+          <Button variant="outlined" size="large" startIcon={<Close />} onClick={onClose}>
             Đóng
           </Button>
         </div>

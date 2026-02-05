@@ -24,7 +24,9 @@ interface Props {
 }
 
 export default function OrderCard({ order, onUpdateStatus }: Props) {
-  const [expanded, setExpanded] = useState(false);
+  const getOriginal = (item: any) => item.originalPrice ?? item.price ?? 0;
+  const getFinal = (item: any) => item.finalPrice ?? item.price ?? 0;
+
   const getStatusText = (status: string) => {
     switch (status) {
       case 'pending':
@@ -47,7 +49,7 @@ export default function OrderCard({ order, onUpdateStatus }: Props) {
 
   return (
     <Card
-      className={`shadow-lg border-2flex flex-colmin-h-[340px]
+      className={`shadow-lg border-2 flex flex-colmin-h-[340px]
     ${order.status === 'pending' ? 'border-orange-300 bg-orange-50' : 'border-gray-200 bg-white'}
     `}
     >
@@ -104,9 +106,17 @@ export default function OrderCard({ order, onUpdateStatus }: Props) {
                 <Typography className="text-xs font-medium">
                   - {item.name} × {item.quantity}
                 </Typography>
-                <Typography className="text-xs font-bold text-orange-700">
-                  {(item.price * item.quantity).toLocaleString('vi-VN')} ₫
-                </Typography>
+                <div className="flex items-center gap-2 text-left">
+                  {getOriginal(item) > getFinal(item) && (
+                    <Typography className="text-[10px] text-gray-400 line-through">
+                      {(getOriginal(item) * item.quantity).toLocaleString('vi-VN')} ₫
+                    </Typography>
+                  )}
+
+                  <Typography className="text-xs font-bold text-orange-700">
+                    {(getFinal(item) * item.quantity).toLocaleString('vi-VN')} ₫
+                  </Typography>
+                </div>
               </div>
             ))}
           </div>
@@ -123,37 +133,36 @@ export default function OrderCard({ order, onUpdateStatus }: Props) {
         </div>
 
         {/* ===== ACTIONS (FIXED) ===== */}
-         {order.status === 'pending' && (
-            <div className="flex gap-2">
-              <Button
-                fullWidth
-                variant="contained"
-                startIcon={<CheckCircle />}
-                onClick={() => onUpdateStatus(order._id, 'completed')}
-                className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700"
-              >
-                Hoàn thành
-              </Button>
-              <Button
-                fullWidth
-                variant="outlined"
-                color="error"
-                startIcon={<Cancel />}
-                onClick={() => onUpdateStatus(order._id, 'cancelled')}
-              >
-                Hủy đơn
-              </Button>
-            </div>
-          )}
+        {order.status === 'pending' && (
+          <div className="flex gap-2">
+            <Button
+              fullWidth
+              variant="contained"
+              startIcon={<CheckCircle />}
+              onClick={() => onUpdateStatus(order._id, 'completed')}
+              className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700"
+            >
+              Hoàn thành
+            </Button>
+            <Button
+              fullWidth
+              variant="outlined"
+              color="error"
+              startIcon={<Cancel />}
+              onClick={() => onUpdateStatus(order._id, 'cancelled')}
+            >
+              Hủy đơn
+            </Button>
+          </div>
+        )}
 
-          {order.status === 'completed' && order.completedAt && (
-            <div className="text-center p-3 bg-green-50 rounded-lg">
-              <Typography variant="body2" className="text-green-700">
-                ✅ Hoàn thành lúc{' '}
-                {new Date(order.completedAt).toLocaleString('vi-VN')}
-              </Typography>
-            </div>
-          )}
+        {order.status === 'completed' && order.completedAt && (
+          <div className="text-center p-3 bg-green-50 rounded-lg">
+            <Typography variant="body2" className="text-green-700">
+              ✅ Hoàn thành lúc {new Date(order.completedAt).toLocaleString('vi-VN')}
+            </Typography>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

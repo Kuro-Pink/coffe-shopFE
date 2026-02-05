@@ -152,6 +152,9 @@ export interface Order {
   customerPhone: string;
   customerNote?: string;
   items: OrderItem[];
+  subtotal: number;
+  productSaving: number;
+  voucherDiscount: number;
   totalAmount: number;
   status: 'pending' | 'completed' | 'cancelled';
   isPaid: boolean;

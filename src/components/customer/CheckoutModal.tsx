@@ -100,6 +100,7 @@ export default function CheckoutModal({ open, onClose, onSuccess }: CheckoutModa
         customerName: data.customerName,
         customerPhone: data.customerPhone,
         customerNote: data.customerNote || '',
+        voucherDiscount: orderDiscount,
         items: items.map((item) => ({
           productId: item.productId,
           quantity: item.quantity,
@@ -107,8 +108,6 @@ export default function CheckoutModal({ open, onClose, onSuccess }: CheckoutModa
       };
 
       const response = await publicService.createOrder(orderData);
-      console.log('✅ Order created successfully:', response);
-
       setSuccess(true);
 
       // ✅ Auto close after 3 seconds
