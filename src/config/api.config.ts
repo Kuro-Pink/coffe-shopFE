@@ -139,6 +139,7 @@ export const API_ENDPOINTS = {
     MENU: (storeId: string) => `/public/stores/${storeId}/menu`,
     CREATE_ORDER: '/public/orders',
     TABLE_INFO: (tableId: string) => `/public/tables/${tableId}`,
+    APPLY_VOUCHER: 'public/apply-voucher',
   },
   AI: {
     CHAT: '/ai/chat',

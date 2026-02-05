@@ -27,7 +27,6 @@ export interface MenuResponse {
   bestSellers?: Product[];
 }
 
-
 export const publicService = {
   // Get menu (categories + products)
   getMenu: async (storeId: string): Promise<MenuResponse> => {
@@ -45,5 +44,10 @@ export const publicService = {
   createOrder: async (data: CreateOrderData) => {
     const response = await api.post(API_ENDPOINTS.PUBLIC.CREATE_ORDER, data);
     return response.data;
+  },
+
+  applyVoucher: async (data: { code: string; storeId: string; total: number }) => {
+    const response = await api.post(API_ENDPOINTS.PUBLIC.APPLY_VOUCHER, data);
+    return response.data.data;
   },
 };

@@ -1,6 +1,5 @@
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
 export type VoucherType = 'percent' | 'fixed';
-export type VoucherScope = 'product' | 'order';
 export type ModalSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 export type ModalVariant = 'default' | 'danger' | 'warning' | 'success' | 'info';
 export type StaffType = 'cashier' | 'bar' | 'kitchen';
@@ -492,9 +491,6 @@ export interface Voucher {
   name: string;
   type: VoucherType;
   value: number;
-
-  scope: VoucherScope;
-
   productIds?: string[];
 
   minBillValue?: number;
@@ -518,7 +514,6 @@ export interface CreateVoucherPayload {
   name: string;
   type: VoucherType;
   value: number;
-  scope: VoucherScope;
 
   productIds?: string[];
 

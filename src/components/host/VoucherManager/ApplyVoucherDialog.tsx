@@ -186,7 +186,6 @@ export default function ApplyVoucherDialog({ open, voucher, onClose }: ApplyVouc
           <Typography variant="body2" className="text-gray-500">
             {voucherLocal.type} - {voucherLocal.value}
           </Typography>
-          <Chip size="small" label={voucherLocal.scope} className="mt-1" />
         </Box>
 
         {/* SEARCH */}

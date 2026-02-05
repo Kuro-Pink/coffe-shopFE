@@ -31,7 +31,11 @@ export default function ProductCard({
   const [detailOpen, setDetailOpen] = useState(false);
   const { addItem } = useCartStore();
 
-  console.log('PRODUCT SNAPSHOT', product);
+  const originalPrice = product.originalPrice ?? product.price ?? product.finalPrice ?? 0;
+
+  const finalPrice = product.finalPrice ?? product.originalPrice ?? product.price ?? 0;
+
+  const hasDiscount = originalPrice > finalPrice;
 
   const handleAddToCart = () => {
     const original = product.originalPrice ?? product.finalPrice ?? 0;
@@ -85,7 +89,7 @@ export default function ProductCard({
                   alt={product.name}
                   className="w-full h-full object-cover"
                 />
-                {(product.originalPrice ?? 0) > (product.finalPrice ?? 0) && (
+                {hasDiscount && (
                   <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-lg text-xs font-bold shadow-md z-10">
                     Giảm giá
                   </div>
@@ -113,30 +117,25 @@ export default function ProductCard({
             <div className="flex items-center justify-between">
               {/* PRICE BLOCK */}
               <div className="flex flex-col">
-                {product.originalPrice > product.finalPrice ? (
+                {hasDiscount ? (
                   <>
                     <Typography variant="body2" className="text-gray-400 line-through font-medium">
-                      {product.originalPrice.toLocaleString('vi-VN')} ₫
+                      {originalPrice.toLocaleString('vi-VN')} ₫
                     </Typography>
 
                     <div className="flex items-center gap-2">
                       <Typography variant="h6" className="text-red-600 font-bold">
-                        {product.finalPrice.toLocaleString('vi-VN')} ₫
+                        {finalPrice.toLocaleString('vi-VN')} ₫
                       </Typography>
 
                       <span className="bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded-full font-semibold">
-                        -
-                        {Math.round(
-                          ((product.originalPrice - product.finalPrice) / product.originalPrice) *
-                            100,
-                        )}
-                        %
+                        -{Math.round(((originalPrice - finalPrice) / originalPrice) * 100)}%
                       </span>
                     </div>
                   </>
                 ) : (
                   <Typography variant="h6" className="text-green-600 font-bold">
-                    {product.finalPrice.toLocaleString('vi-VN')} ₫
+                    {finalPrice.toLocaleString('vi-VN')} ₫
                   </Typography>
                 )}
               </div>
@@ -181,7 +180,7 @@ export default function ProductCard({
           </Typography>
 
           <div className="mb-6">
-            {product.originalPrice > product.finalPrice ? (
+            {hasDiscount ? (
               <>
                 <Typography className="line-through text-gray-400">
                   {product.originalPrice.toLocaleString('vi-VN')} ₫

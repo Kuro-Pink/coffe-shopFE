@@ -21,6 +21,7 @@ import { z } from 'zod';
 import { useCartStore } from '@/lib/stores/cartStore';
 import { publicService } from '@/lib/services/publicService';
 import { AxiosError } from 'axios';
+import { showToast } from '../common/Toast';
 
 interface CheckoutModalProps {
   open: boolean;
@@ -138,6 +139,19 @@ export default function CheckoutModal({ open, onClose, onSuccess }: CheckoutModa
       setIsLoading(false);
     }
   };
+  const handleApplyVoucher = async () => {
+    try {
+      const res = await publicService.applyVoucher({
+        code: voucherCode,
+        storeId: currentStoreId,
+        total: finalTotal,
+      });
+
+      setOrderDiscount(res.discount);
+    } catch (e: any) {
+      showToast.error({ message: 'Voucher không hợp lệ' });
+    }
+  };
 
   const handleClose = () => {
     if (!isLoading && !success) {
@@ -233,7 +247,7 @@ export default function CheckoutModal({ open, onClose, onSuccess }: CheckoutModa
                     variant="outlined"
                     size="small"
                     className="mt-2"
-                    onClick={() => alert('Voucher sẽ hoạt động khi kết nối BE')}
+                    onClick={handleApplyVoucher}
                   >
                     Áp dụng mã
                   </Button>
