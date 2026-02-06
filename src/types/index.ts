@@ -152,6 +152,9 @@ export interface Order {
   customerPhone: string;
   customerNote?: string;
   items: OrderItem[];
+  originalPrice: number;
+  finalPrice: number;
+  discountAmount: number;
   subtotal: number;
   productSaving: number;
   voucherDiscount: number;

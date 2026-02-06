@@ -125,6 +125,28 @@ export default function OrderCard({ order, onUpdateStatus }: Props) {
         <Divider />
 
         {/* ===== TOTAL ===== */}
+        <div className="space-y-1 text-sm">
+          <div className="flex justify-between">
+            <span>Tạm tính:</span>
+            <span>{order.subtotal?.toLocaleString('vi-VN')} ₫</span>
+          </div>
+
+          {order.productSaving > 0 && (
+            <div className="flex justify-between text-green-600">
+              <span>Khuyến mại:</span>
+              <span>-{order.productSaving.toLocaleString('vi-VN')} ₫</span>
+            </div>
+          )}
+
+          {order.voucherDiscount > 0 && (
+            <div className="flex justify-between text-blue-600">
+              <span>Mã giảm giá:</span>
+              <span>-{order.voucherDiscount.toLocaleString('vi-VN')} ₫</span>
+            </div>
+          )}
+        </div>
+
+        <Divider className="my-2" />
         <div className="flex justify-between items-center">
           <Typography className="text-sm font-semibold">Tổng</Typography>
           <Typography className="font-bold text-green-600">

@@ -19,8 +19,10 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Chip,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import { Table, Order } from '@/types';
 import { storeService } from '@/lib/services/storeService';
 import { showToast } from '@/components/common/Toast';
@@ -54,6 +56,9 @@ export default function PaymentDialog({ open, table, onClose, onSuccess }: Payme
   const [amountReceived, setAmountReceived] = useState<string>('');
   const [bill, setBill] = useState<Bill | null>(null);
   const [step, setStep] = useState<'loading' | 'payment' | 'bill'>('loading');
+  const getOriginal = (item: any) => item.originalPrice ?? item.price ?? 0;
+  const getFinal = (item: any) => item.finalPrice ?? item.price ?? 0;
+  const getItemTotal = (item: any) => getFinal(item) * (item.quantity || 1);
 
   useEffect(() => {
     if (open && table) {
@@ -338,16 +343,28 @@ export default function PaymentDialog({ open, table, onClose, onSuccess }: Payme
                           <Typography variant="body2" className="font-semibold">
                             {order.orderNumber}
                           </Typography>
+
                           <Typography variant="caption" className="text-gray-600 block">
                             {format(new Date(order.createdAt), 'HH:mm - dd/MM/yyyy', {
                               locale: vi,
                             })}
                           </Typography>
-                          <Typography variant="caption" className="text-gray-600">
-                            {order.items.length} món
-                          </Typography>
-                        </div>
 
+                          <div className="flex items-center gap-2 mt-1">
+                            <Typography variant="caption" className="text-gray-600">
+                              {order.items.length} món
+                            </Typography>
+
+                            {order.voucherDiscount > 0 && (
+                              <Chip
+                                size="small"
+                                color="info"
+                                icon={<LocalOfferIcon fontSize="small" />}
+                                label={`-${order.voucherDiscount.toLocaleString('vi-VN')} ₫`}
+                              />
+                            )}
+                          </div>
+                        </div>
                         <Typography variant="body2" className="font-bold text-green-600">
                           {order.totalAmount.toLocaleString('vi-VN')} ₫
                         </Typography>
@@ -363,10 +380,26 @@ export default function PaymentDialog({ open, table, onClose, onSuccess }: Payme
                           >
                             <div>
                               <Typography variant="body2">{item.name}</Typography>
-                              <Typography variant="caption" className="text-gray-600">
-                                Số lượng: {item.quantity} - Giá:{' '}
-                                {item.price.toLocaleString('vi-VN')} ₫
-                              </Typography>
+                              <div className="text-right">
+                                <div className="flex items-center gap-2">
+                                  {getOriginal(item) > getFinal(item) && (
+                                    <Typography
+                                      variant="caption"
+                                      className="text-gray-400 line-through"
+                                    >
+                                      {(getOriginal(item) * item.quantity).toLocaleString('vi-VN')}{' '}
+                                      ₫
+                                    </Typography>
+                                  )}
+
+                                  <Typography
+                                    variant="caption"
+                                    className="font-bold text-orange-700"
+                                  >
+                                    {(getFinal(item) * item.quantity).toLocaleString('vi-VN')} ₫
+                                  </Typography>
+                                </div>
+                              </div>
                             </div>
                           </ListItem>
                         ))}
