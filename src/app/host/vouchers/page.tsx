@@ -16,7 +16,6 @@ import { Add, Edit, Delete, LocalOffer } from '@mui/icons-material';
 import { Voucher, CreateVoucherPayload, UpdateVoucherPayload, VoucherType } from '@/types';
 import { voucherService } from '@/lib/services/voucherService';
 import { useAuthStore } from '@/lib/stores/authStore';
-
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import FormDialog from '@/components/common/FormDialog';
 import ApplyVoucherDialog from '@/components/host/VoucherManager/ApplyVoucherDialog';
@@ -202,6 +201,7 @@ export default function VoucherPage() {
     setFormData((prev) => ({ ...prev, [field]: value }));
     validateField(field, value);
   };
+  const now = new Date();
 
   if (!storeId) {
     return <Typography>Bạn chưa được gán cửa hàng</Typography>;
@@ -227,6 +227,7 @@ export default function VoucherPage() {
             key={v._id}
             className="border rounded-xl p-4 bg-white shadow-sm hover:shadow-md transition flex flex-col justify-between"
           >
+            {new Date(v.endDate) < now && <Chip label="Hết hạn" color="error" size="small" />}
             {/* TOP INFO */}
             <Box>
               <Typography className="font-semibold text-base text-gray-800">
@@ -236,11 +237,20 @@ export default function VoucherPage() {
               <Typography variant="body2" className="text-sm text-gray-500 mt-1">
                 {v.type === 'percent' ? `Giảm ${v.value}%` : `Giảm ${v.value.toLocaleString()}đ`}
               </Typography>
+              {v.usageLimit && (
+                <Typography variant="caption" className="text-gray-500 block">
+                  Còn {v.usageLimit - (v.usedCount || 0)} lượt
+                </Typography>
+              )}
             </Box>
 
             {/* ACTIONS */}
             <Box className="flex items-center justify-between mt-4">
-              <Switch checked={v.isActive} onChange={() => handleToggle(v)} />
+              <Switch
+                checked={v.isActive}
+                disabled={v.usageLimit && v.usedCount >= v.usageLimit}
+                onChange={() => handleToggle(v)}
+              />
 
               <Box className="flex gap-1">
                 <IconButton size="small" onClick={() => handleEdit(v)}>

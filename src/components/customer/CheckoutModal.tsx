@@ -54,6 +54,7 @@ export default function CheckoutModal({ open, onClose, onSuccess }: CheckoutModa
 
   const [voucherCode, setVoucherCode] = useState('');
   const [orderDiscount, setOrderDiscount] = useState(0);
+  const [voucherId, setVoucherId] = useState<string | null>(null);
   const originalTotal = items.reduce((sum, item) => sum + getOriginal(item) * item.quantity, 0);
 
   const finalTotal = items.reduce((sum, item) => sum + getFinal(item) * item.quantity, 0);
@@ -101,6 +102,7 @@ export default function CheckoutModal({ open, onClose, onSuccess }: CheckoutModa
         customerPhone: data.customerPhone,
         customerNote: data.customerNote || '',
         voucherDiscount: orderDiscount,
+        voucherId: voucherId || undefined,
         items: items.map((item) => ({
           productId: item.productId,
           quantity: item.quantity,
@@ -117,6 +119,7 @@ export default function CheckoutModal({ open, onClose, onSuccess }: CheckoutModa
         setIsLoading(false); // ✅ CRITICAL: Reset loading state
         setVoucherCode('');
         setOrderDiscount(0);
+        setVoucherId(null);
         onSuccess();
       }, 3000);
     } catch (err: unknown) {
@@ -146,8 +149,17 @@ export default function CheckoutModal({ open, onClose, onSuccess }: CheckoutModa
         total: finalTotal,
       });
 
+      if (!voucherCode.trim()) {
+        showToast.warning({ message: 'Vui long nhập mã voucher rồi tiến hành sử dụng' });
+        return;
+      }
+
       setOrderDiscount(res.discount);
-    } catch (e: any) {
+      setVoucherId(res.voucherId); // 🔥 QUAN TRỌNG
+      showToast.success({ message: 'Áp dụng voucher thành công' });
+    } catch {
+      setOrderDiscount(0);
+      setVoucherId(null);
       showToast.error({ message: 'Voucher không hợp lệ' });
     }
   };
