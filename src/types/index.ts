@@ -206,28 +206,46 @@ export interface StoreRequest {
   updatedAt: string;
 }
 
+export interface StoreInfo {
+  name?: string;
+  address?: string;
+  phone?: string;
+}
+
 export interface Bill {
   _id: string;
   billNumber: string;
+
   storeId: string;
+  store?: StoreInfo; // 🔥 THÊM
+
+  staffName?: string; // 🔥 THÊM
+
   tableId: string;
   tableName: string;
   tableArea: string;
+
   customerName: string;
   customerPhone: string;
+
   orders: Order[]; // Multiple orders combined
   items: OrderItem[]; // All items combined
+
   subtotal: number;
   tax?: number;
   discount?: number;
   totalAmount: number;
+
   paymentMethod: 'cash' | 'transfer';
   amountReceived?: number;
   changeAmount?: number;
+
   sessionStartTime: string;
   sessionEndTime: string;
   isPaid: boolean;
-  qrPaymentUrl?: string; // ✅ VietQR or bank QR
+
+  qrPaymentUrl?: string;
+
   createdAt: string;
   paidAt?: string;
 }
