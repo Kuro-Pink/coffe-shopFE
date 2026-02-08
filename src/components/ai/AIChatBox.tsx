@@ -26,7 +26,9 @@ interface Props {
 interface ChatProduct {
   productId: string;
   name: string;
-  price: number;
+  price: number; // finalPrice
+  originalPrice?: number;
+  discountAmount?: number;
   image?: string;
 }
 
@@ -313,6 +315,9 @@ export default function AIChatBox({ storeId }: Props) {
                             productId={p.productId}
                             name={p.name}
                             price={p.price}
+                            originalPrice={p.originalPrice}
+                            finalPrice={p.finalPrice}
+                            discountAmount={p.discountAmount}
                             image={p.image}
                             storeId={storeId}
                             onAddedToCart={handleAfterAddToCart}

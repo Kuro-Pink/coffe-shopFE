@@ -33,10 +33,6 @@ export default function Cart({ open, onClose }: CartProps) {
   const items = getCurrentItems();
   const getOriginal = (item: any) => item.originalPrice ?? item.price;
   const getFinal = (item: any) => item.finalPrice ?? item.price;
-  console.log('items', items);
-  console.log('getOriginal', getOriginal);
-  console.log('getFinal', getFinal);
-
   const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   const handleCheckout = () => {

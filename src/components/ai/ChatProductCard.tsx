@@ -5,28 +5,53 @@ import { useCartStore } from '@/lib/stores/cartStore';
 interface Props {
   productId: string;
   name: string;
-  price: number;
+
+  price: number; // fallback
+  originalPrice?: number;
+  finalPrice?: number;
+  discountAmount?: number;
+
   image?: string;
   storeId: string;
-  onAddedToCart?: (productId: string, name: string) => void; // 🆕
+  onAddedToCart?: (productId: string, name: string) => void;
 }
 
 export default function ChatProductCard({
   productId,
   name,
   price,
+  originalPrice,
+  finalPrice,
+  discountAmount,
   image,
   storeId,
   onAddedToCart,
 }: Props) {
   const addItem = useCartStore((s) => s.addItem);
+  const original = originalPrice ?? price;
+  const final = finalPrice ?? price;
+  const hasDiscount = original > final;
+  console.log('original', original);
+  console.log('final', final);
+  console.log('hasDiscount', hasDiscount);
+  console.log('FULL PRODUCT', {
+    productId,
+    name,
+    price,
+    originalPrice,
+    finalPrice,
+    discountAmount,
+  });
 
   const handleAdd = () => {
     addItem({
       productId,
       storeId,
       name,
-      price,
+      price: finalPrice ?? price,
+      originalPrice: originalPrice ?? price,
+      finalPrice: finalPrice ?? price,
+      discountAmount: discountAmount ?? 0,
       quantity: 1,
       image,
     });
@@ -52,9 +77,38 @@ export default function ChatProductCard({
         <Typography fontSize={14} fontWeight={600}>
           {name}
         </Typography>
-        <Typography fontSize={13} color="green">
-          {price.toLocaleString('vi-VN')} ₫
-        </Typography>
+        {/* PRICE BLOCK */}
+        <Box display="flex" flexDirection="column">
+          {hasDiscount ? (
+            <>
+              <Typography fontSize={12} color="gray" sx={{ textDecoration: 'line-through' }}>
+                {original.toLocaleString('vi-VN')} ₫
+              </Typography>
+
+              <Box display="flex" alignItems="center" gap={1}>
+                <Typography fontSize={14} color="red" fontWeight={600}>
+                  {final.toLocaleString('vi-VN')} ₫
+                </Typography>
+
+                <Box
+                  px={0.8}
+                  py={0.2}
+                  borderRadius={1}
+                  bgcolor="#fee2e2"
+                  color="#dc2626"
+                  fontSize={11}
+                  fontWeight={600}
+                >
+                  -{Math.round(((original - final) / original) * 100)}%
+                </Box>
+              </Box>
+            </>
+          ) : (
+            <Typography fontSize={14} color="green" fontWeight={600}>
+              {final.toLocaleString('vi-VN')} ₫
+            </Typography>
+          )}
+        </Box>
       </Box>
 
       <Button size="small" variant="contained" onClick={handleAdd}>

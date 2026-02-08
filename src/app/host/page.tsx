@@ -465,7 +465,7 @@ export default function StatsPage() {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {stats.bestSellers.slice(0, 10).map((product, index) => (
+                      {stats.bestSellers.slice(0, 5).map((product, index) => (
                         <TableRow key={product._id} className="hover:bg-gray-50">
                           <TableCell>
                             <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 text-white font-bold text-sm">

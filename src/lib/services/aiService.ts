@@ -29,7 +29,12 @@ export interface AIChatResponse {
   products?: {
     productId: string;
     name: string;
-    price: number;
+
+    price: number; // finalPrice để FE cũ vẫn chạy
+    finalPrice?: number;
+    originalPrice?: number;
+    discountAmount?: number;
+
     image?: string;
   }[];
 
