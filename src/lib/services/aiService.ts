@@ -50,19 +50,6 @@ export interface AIChatResponse {
 }
 
 /* =========================
-   2️⃣ RECOMMEND PRODUCTS
-========================= */
-export interface RecommendProductsResponse {
-  products: {
-    _id: string;
-    name: string;
-    price: number;
-    image?: string;
-    score?: number;
-  }[];
-}
-
-/* =========================
    3️⃣ RECOMMEND COMBO (AI combo theo món trong giỏ)
 ========================= */
 export interface RecommendComboRequest {
@@ -71,15 +58,15 @@ export interface RecommendComboRequest {
 }
 
 export interface RecommendComboResponse {
-  combo: {
-    baseProductId: string;
-    recommended: {
-      _id: string;
-      name: string;
-      price: number;
-      image?: string;
-      score?: number;
-    }[];
+  combos: {
+    productId: string;
+    name: string;
+    finalPrice: number;
+    originalPrice?: number;
+    discountAmount?: number;
+    image?: string;
+    reason?: string;
+    popularity?: number;
   }[];
 }
 
@@ -122,26 +109,12 @@ export const aiService = {
   },
 
   // 🍽️ Gợi ý combo theo các món đang có
-  recommendCombo: async (storeId: string, productId: string, signal?: AbortSignal) => {
-    try {
-      const res = await api.get(API_ENDPOINTS.AI.COMBO, {
-        params: { storeId, productId },
-        timeout: 4000,
-        signal, // 👈 QUAN TRỌNG
-      });
+  recommendCartCombo: async (storeId: string, productIds: string[]) => {
+    const res = await api.post(API_ENDPOINTS.AI.CART_COMBO, {
+      storeId,
+      productIds,
+    });
 
-      if (!res.data?.combo) return null;
-      return res.data;
-    } catch {
-      return null;
-    }
-  },
-
-  // 🎯 Gợi ý món riêng lẻ
-  recommendProducts: async (storeId: string) => {
-    const res = await api.get<RecommendProductsResponse>(
-      `${API_ENDPOINTS.AI.RCM_PRODUCTS}?storeId=${storeId}`,
-    );
     return res.data;
   },
 

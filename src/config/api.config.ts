@@ -143,7 +143,7 @@ export const API_ENDPOINTS = {
   },
   AI: {
     CHAT: '/ai/chat',
-    RCM_PRODUCTS: '/ai/recommend',
+    CART_COMBO: '/ai/cart-combo',
     COMBO: '/ai/combo',
     SUGGEST_ORDERS: '/ai/suggest-order',
     CUSTOMER: '/ai/customer-profile',

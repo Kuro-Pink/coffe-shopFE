@@ -262,7 +262,7 @@ export default function AIChatBox({ storeId }: Props) {
           position: 'fixed',
           bottom: 86,
           right: 36,
-          zIndex: 9999,
+          zIndex: 999,
           background: 'linear-gradient(to right, #6366f1, #22c55e)',
         }}
       >

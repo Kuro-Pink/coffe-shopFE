@@ -170,15 +170,15 @@ export default function Cart({ open, onClose }: CartProps) {
                         </div>
                       </div>
                     </ListItem>
-                    {/* {item.quantity > 0 && currentStoreId && (
-                      <ComboSuggestion
-                        key={`combo-${item.productId}`} 
-                        storeId={currentStoreId}
-                        baseProductId={item.productId}
-                      />
-                    )} */}
                   </div>
                 ))}
+                {/* COMBO GỢI Ý - CHỈ 1 LẦN */}
+                {items.length > 0 && currentStoreId && (
+                  <ComboSuggestion
+                    storeId={currentStoreId}
+                    productIds={items.map((i) => i.productId)}
+                  />
+                )}
               </List>
             )}
           </div>
