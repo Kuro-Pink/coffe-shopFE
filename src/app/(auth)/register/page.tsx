@@ -94,7 +94,11 @@ export default function HostRegistrationPage() {
     let isValid = false;
 
     if (activeStep === 0) {
-      isValid = await trigger(); // 🔥 KHÔNG truyền field
+      isValid = await trigger(['name', 'email', 'phone', 'password', 'confirmPassword']);
+    }
+
+    if (!isValid && getValues('password') !== getValues('confirmPassword')) {
+      showToast.error({ message: 'Mật khẩu xác nhận không khớp' });
     }
 
     if (activeStep === 1) {
@@ -180,13 +184,20 @@ export default function HostRegistrationPage() {
       setRegisteredEmail(data.email);
       setSuccess(true);
     } catch (err: unknown) {
-      console.error('❌ Registration error:', err);
-
       let errorMessage = 'Đăng ký thất bại. Vui lòng thử lại.';
 
       if (err instanceof AxiosError) {
         const responseData = err.response?.data;
-        errorMessage = responseData?.message || responseData?.error || errorMessage;
+
+        if (err.response?.status === 400 && responseData?.message === 'Email already exists') {
+          showToast.error({
+            message: 'Email đã được đăng ký, vui lòng dùng email khác',
+          });
+          return;
+        }
+
+        errorMessage =
+          responseData?.message || responseData?.error || 'Đăng ký thất bại. Vui lòng thử lại.';
       } else if (err instanceof Error) {
         errorMessage = err.message;
       }
