@@ -66,10 +66,14 @@ export default function ProductCard({
   return (
     <>
       <Card
+        sx={{
+          opacity: product.isOutOfStock ? 0.5 : 1,
+          filter: product.isOutOfStock ? 'grayscale(1)' : 'none',
+        }}
         className={`
-    hover:shadow-xl transition-all duration-300 cursor-pointer border
-    ${highlight ? 'border-orange-500 shadow-orange-200 shadow-lg scale-[1.02]' : 'border-gray-200'}
-  `}
+          hover:shadow-xl transition-all duration-300 cursor-pointer border
+          ${highlight ? 'border-orange-500 shadow-orange-200 shadow-lg scale-[1.02]' : 'border-gray-200'}
+        `}
         onClick={() => setDetailOpen(true)}
       >
         <CardContent className="p-0">
@@ -103,6 +107,19 @@ export default function ProductCard({
               </div>
             )}
           </div>
+          {product.isOutOfStock && (
+            <>
+              {/* Overlay mờ */}
+              <div className="absolute inset-0 bg-black/40 z-10" />
+
+              {/* Badge tròn */}
+              <div className="absolute inset-0 flex items-center justify-center z-20">
+                <div className="bg-gray-800 text-white w-24 h-24 rounded-full flex items-center justify-center text-sm font-bold shadow-xl">
+                  TẠM HẾT
+                </div>
+              </div>
+            </>
+          )}
 
           {/* Info */}
           <div className="p-4">
@@ -144,6 +161,7 @@ export default function ProductCard({
                 variant="contained"
                 size="small"
                 startIcon={<AddShoppingCart />}
+                disabled={product.isOutOfStock}
                 onClick={(e) => {
                   e.stopPropagation();
                   setDetailOpen(true);
@@ -237,6 +255,7 @@ export default function ProductCard({
           <Button
             variant="contained"
             onClick={handleAddToCart}
+            disabled={product.isOutOfStock}
             startIcon={<AddShoppingCart />}
             className="flex-1 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700"
           >

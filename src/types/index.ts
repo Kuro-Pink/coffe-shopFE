@@ -112,6 +112,7 @@ export interface Product {
   categoryId: string;
   storeId: string;
   isAvailable: boolean;
+  isOutOfStock?: boolean;
   soldCount?: number;
   recipe?: ProductIngredient[];
 
