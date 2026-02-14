@@ -96,8 +96,8 @@ export default function AdminRevenuePage() {
 
                   <TableCell align="center">
                     <Chip
-                      label={row.isActive ? 'Hoạt động' : 'Đã khóa'}
-                      color={row.isActive ? 'success' : 'error'}
+                      label={!row.isActive ? 'Hoạt động' : 'Ngừng hoạt động'}
+                      color={!row.isActive ? 'success' : 'error'}
                       size="small"
                     />
                   </TableCell>

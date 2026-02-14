@@ -8,7 +8,7 @@ import {
   Typography,
   Button,
   Grid,
-  IconButton,
+  Switch,
   Chip,
   TextField,
   InputAdornment,
@@ -24,7 +24,7 @@ import {
   Pagination,
   Select,
 } from '@mui/material';
-import { Add, Search, Store as StoreIcon, Lock, LockOpen } from '@mui/icons-material';
+import { Add, Search, Store as StoreIcon } from '@mui/icons-material';
 import { adminService } from '@/lib/services/adminService';
 import { Store } from '@/types';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -327,17 +327,15 @@ export default function StoresListPage() {
                   />
                 </TableCell>
 
-                <TableCell align="right">
-                  <IconButton
-                    onClick={(e) => {
-                      e.stopPropagation();
+                <TableCell align="right" onClick={(e) => e.stopPropagation()}>
+                  <Switch
+                    checked={store.isActive}
+                    color="primary"
+                    onChange={() => {
                       setSelectedStore(store);
                       setConfirmLock(true);
                     }}
-                    color={store.isActive ? 'error' : 'success'}
-                  >
-                    {store.isActive ? <Lock /> : <LockOpen />}
-                  </IconButton>
+                  />
                 </TableCell>
               </TableRow>
             ))}

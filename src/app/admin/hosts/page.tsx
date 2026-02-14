@@ -13,6 +13,7 @@ import {
   TableHead,
   TableRow,
   Chip,
+  Switch,
   IconButton,
   Tooltip,
   MenuItem,
@@ -126,7 +127,7 @@ export default function AdminHostsPage() {
                   <TableCell align="center">
                     <Chip
                       size="small"
-                      label={host.isActive ? 'Hoạt động' : 'Khóa'}
+                      label={host.isActive ? 'Hoạt động' : 'Bị khóa'}
                       color={host.isActive ? 'success' : 'error'}
                     />
                   </TableCell>
@@ -135,15 +136,14 @@ export default function AdminHostsPage() {
                   </TableCell>
                   <TableCell align="center" onClick={(e) => e.stopPropagation()}>
                     <Tooltip title={host.isActive ? 'Khóa host' : 'Mở khóa'}>
-                      <IconButton
-                        color={host.isActive ? 'error' : 'success'}
-                        onClick={() => {
+                      <Switch
+                        checked={host.isActive}
+                        color="primary"
+                        onChange={() => {
                           setSelectedHost(host);
                           setConfirmLock(true);
                         }}
-                      >
-                        {host.isActive ? <Lock /> : <LockOpen />}
-                      </IconButton>
+                      />
                     </Tooltip>
                   </TableCell>
                 </TableRow>
