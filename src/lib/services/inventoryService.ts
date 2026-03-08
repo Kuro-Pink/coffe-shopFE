@@ -6,6 +6,7 @@ import {
   InventoryTransaction,
   InventorySummary,
   UsageReport,
+  ProductIngredient,
 } from '@/types';
 export interface CreateIngredientData {
   name: string;
@@ -69,7 +70,7 @@ export const inventoryService = {
   },
   // ===== PRODUCT RECIPE =====
   // Get product recipe
-  getProductRecipe: async (productId: string): Promise<ProductRecipe> => {
+  getProductRecipe: async (productId: string): Promise<ProductIngredient[]> => {
     const response = await api.get(API_ENDPOINTS.HOST.INVENTORY.PRODUCT_RECIPE(productId));
     return response.data.data;
   },

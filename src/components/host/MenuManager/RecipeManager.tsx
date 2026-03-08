@@ -63,7 +63,7 @@ const RecipeManager = forwardRef<RecipeManagerRef, RecipeManagerProps>(
         hasRecipe: recipe.length > 0,
         isSaving: saving,
       });
-    }, [recipe.length, saving, onRecipeStateChange]);
+    }, [recipe, saving]);
 
     const fetchData = async () => {
       try {
@@ -75,12 +75,12 @@ const RecipeManager = forwardRef<RecipeManagerRef, RecipeManagerProps>(
         let recipeData: ProductIngredient[] = [];
         try {
           const recipeResponse = await inventoryService.getProductRecipe(productId);
-          recipeData = recipeResponse?.ingredients || [];
+          recipeData = recipeResponse || [];
         } catch {
           recipeData = [];
         }
 
-        if (recipe.length === 0 && recipeData.length > 0) {
+        if (recipeData?.length) {
           onRecipeChange(recipeData);
           onRecipeInitialized?.();
         }
@@ -93,6 +93,7 @@ const RecipeManager = forwardRef<RecipeManagerRef, RecipeManagerProps>(
     };
 
     useEffect(() => {
+      if (!productId) return;
       fetchData();
     }, [productId, storeId]);
 
@@ -241,7 +242,7 @@ const RecipeManager = forwardRef<RecipeManagerRef, RecipeManagerProps>(
           ) : (
             <div className="space-y-3 mb-4">
               {recipe.map((item, index) => (
-                <div key={`${item.ingredientId}-${index}`} className="flex items-center gap-3">
+                <div key={index} className="flex items-center gap-3">
                   <TextField
                     select
                     label="Nguyên liệu"
