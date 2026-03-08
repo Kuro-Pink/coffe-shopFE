@@ -26,8 +26,10 @@ export default function QRCodeDisplay({ table, open, onClose }: QRCodeDisplayPro
   const qrRef = useRef<HTMLDivElement>(null);
 
   // Generate menu URL
-  const menuUrl = `${window.location.origin}/menu/${table.storeId}?table=${table._id}`;
-
+  const menuUrl =
+    typeof window !== 'undefined'
+      ? `${window.location.origin}/menu/${table.storeId}?table=${table._id}`
+      : '';
   const handleDownload = () => {
     const svg = qrRef.current?.querySelector('svg');
     if (!svg) return;
@@ -137,11 +139,6 @@ export default function QRCodeDisplay({ table, open, onClose }: QRCodeDisplayPro
     }, 250);
   };
 
-  const handleCopyUrl = () => {
-    navigator.clipboard.writeText(menuUrl);
-    showToast.success({ message: 'Đã copy link menu!' });
-  };
-
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle className="text-center">
@@ -209,14 +206,6 @@ export default function QRCodeDisplay({ table, open, onClose }: QRCodeDisplayPro
               <Typography variant="body2" className="flex-1 text-gray-700 break-all text-xs">
                 {menuUrl}
               </Typography>
-              <Button
-                size="small"
-                startIcon={<ContentCopy fontSize="small" />}
-                onClick={handleCopyUrl}
-                className="shrink-0"
-              >
-                Copy
-              </Button>
             </div>
           </div>
         </Box>

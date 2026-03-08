@@ -49,7 +49,6 @@ export default function UsageReport({ storeId }: UsageReportProps) {
         startDate,
         endDate,
       });
-      console.log('Usage Report Data:', data);
       setUsageData(data);
     } catch (error) {
       console.error('Failed to fetch usage report:', error);

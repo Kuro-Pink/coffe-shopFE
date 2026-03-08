@@ -142,6 +142,16 @@ export default function CheckoutModal({ open, onClose, onSuccess }: CheckoutModa
     }
   };
   const handleApplyVoucher = async () => {
+    if (!voucherCode.trim()) {
+      showToast.warning({ message: 'Vui lòng nhập mã voucher rồi tiến hành sử dụng' });
+      return;
+    }
+
+    if (!currentStoreId) {
+      showToast.error({ message: 'Không xác định được cửa hàng' });
+      return;
+    }
+
     try {
       const res = await publicService.applyVoucher({
         code: voucherCode,
@@ -149,13 +159,9 @@ export default function CheckoutModal({ open, onClose, onSuccess }: CheckoutModa
         total: finalTotal,
       });
 
-      if (!voucherCode.trim()) {
-        showToast.warning({ message: 'Vui long nhập mã voucher rồi tiến hành sử dụng' });
-        return;
-      }
-
       setOrderDiscount(res.discount);
-      setVoucherId(res.voucherId); // 🔥 QUAN TRỌNG
+      setVoucherId(res.voucherId);
+
       showToast.success({ message: 'Áp dụng voucher thành công' });
     } catch {
       setOrderDiscount(0);

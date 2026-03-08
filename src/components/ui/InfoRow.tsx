@@ -5,17 +5,12 @@ import clsx from 'clsx';
 
 export interface InfoRowProps {
   label: string;
-  value: string | number;
+  value: ReactNode;
   icon?: ReactNode;
   className?: string;
 }
 
-export default function InfoRow({
-  label,
-  value,
-  icon,
-  className,
-}: InfoRowProps) {
+export default function InfoRow({ label, value, icon, className }: InfoRowProps) {
   return (
     <div
       className={clsx(

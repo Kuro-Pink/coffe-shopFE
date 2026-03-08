@@ -67,7 +67,6 @@ export default function EditStorePage() {
     try {
       setLoading(true);
       const store = await adminService.getStore(storeId);
-      console.log('Fetched store:', store);
 
       // Populate form
       reset({

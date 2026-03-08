@@ -14,7 +14,6 @@ export default function BillDisplay({ bill }: BillDisplayProps) {
   const { user } = useAuthStore();
 
   if (!bill) return null;
-  console.log('bill', bill);
 
   const sessionDuration = Math.max(
     0,
@@ -28,6 +27,8 @@ export default function BillDisplay({ bill }: BillDisplayProps) {
     if (phone.length < 7) return phone;
     return `${phone.slice(0, 2)}****${phone.slice(-3)}`;
   };
+
+  const changeAmount = bill.changeAmount ?? 0;
 
   return (
     <div className="bg-white rounded-lg p-6 max-w-md mx-auto" style={{ fontFamily: 'monospace' }}>
@@ -168,10 +169,10 @@ export default function BillDisplay({ bill }: BillDisplayProps) {
           </span>
         </div>
 
-        {bill.discount > 0 && (
+        {(bill.changeAmount ?? 0) > 0 && (
           <div className="flex justify-between text-red-600">
             <span>Mã giảm giá:</span>
-            <span>-{Number(bill.discount).toLocaleString('vi-VN')} ₫</span>
+            <span>-{Number(bill.changeAmount ?? 0).toLocaleString('vi-VN')} ₫</span>
           </div>
         )}
 
@@ -207,10 +208,10 @@ export default function BillDisplay({ bill }: BillDisplayProps) {
               </div>
             )}
 
-            {bill.changeAmount > 0 && (
+            {changeAmount > 0 && (
               <div className="flex justify-between text-orange-600">
                 <span>Tiền thừa:</span>
-                <span>{Number(bill.changeAmount).toLocaleString('vi-VN')} ₫</span>
+                <span>{changeAmount.toLocaleString('vi-VN')} ₫</span>
               </div>
             )}
           </>

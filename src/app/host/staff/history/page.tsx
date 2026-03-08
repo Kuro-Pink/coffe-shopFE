@@ -76,7 +76,6 @@ export default function MyShiftHistoryPage() {
         shiftService.getShiftHistory(),
         shiftService.getShiftStats(),
       ]);
-      console.log('Fetch shift shiftStats', shiftStats);
 
       setShifts(history);
       setStats(shiftStats);

@@ -248,7 +248,7 @@ export default function VoucherPage() {
             <Box className="flex items-center justify-between mt-4">
               <Switch
                 checked={v.isActive}
-                disabled={v.usageLimit && v.usedCount >= v.usageLimit}
+                disabled={Boolean(v.usageLimit && v.usedCount >= v.usageLimit)}
                 onChange={() => handleToggle(v)}
               />
 

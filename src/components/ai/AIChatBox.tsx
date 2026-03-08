@@ -1,16 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import {
-  Box,
-  Button,
-  TextField,
-  Typography,
-  Modal,
-  Fab,
-  useMediaQuery,
-  CircularProgress,
-} from '@mui/material';
+import { Box, Button, TextField, Typography, Modal, Fab, useMediaQuery } from '@mui/material';
 import ForumIcon from '@mui/icons-material/Forum';
 import CloseIcon from '@mui/icons-material/Close';
 import Fade from '@mui/material/Fade';
@@ -23,11 +14,14 @@ interface Props {
   storeId: string;
 }
 
-interface ChatProduct {
+export interface ChatProduct {
   productId: string;
   name: string;
-  price: number; // finalPrice
+
+  price: number;
   originalPrice?: number;
+  finalPrice?: number;
+
   discountAmount?: number;
   image?: string;
 }
@@ -37,12 +31,14 @@ interface ChatOption {
   message: string;
 }
 
+type AIAction = 'CONFIRM_LAST_ORDER' | 'ASK_ADD_MORE';
+
 interface ChatMessage {
   role: 'ai' | 'user';
   text: string;
-  action?: 'CONFIRM_LAST_ORDER';
+  action?: AIAction;
   products?: ChatProduct[];
-  options?: ChatOption[]; // 👈 THÊM DÒNG NÀY
+  options?: ChatOption[];
 }
 
 const MAIN_OPTIONS: ChatOption[] = [
@@ -129,8 +125,16 @@ export default function AIChatBox({ storeId }: Props) {
         productId: item.productId,
         storeId: storeId,
         name: item.name,
+
         price: item.price,
+        originalPrice: item.originalPrice ?? item.price,
+        finalPrice: item.finalPrice ?? item.price,
+
         quantity: item.quantity,
+
+        discountAmount: item.discountAmount,
+        discountPercent: item.discountPercent,
+        hasDiscount: item.hasDiscount,
       });
     });
 
@@ -138,6 +142,7 @@ export default function AIChatBox({ storeId }: Props) {
       ...prev,
       { role: 'ai', text: 'Mình đã thêm món như lần trước cho bạn rồi nha ☕😊' },
     ]);
+
     setLastOrder(null);
   };
 
@@ -159,37 +164,6 @@ export default function AIChatBox({ storeId }: Props) {
   const handleSendMessage = async (text?: string) => {
     const content = (text ?? input).trim();
     if (!content) return;
-
-    // 👉 Nếu khách chọn upsell combo
-    if (content.startsWith('goi combo')) {
-      const productId = content.split(' ')[2];
-
-      setIsTyping(true);
-      const comboRes = await aiService.recommendCombo(storeId, productId);
-      setIsTyping(false);
-
-      if (comboRes?.combo) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: 'ai',
-            text: comboRes.upsellText || 'Món này hay được gọi kèm nè 😋',
-            products: [comboRes.combo],
-            options: MAIN_OPTIONS,
-          },
-        ]);
-      } else {
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: 'ai',
-            text: 'Hiện chưa có combo phù hợp lắm, bạn xem thêm menu nhé 😊',
-            options: MAIN_OPTIONS,
-          },
-        ]);
-      }
-      return;
-    }
 
     // 👉 Nếu khách từ chối combo
     if (content === 'khong combo') {
@@ -237,7 +211,7 @@ export default function AIChatBox({ storeId }: Props) {
         {
           role: 'ai',
           text: res?.reply || 'AI đang bận chút, anh thử lại nhé 🙏',
-          action: res?.action,
+          action: res?.action ?? undefined,
           products: res?.products,
           options: nextOptions, // 👈 thêm dòng này
         },

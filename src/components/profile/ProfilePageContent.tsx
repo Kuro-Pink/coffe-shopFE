@@ -12,7 +12,7 @@ export default function ProfilePageContent() {
   const [showChangePassword, setShowChangePassword] = useState(false);
 
   useEffect(() => {
-    authService.getMe().then((res) => setUser(res.data));
+    authService.getMe().then((res) => setUser(res));
   }, []);
 
   if (!user) return null;

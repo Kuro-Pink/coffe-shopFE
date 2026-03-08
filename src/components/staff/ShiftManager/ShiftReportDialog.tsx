@@ -34,7 +34,6 @@ interface ShiftReportDialogProps {
 }
 
 export default function ShiftReportDialog({ open, shift, onClose }: ShiftReportDialogProps) {
-  console.log('Shift Report:', shift);
   const handlePrint = () => {
     window.print();
   };

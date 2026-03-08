@@ -172,7 +172,6 @@ export default function TablesManagementPage() {
         showToast.success({ message: 'Cập nhật bàn thành công!' });
       } else {
         await storeService.createTable(user.storeId, data);
-        console.log('Created table with data:', data);
         showToast.success({ message: 'Thêm bàn mới thành công!' });
       }
 
@@ -546,7 +545,6 @@ export default function TablesManagementPage() {
                     <div className="space-y-2">
                       <Button
                         fullWidth
-                        margin="normal"
                         variant="contained"
                         startIcon={<QrCode />}
                         onClick={() => setQrDialog({ open: true, table })}
@@ -559,7 +557,6 @@ export default function TablesManagementPage() {
                       {(table.status || 'available') === 'occupied' && (
                         <Button
                           fullWidth
-                          margin="normal"
                           variant="contained"
                           size="small"
                           onClick={() => setPaymentDialog({ open: true, table })}

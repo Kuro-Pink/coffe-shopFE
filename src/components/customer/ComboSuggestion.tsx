@@ -24,8 +24,8 @@ interface SuggestedProduct {
 
 export default function ComboSuggestion({ storeId, productIds }: Props) {
   const addItem = useCartStore((s) => s.addItem);
-  const cartIds = useCartStore((s) => s.items)?.map((i) => i.productId) ?? [];
-
+  const getCurrentItems = useCartStore((s) => s.getCurrentItems);
+  const cartIds = getCurrentItems().map((i) => i.productId);
   const [products, setProducts] = useState<SuggestedProduct[]>([]);
   const [loading, setLoading] = useState(false);
   const [added, setAdded] = useState(false);

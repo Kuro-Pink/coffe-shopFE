@@ -159,12 +159,6 @@ export default function StoresListPage() {
     }
   };
 
-  const hosts = Array.from(
-    new Map(
-      stores.filter((s) => typeof s.ownerId === 'object').map((s) => [s.ownerId._id, s.ownerId]),
-    ).values(),
-  );
-
   const totalItems = filteredStores.length;
   const totalPages = Math.ceil(totalItems / pageSize);
   const paginatedStores = filteredStores.slice((page - 1) * pageSize, page * pageSize);

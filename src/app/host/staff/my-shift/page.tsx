@@ -54,8 +54,6 @@ export default function MyShiftPage() {
     }
   }, [user?.role]);
 
-  console.log('currentShift', currentShift);
-
   const fetchCurrentShift = async () => {
     try {
       setLoading(true);

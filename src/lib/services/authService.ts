@@ -47,7 +47,7 @@ export const authService = {
   // ✅ Get current user
   getMe: async (): Promise<User> => {
     const response = await api.get(API_ENDPOINTS.AUTH.ME);
-    return response.data;
+    return response.data.data;
   },
 
   // ✅ Update profile (multipart)

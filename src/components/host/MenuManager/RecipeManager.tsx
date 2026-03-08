@@ -75,7 +75,7 @@ const RecipeManager = forwardRef<RecipeManagerRef, RecipeManagerProps>(
         let recipeData: ProductIngredient[] = [];
         try {
           const recipeResponse = await inventoryService.getProductRecipe(productId);
-          recipeData = recipeResponse || [];
+          recipeData = recipeResponse?.ingredients || [];
         } catch {
           recipeData = [];
         }

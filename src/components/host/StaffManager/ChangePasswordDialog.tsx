@@ -28,7 +28,6 @@ export default function ChangePasswordDialog({ open, staff, onClose }: Props) {
   const [show, setShow] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  console.log(' password', password);
 
   const handleSubmit = async () => {
     if (password.length < 6) {

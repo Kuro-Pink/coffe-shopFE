@@ -45,7 +45,6 @@ interface CheckOutDialogProps {
 export default function CheckOutDialog({ open, shift, onClose, onSuccess }: CheckOutDialogProps) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  console.log('checkout data Shift:', shift);
 
   const {
     register,

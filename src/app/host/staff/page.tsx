@@ -74,7 +74,6 @@ export default function StaffManagementPage() {
         staffService.getStaff(user.storeId),
         staffService.getStats(user.storeId),
       ]);
-      console.log('Fetched statsData data:', statsData);
       setStaff(staffData);
       setStats(statsData);
     } catch (error) {

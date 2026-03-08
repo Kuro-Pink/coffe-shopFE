@@ -10,14 +10,28 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'rec
 import { adminService } from '@/lib/services/adminService';
 import SummaryCard from '@/components/ui/SummaryCard';
 
+interface DashboardStats {
+  totalStores: number;
+  activeStores: number;
+  inactiveStores: number;
+  totalOrders: number;
+  totalRevenue: number;
+  totalHosts: number;
+  pendingStoreRequests: number;
+}
+
 export default function AdminDashboard() {
   const router = useRouter();
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<DashboardStats>({
     totalStores: 0,
+    activeStores: 0,
+    inactiveStores: 0,
     totalOrders: 0,
     totalRevenue: 0,
     totalHosts: 0,
+    pendingStoreRequests: 0,
   });
+
   const [range, setRange] = useState(7);
   const [chartData, setChartData] = useState<any[]>([]);
   const [activities, setActivities] = useState<any[]>([]);
@@ -101,8 +115,6 @@ export default function AdminDashboard() {
 
   const fetchActivities = async () => {
     const res = await adminService.getRecentActivities();
-    console.log('Activities data:', res);
-
     setActivities(res);
   };
 
@@ -160,7 +172,6 @@ export default function AdminDashboard() {
               value={stat.value}
               icon={stat.icon}
               color={stat.color}
-              onClick={stat.onClick}
             />
           ))}
         </div>

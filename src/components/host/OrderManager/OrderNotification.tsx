@@ -28,7 +28,6 @@ export default function OrderNotification({
 
     return () => stopNotificationSound();
   }, [open]);
-  console.log('order', order);
 
   const getOriginal = (item: any) => item.originalPrice ?? item.price ?? 0;
   const getFinal = (item: any) => item.finalPrice ?? item.price ?? 0;

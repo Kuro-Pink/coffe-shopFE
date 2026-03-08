@@ -31,17 +31,6 @@ export default function ChatProductCard({
   const original = originalPrice ?? price;
   const final = finalPrice ?? price;
   const hasDiscount = original > final;
-  console.log('original', original);
-  console.log('final', final);
-  console.log('hasDiscount', hasDiscount);
-  console.log('FULL PRODUCT', {
-    productId,
-    name,
-    price,
-    originalPrice,
-    finalPrice,
-    discountAmount,
-  });
 
   const handleAdd = () => {
     addItem({

@@ -24,7 +24,6 @@ export default function RevenueStoreDetailPage() {
     setLoading(true);
     try {
       const res = await adminService.getRevenueByStoreDetail(storeId, range);
-      console.log('res', res);
       setData(res);
     } catch (err) {
       console.error('Fetch revenue detail failed', err);
