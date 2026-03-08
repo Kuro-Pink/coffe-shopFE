@@ -171,7 +171,7 @@ export default function QRCodeDisplay({ table, open, onClose }: QRCodeDisplayPro
               level="H"
               includeMargin={true}
               imageSettings={{
-                src: '/logo.png',
+                src: '',
                 height: 40,
                 width: 40,
                 excavate: true,

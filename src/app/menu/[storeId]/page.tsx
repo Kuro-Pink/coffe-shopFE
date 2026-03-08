@@ -79,7 +79,7 @@ export default function CustomerMenuPage() {
       setCategories(categories);
       setProducts(availableProducts);
       setBestSellers(
-        availableProducts.toSorted((a, b) => (b.soldCount ?? 0) - (a.soldCount ?? 0)).slice(0, 3),
+        [...availableProducts].sort((a, b) => (b.soldCount ?? 0) - (a.soldCount ?? 0)).slice(0, 3),
       );
 
       setStoreName(menuData.store?.name || 'Menu');
