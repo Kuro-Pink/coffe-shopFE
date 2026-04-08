@@ -96,7 +96,31 @@ npm run dev
 - **UX thực tế**: quản lý check-in bàn, in bill, mã QR để mở bàn
 - **Công nghệ enterprise**: Next.js 16 + React 19 + TypeScript + MUI + Tailwind
 
-## Thêm screenshot vào README
+## Screenshots
+
+### Admin Dashboard
+
+![Admin Dashboard](./public/screenshots/admin-dashboard.png)
+
+### Host Dashboard
+
+![Host Dashboard](./public/screenshots/host-dashboard.png)
+
+### Host Menu Management
+
+![Host Menu](./public/screenshots/host-menu.png)
+
+### Orders Management
+
+![Orders](./public/screenshots/orders.png)
+
+### Tables Management
+
+![Tables](./public/screenshots/tables.png)
+
+### Customer Order
+
+![Customer Order](./public/screenshots/customer-order.png)
 
 1. Chụp ảnh màn hình các trang chính như:
    - dashboard Admin
@@ -105,20 +129,6 @@ npm run dev
    - trang Customer xem menu và order
 2. Lưu ảnh vào thư mục `public/screenshots/` hoặc `docs/screenshots/` trong repo.
 3. Thêm link ảnh vào `README.md` bằng Markdown:
-
-```md
-## Demo giao diện
-
-![Admin Dashboard](./public/screenshots/admin-dashboard.png)
-
-![Host Dashboard](./public/screenshots/host-dashboard.png)
-
-![Host Order Management](./public/screenshots/orders.png)
-
-![Customer Order](./public/screenshots/customer-order.png)
-
-![Customer Menu](./public/screenshots/host-menu.png)
-```
 
 ## Ghi chú
 
