@@ -100,27 +100,25 @@ npm run dev
 
 1. Chụp ảnh màn hình các trang chính như:
    - dashboard Admin
+   - dashboard Host
    - trang Host quản lý menu / đơn hàng
-   - trang Customer xem menu và_checkout
-   - màn hình in hóa đơn / QR code
+   - trang Customer xem menu và order
 2. Lưu ảnh vào thư mục `public/screenshots/` hoặc `docs/screenshots/` trong repo.
 3. Thêm link ảnh vào `README.md` bằng Markdown:
 
 ```md
 ## Demo giao diện
 
-![Admin Dashboard](public/screenshots/admin-dashboard.png)
+![Admin Dashboard](./public/screenshots/admin-dashboard.png)
 
-![Host Dashboard](public/screenshots/host-dashboard.png)
+![Host Dashboard](./public/screenshots/host-dashboard.png)
 
-![Host Order Management](public/screenshots/orders.png)
+![Host Order Management](./public/screenshots/orders.png)
 
-![Customer Order](public/screenshots/customer-order.png)
+![Customer Order](./public/screenshots/customer-order.png)
 
-![Customer Menu](public/screenshots/host-menu.png)
+![Customer Menu](./public/screenshots/host-menu.png)
 ```
-
-4. Nếu dùng GitHub, ảnh sẽ hiển thị tự động khi repo được push lên.
 
 ## Ghi chú
 
